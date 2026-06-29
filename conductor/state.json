@@ -43,8 +43,7 @@
     "mcp_registry_submission_workflow_requires_published_crates_and_registry_credentials",
     "main_branch_protection_requires_review_and_required_checks",
     "glama_registry_metadata_requires_explicit_user_endpoint",
-    "repository_auto_merge_enabled_for_review_gated_prs"
-    ,
+    "repository_auto_merge_enabled_for_review_gated_prs",
     "branch_protection_required_checks_use_actual_job_names"
   ],
   "implemented_surfaces": [
@@ -107,8 +106,7 @@
     "release workflow run 28407239423 validated release inputs, package validation, cross-platform binary builds, and GitHub release update before failing on empty CARGO_REGISTRY_TOKEN",
     "PR 22 checks passed on initial release-hardening head before review-feedback fix",
     "PR 22 checks passed on latest head f4034d0",
-    "mcp-publisher publish currently blocks on authentication and should wait until crates.io packages exist"
-    ,
+    "mcp-publisher publish currently blocks on authentication and should wait until crates.io packages exist",
     "main branch protection restored with actual CI job-name required checks"
   ],
   "blocked_by": [
