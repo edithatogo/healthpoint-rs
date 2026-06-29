@@ -18,6 +18,6 @@ Release hardening status for `healthpoint-rs`.
 ## Local verification
 
 ```bash
-gh release view v0.1.0 --json assets
+gh release view <tag> --json assets
 shasum -a 256 -c <artifact>.sha256
 ```
