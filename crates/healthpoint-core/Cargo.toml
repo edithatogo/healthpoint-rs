@@ -1,6 +1,6 @@
 [package]
 name = "healthpoint-core"
-version = "0.1.0"
+version.workspace = true
 description = "Core domain model, queries, provenance, and provider traits for Healthpoint tooling."
 edition.workspace = true
 rust-version.workspace = true

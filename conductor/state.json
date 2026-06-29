@@ -1,6 +1,6 @@
 {
   "project": "healthpoint-rs",
-  "status": "release_readiness_hardened_external_approval_remaining",
+  "status": "release_tag_ready_crates_registry_token_blocked",
   "updated_at": "2026-06-30",
   "context_model": "conductor",
   "default_branch": "main",
@@ -36,7 +36,11 @@
     "daily_dependency_automation",
     "cross_platform_ci",
     "locked_cargo_ci",
-    "current_github_actions"
+    "current_github_actions",
+    "workspace_package_version_is_release_source_of_truth",
+    "rmcp_uses_crates_io_release",
+    "crates_io_publish_workflow_requires_CARGO_REGISTRY_TOKEN",
+    "mcp_registry_submission_workflow_requires_published_crates_and_registry_credentials"
   ],
   "implemented_surfaces": [
     "HealthpointClient configurable base URL/auth/geo mode",
@@ -62,7 +66,11 @@
     "release runbook, threat model, live contract capture plan, RMCP pin plan",
     "Linux/macOS/Windows CI with locked Cargo commands",
     "MSRV CI check for Rust 1.88",
-    "daily Dependabot and Renovate dependency automation"
+    "daily Dependabot and Renovate dependency automation",
+    "centralized workspace package version and release-version validator",
+    "crates.io-ready path+version workspace dependency metadata",
+    "MCP registry submission readiness validator and workflow",
+    "tag-driven GitHub release workflow with checksum artifacts and crates.io publish job"
   ],
   "validated_in_current_environment": [
     "JSON metadata parsed successfully",
@@ -81,15 +89,24 @@
     "cargo test --workspace --locked passed",
     "cargo clippy --workspace --all-targets --locked -- -D warnings passed",
     "cargo deny check passed",
-    "MCP JSON-RPC smoke against synthetic server listed resources/templates/prompts and read policy/query resources"
+    "MCP JSON-RPC smoke against synthetic server listed resources/templates/prompts and read policy/query resources",
+    "scripts/check-release-version.py --tag v0.1.0 passed",
+    "scripts/check-mcp-registry-submission.py passed",
+    "healthpoint-core cargo publish dry-run passed",
+    "cargo package --list passed for dependent publish crates"
   ],
   "blocked_by": [
     "Healthpoint written approval for public-data, hosted proxy, redistribution, open_social_data publication, AI dataset, or non-research commercial use",
-    "metadata-only follow-up captures for broader pagination, nearby, direct-read, and rate-limit shapes"
+    "metadata-only follow-up captures for broader pagination, nearby, direct-read, and rate-limit shapes",
+    "CARGO_REGISTRY_TOKEN secret is required before crates.io publish workflow can publish packages",
+    "Official MCP registry submission requires crates.io packages to exist and mcp-publisher credentials/tooling",
+    "Third-party MCP directories require account-gated manual submission or repository indexing"
   ],
   "next_tracks": [
-    "capture-additional-live-metadata-without-payloads",
+    "add-CARGO_REGISTRY_TOKEN-and-run-tagged-release-publish",
+    "submit-official-mcp-registry-after-crates-publication",
+    "complete-third-party-mcp-directory-account-submissions",
     "obtain-healthpoint-written-approval-before-production-or-public-data-release"
   ],
-  "latest_checkpoint": "conductor/checkpoints/2026-06-30-release-readiness-mcp-contracts.md"
+  "latest_checkpoint": "conductor/checkpoints/2026-06-30-release-publication-automation.md"
 }

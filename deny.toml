@@ -22,4 +22,4 @@ ignore = []
 [sources]
 unknown-registry = "deny"
 unknown-git = "warn"
-allow-git = ["https://github.com/modelcontextprotocol/rust-sdk"]
+allow-git = []

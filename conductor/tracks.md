@@ -11,7 +11,7 @@
 | 05. MCP | Complete | RMCP stdio server exposes read-only tools, native resources/resource templates, and prompt templates. |
 | 06. open_social_data bridge | Partial | Tabular adapter covers services, locations, organizations, codes, contacts, eligibility, and availability without hard dependency; initial data dictionaries exist. |
 | 07. Live validation | Partial | UAT base URL, x-api-key auth, search parameter names, and a metadata-only live smoke are confirmed; broader pagination/nearby/direct-read/rate-limit captures remain metadata-only follow-ups. |
-| 08. Release and distribution | Partial | Cargo.lock, RMCP pin, release runbook, binary release workflow, packaging docs, provenance plan, release checklist, and CI confirmation exist; public data, hosted proxy, redistribution, open-data, AI dataset, and non-research commercial use still need Healthpoint written approval. |
+| 08. Release and distribution | Partial | Dynamic workspace versioning, crates.io-ready metadata, tag-driven GitHub release workflow, checksum artifacts, crates.io publish job, and MCP registry submission workflow exist; crates.io token and account-gated registry submissions remain external gates. |
 
 ## Track 01 — Workspace foundation
 
@@ -138,7 +138,7 @@ Tasks:
 
 ## Track 08 — Release and distribution
 
-Status: planned
+Status: partial
 
 Tasks:
 
@@ -150,3 +150,14 @@ Tasks:
 - [x] Add release runbook.
 - [x] Add issue/PR templates with safety and licensing gates.
 - [x] Add RMCP pin plan.
+- [x] Centralize release version in `workspace.package.version`.
+- [x] Make workspace dependencies publishable with path plus version metadata.
+- [x] Move `rmcp` from Git source to crates.io release.
+- [x] Add release version consistency validator.
+- [x] Add tag-driven GitHub release workflow with checksums.
+- [x] Add crates.io publish workflow gated on `CARGO_REGISTRY_TOKEN`.
+- [x] Add MCP registry submission readiness validator and workflow.
+- [ ] Add `CARGO_REGISTRY_TOKEN` repository secret.
+- [ ] Publish crates.io packages.
+- [ ] Submit official MCP registry package after crates.io publication.
+- [ ] Complete account-gated third-party MCP directory submissions.

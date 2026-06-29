@@ -12,6 +12,7 @@ members = [
 ]
 
 [workspace.package]
+version = "0.1.0"
 edition = "2024"
 rust-version = "1.88"
 license = "Apache-2.0"
@@ -50,11 +51,11 @@ url = { version = "2", features = ["serde"] }
 uuid = { version = "1", features = ["serde", "v7"] }
 
 # Official Rust MCP SDK pinned to the commit validated by local setup gates.
-rmcp = { git = "https://github.com/modelcontextprotocol/rust-sdk", rev = "67a30859443ab0fe79f2d50307c7d7bc9518f7e3", features = ["server", "transport-io"] }
+rmcp = { version = "2.0.0", features = ["server", "transport-io"] }
 
-healthpoint-core = { path = "crates/healthpoint-core" }
-healthpoint-fhir = { path = "crates/healthpoint-fhir" }
-healthpoint-client = { path = "crates/healthpoint-client" }
-healthpoint-export = { path = "crates/healthpoint-export" }
-healthpoint-osd-adapter = { path = "crates/healthpoint-osd-adapter" }
-healthpoint-testkit = { path = "crates/healthpoint-testkit" }
+healthpoint-core = { version = "0.1.0", path = "crates/healthpoint-core" }
+healthpoint-fhir = { version = "0.1.0", path = "crates/healthpoint-fhir" }
+healthpoint-client = { version = "0.1.0", path = "crates/healthpoint-client" }
+healthpoint-export = { version = "0.1.0", path = "crates/healthpoint-export" }
+healthpoint-osd-adapter = { version = "0.1.0", path = "crates/healthpoint-osd-adapter" }
+healthpoint-testkit = { version = "0.1.0", path = "crates/healthpoint-testkit" }

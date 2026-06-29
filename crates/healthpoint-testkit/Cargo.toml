@@ -1,12 +1,11 @@
 [package]
 name = "healthpoint-testkit"
-version = "0.1.0"
+version.workspace = true
 description = "Synthetic fixtures and test helpers for healthpoint-rs."
 edition.workspace = true
 rust-version.workspace = true
 license.workspace = true
 repository.workspace = true
-publish = false
 
 [dependencies]
 async-trait.workspace = true

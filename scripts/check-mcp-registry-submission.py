@@ -1,0 +1,111 @@
+#!/usr/bin/env python3
+"""Validate MCP registry submission readiness for healthpoint-rs.
+
+This is intentionally conservative: it verifies local manifest/package evidence
+and records which registries are automatable versus manually gated.
+"""
+from __future__ import annotations
+
+import json
+import pathlib
+import subprocess
+import sys
+import tomllib
+from dataclasses import dataclass
+
+ROOT = pathlib.Path(__file__).resolve().parents[1]
+
+
+@dataclass(frozen=True)
+class Registry:
+    name: str
+    url: str
+    submission: str
+    requirement: str
+    automatable: bool
+
+
+REGISTRIES = [
+    Registry(
+        "Official MCP Registry",
+        "https://github.com/modelcontextprotocol/registry",
+        "mcp-publisher login && mcp-publisher publish",
+        "Valid server.json plus a published package in a trusted registry such as crates.io.",
+        True,
+    ),
+    Registry(
+        "Smithery",
+        "https://smithery.ai/",
+        "Provider/account submission or repository import.",
+        "Public repository, install instructions, server metadata, and maintainer account.",
+        False,
+    ),
+    Registry(
+        "Glama MCP server directory",
+        "https://glama.ai/mcp/servers",
+        "Directory submission/indexing.",
+        "Public repository metadata and MCP server install/use documentation.",
+        False,
+    ),
+    Registry(
+        "PulseMCP",
+        "https://www.pulsemcp.com/",
+        "Directory submission/indexing.",
+        "Public repository metadata and MCP server install/use documentation.",
+        False,
+    ),
+    Registry(
+        "mcp.so",
+        "https://mcp.so/",
+        "Directory submission/indexing.",
+        "Public repository metadata and MCP server install/use documentation.",
+        False,
+    ),
+]
+
+
+def cargo(*args: str) -> str:
+    return subprocess.check_output(["cargo", *args], cwd=ROOT, text=True, stderr=subprocess.STDOUT)
+
+
+def main() -> int:
+    errors: list[str] = []
+    server_path = ROOT / "server.json"
+    server = json.loads(server_path.read_text(encoding="utf-8"))
+    workspace = tomllib.loads((ROOT / "Cargo.toml").read_text(encoding="utf-8"))
+    version = workspace["workspace"]["package"]["version"]
+
+    if server.get("name") != "healthpoint-rs":
+        errors.append("server.json name must be healthpoint-rs")
+    if server.get("version") != version:
+        errors.append("server.json version must match workspace.package.version")
+    if server.get("transport") != "stdio":
+        errors.append("server.json transport must be stdio")
+    if server.get("command") != "healthpoint-mcp":
+        errors.append("server.json command must be healthpoint-mcp")
+    if not server.get("env", {}).get("HEALTHPOINT_API_KEY", {}).get("secret"):
+        errors.append("HEALTHPOINT_API_KEY must be marked secret")
+    packages = server.get("packages", [])
+    cargo_packages = [pkg for pkg in packages if pkg.get("registry") == "crates.io"]
+    if not any(pkg.get("name") == "healthpoint-mcp" and pkg.get("version") == version for pkg in cargo_packages):
+        errors.append("server.json packages must include healthpoint-mcp on crates.io at the workspace version")
+
+    metadata = json.loads(cargo("metadata", "--format-version", "1", "--no-deps"))
+    names = {pkg["name"] for pkg in metadata["packages"]}
+    for required in ["healthpoint-mcp", "healthpoint-cli"]:
+        if required not in names:
+            errors.append(f"Cargo metadata missing {required}")
+
+    report = {
+        "server": server.get("name"),
+        "version": version,
+        "registries": [registry.__dict__ for registry in REGISTRIES],
+        "automated_submit_ready": not errors,
+        "errors": errors,
+    }
+    print(json.dumps(report, indent=2, sort_keys=True))
+    return 1 if errors else 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

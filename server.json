@@ -30,5 +30,38 @@
       "required": false,
       "default": "30"
     }
-  }
+  },
+  "packages": [
+    {
+      "registry": "crates.io",
+      "name": "healthpoint-mcp",
+      "version": "0.1.0",
+      "package": "healthpoint-mcp",
+      "binaries": [
+        "healthpoint-mcp"
+      ]
+    },
+    {
+      "registry": "crates.io",
+      "name": "healthpoint-cli",
+      "version": "0.1.0",
+      "package": "healthpoint-cli",
+      "binaries": [
+        "healthpoint"
+      ]
+    }
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/edithatogo/healthpoint-rs"
+  },
+  "license": "Apache-2.0",
+  "homepage": "https://github.com/edithatogo/healthpoint-rs",
+  "keywords": [
+    "healthpoint",
+    "fhir",
+    "mcp",
+    "snomed",
+    "healthcare"
+  ]
 }

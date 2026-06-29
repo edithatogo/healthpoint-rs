@@ -1,0 +1,43 @@
+name: MCP registry submission readiness
+
+on:
+  workflow_dispatch:
+    inputs:
+      submit_official:
+        description: "Submit to the official MCP registry when credentials/tooling are available"
+        type: boolean
+        default: false
+  push:
+    tags:
+      - "v*"
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    name: Validate registry requirements
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: dtolnay/rust-toolchain@stable
+      - name: Validate local registry requirements
+        run: scripts/check-mcp-registry-submission.py
+      - name: Verify crates are published
+        shell: bash
+        run: |
+          version=$(python3 - <<'PY'
+          import tomllib
+          print(tomllib.load(open('Cargo.toml','rb'))['workspace']['package']['version'])
+          PY
+          )
+          for crate in healthpoint-core healthpoint-fhir healthpoint-client healthpoint-export healthpoint-testkit healthpoint-osd-adapter healthpoint-cli healthpoint-mcp; do
+            cargo search "$crate" --limit 1 | grep "^$crate = \"$version\""
+          done
+      - name: Official registry submit gate
+        if: inputs.submit_official == true
+        shell: bash
+        run: |
+          command -v mcp-publisher
+          mcp-publisher publish --dry-run
+          mcp-publisher publish

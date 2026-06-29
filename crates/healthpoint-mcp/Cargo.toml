@@ -1,6 +1,6 @@
 [package]
 name = "healthpoint-mcp"
-version = "0.1.0"
+version.workspace = true
 description = "Read-only MCP server for Healthpoint directory access."
 edition.workspace = true
 rust-version.workspace = true
