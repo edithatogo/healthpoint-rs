@@ -173,6 +173,23 @@ def check_server_json(findings: list[Finding]) -> None:
         findings.append(Finding("error", "server.json", "missing MCP server manifest"))
         return
     data = json.loads(server.read_text(encoding="utf-8"))
+    packages = data.get("packages", [])
+    official_env = []
+    official_transport = None
+    for package in packages:
+        if package.get("identifier") == "healthpoint-mcp":
+            official_env = package.get("environmentVariables", [])
+            official_transport = package.get("transport", {}).get("type")
+            break
+    if official_env:
+        env = {item.get("name"): item for item in official_env}
+        api_key = env.get("HEALTHPOINT_API_KEY", {})
+        if not api_key.get("isSecret"):
+            findings.append(Finding("error", "server.json", "HEALTHPOINT_API_KEY must be marked isSecret"))
+        if official_transport != "stdio":
+            findings.append(Finding("warning", "server.json", "expected stdio MCP transport"))
+        return
+
     env = data.get("env", {})
     api_key = env.get("HEALTHPOINT_API_KEY", {})
     if not api_key.get("secret"):
