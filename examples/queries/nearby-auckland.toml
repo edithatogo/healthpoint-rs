@@ -1,0 +1,5 @@
+text = "screening"
+lat = -36.8485
+lon = 174.7633
+radius_km = 10
+limit = 10

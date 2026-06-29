@@ -19,14 +19,22 @@ The default path is read-only, local-only, and bring-your-own-key. Any command t
 - Create workspace crates for core, FHIR, client, CLI, MCP, export, OSD adapter, and testkit.
 - Add Conductor setup/run entrypoints.
 - Add CI, linting, formatter, security, and docs scaffolding.
-- Acceptance: `cargo check --workspace --all-targets` succeeds.
+- Acceptance: `cargo check --workspace --all-targets` succeeds in a Rust-enabled environment.
 
 ### Milestone 1.2: FHIR-first record model
 
 - Map synthetic `HealthcareService` Bundle to `ServiceRecord`.
 - Preserve raw FHIR JSON on typed records.
 - Add `SourceProvenance` and `AccessPolicy` to every record/page/export.
+- Add Location and Organization projections.
 - Acceptance: tests map synthetic fixtures without real Healthpoint data.
+
+### Milestone 1.3: Adapter contracts
+
+- Add `healthpoint://` resource URI parser.
+- Add JSON Schema emission for stable integration contracts.
+- Add response metadata and redaction primitives.
+- Acceptance: offline fixture/schema/inspect commands work after compile validation.
 
 ## Phase 2: Licensed API client and CLI
 
@@ -34,25 +42,26 @@ The default path is read-only, local-only, and bring-your-own-key. Any command t
 
 - Implement configurable base URL, auth scheme, and conservative request limits.
 - Support search/get for `HealthcareService` and get for `Organization` and `Location`.
+- Validate FHIR ids and geo search inputs before request construction.
 - Acceptance: mock-server tests pass; live tests remain ignored and key-gated.
 
 ### Milestone 2.2: CLI surface
 
-- Add `doctor`, `search services`, `get service`, `get organization`, `get location`, and `export manifest`.
+- Add `doctor`, `policy show`, `fixture`, `schema`, `inspect`, `search services`, `get`, `get uri`, `export manifest`, and `export services`.
 - Add JSON, JSONL, CSV, and human output modes where appropriate.
-- Acceptance: CLI never prints secrets and all errors include remediation hints.
+- Acceptance: CLI never prints secrets and all errors include remediation hints where practical.
 
 ## Phase 3: MCP server
 
 ### Milestone 3.1: Read-only MCP tools
 
-- Expose diagnostic, service search, SNOMED search, nearby search, service get, location get, and organization get tools.
+- Expose diagnostic, service search, SNOMED search, nearby search, service get, location get, organization get, and resource URI read tools.
 - Add clear tool descriptions, schemas, limits, and licence warnings.
 - Acceptance: server launches over stdio and tool calls return provenance-rich JSON.
 
 ### Milestone 3.2: MCP resources and prompts
 
-- Add resource templates for `healthpoint://service/{id}`, `healthpoint://organization/{id}`, and `healthpoint://location/{id}`.
+- Add resource templates for `healthpoint://service/{id}`, `healthpoint://organization/{id}`, and `healthpoint://location/{id}` after RMCP API validation.
 - Add prompts for safe directory summaries and code-mapping explanations.
 - Acceptance: resources are read-only and paginated where relevant.
 
@@ -68,6 +77,7 @@ The default path is read-only, local-only, and bring-your-own-key. Any command t
 
 - Stabilise tabular views before adding a hard dependency.
 - Add adapter that can be consumed by `open_social_data` only when terms permit.
+- Add initial data dictionaries.
 - Acceptance: no command labels Healthpoint-derived outputs as open without `open-approved` policy.
 
 ## Cross-cutting requirements
@@ -78,3 +88,4 @@ The default path is read-only, local-only, and bring-your-own-key. Any command t
 - Redact secrets from logs, traces, tests, errors, and diagnostics.
 - Prefer synthetic fixtures for CI.
 - Treat the `rmcp` dependency as bleeding-edge; pin before stable releases.
+- Use Conductor checkpoints when handing off or reaching environment limits.

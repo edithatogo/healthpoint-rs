@@ -104,6 +104,89 @@
             "value": "https://example.test/synthetic-service",
             "use": "work"
           }
+        ],
+        "identifier": [
+          {
+            "use": "official",
+            "system": "https://example.test/healthcare-service-id",
+            "value": "svc-cervical-screening-1"
+          }
+        ],
+        "category": [
+          {
+            "coding": [
+              {
+                "system": "http://terminology.hl7.org/CodeSystem/service-category",
+                "code": "17",
+                "display": "General Practice"
+              }
+            ]
+          }
+        ],
+        "serviceProvisionCode": [
+          {
+            "coding": [
+              {
+                "system": "http://terminology.hl7.org/CodeSystem/service-provision-conditions",
+                "code": "free",
+                "display": "Free"
+              }
+            ]
+          }
+        ],
+        "characteristic": [
+          {
+            "coding": [
+              {
+                "system": "https://example.test/characteristics",
+                "code": "walk-in",
+                "display": "Walk-in"
+              }
+            ]
+          }
+        ],
+        "eligibility": [
+          {
+            "code": {
+              "coding": [
+                {
+                  "system": "https://example.test/eligibility",
+                  "code": "eligible-population",
+                  "display": "Eligible population"
+                }
+              ]
+            },
+            "comment": "Synthetic eligibility comment"
+          }
+        ],
+        "comment": "Synthetic Healthpoint service comment.",
+        "extraDetails": "Synthetic extra details for offline tests only.",
+        "availableTime": [
+          {
+            "daysOfWeek": [
+              "mon",
+              "tue",
+              "wed"
+            ],
+            "allDay": false,
+            "availableStartTime": "09:00:00",
+            "availableEndTime": "17:00:00"
+          }
+        ],
+        "notAvailable": [
+          {
+            "description": "Synthetic public holiday closure",
+            "during": {
+              "start": "2026-12-25",
+              "end": "2026-12-26"
+            }
+          }
+        ],
+        "endpoint": [
+          {
+            "reference": "Endpoint/endpoint-example-1",
+            "display": "Synthetic endpoint"
+          }
         ]
       }
     }

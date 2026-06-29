@@ -1,32 +1,62 @@
-# healthpoint-rs Conductor Brief
+# Conductor brief: healthpoint-rs
 
 ## Mission
 
-Build a Rust-first Healthpoint API toolkit that provides a typed SDK, CLI, MCP server, and future data-plane adapter without bundling or redistributing licensed Healthpoint data.
+Build a Rust-first Healthpoint API SDK, CLI, and read-only MCP server that can later integrate with `open_social_data` without assuming Healthpoint-derived data is open or redistributable.
 
-## Architectural stance
+## Current architecture
 
-- New canonical repo: `healthpoint-rs`.
-- `substack-cli-ts` is a workflow reference only.
-- `open_social_data` is a future integration target for approved tabular exports, not the initial core.
-- Healthpoint data access is bring-your-own-key.
-- FHIR resources remain the canonical internal representation; tables are views.
+```text
+healthpoint-core
+  Domain records, query model, provenance, access policy, validation, redaction, resource URIs.
 
-## Current priorities
+healthpoint-fhir
+  Tolerant FHIR R4 JSON mapping for HealthcareService, Location, and Organization.
 
-1. Validate API auth/base URL from licensed documentation.
-2. Confirm search parameter names for text, SNOMED/type/specialty, and nearby search.
-3. Make synthetic fixture mapping compile and pass.
-4. Make `doctor` and JSON search/get commands robust.
-5. Add MCP tools over the same client.
+healthpoint-client
+  Async reqwest client with configurable base URL, auth scheme, search URL building, response metadata, and same-origin cursor handling.
 
-## Context-packing rule
+healthpoint-cli
+  doctor/search/get/get-uri/inspect/export/fixture/schema/policy command surface.
 
-Every future agent should read, in order:
+healthpoint-mcp
+  Read-only RMCP stdio server over the same client/core.
 
-1. `conductor/state.json`
-2. `conductor/brief.md`
-3. `conductor/tracks.md`
-4. latest ADRs in `conductor/decisions/`
-5. `docs/access-and-licensing.md`
-6. `docs/api-assumptions.md`
+healthpoint-export
+  JSON/JSONL/CSV service exports and export manifests.
+
+healthpoint-osd-adapter
+  Future open_social_data tabular view adapter without hard dependency.
+
+healthpoint-testkit
+  Synthetic fixtures and offline FixtureDirectoryProvider.
+```
+
+## Non-negotiables
+
+- No real Healthpoint payloads in Git.
+- No committed API keys or local caches.
+- No scraping fallback.
+- No public proxy mode.
+- No open-data claims until terms/permission allow it.
+- MCP remains read-only.
+- Exports default to local-only and carry manifests.
+
+## Current environment state
+
+The current sandbox has no Cargo/Rust. Metadata validation passes, but compile/test/clippy must run elsewhere.
+
+## Next handoff command sequence
+
+```bash
+cargo fmt --all --check
+cargo check --workspace --all-targets
+cargo test --workspace
+cargo clippy --workspace --all-targets -- -D warnings
+cargo run -p healthpoint-cli -- fixture services --format human
+cargo run -p healthpoint-cli -- inspect search-url --text "cervical screening" --snomed 171149006
+```
+
+## Live validation rule
+
+Use Dylan's Healthpoint key locally. Record endpoint-shape metadata only; do not commit API responses.

@@ -58,6 +58,17 @@ impl Code {
     }
 }
 
+/// FHIR identifier projection.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
+pub struct Identifier {
+    /// usual | official | temp | secondary | old, when supplied.
+    pub use_code: Option<String>,
+    /// Identifier system URI.
+    pub system: Option<String>,
+    /// Identifier value.
+    pub value: Option<String>,
+}
+
 /// Reference to another FHIR resource.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
 pub struct ResourceReference {
@@ -108,11 +119,53 @@ pub struct GeoPosition {
     pub altitude: Option<f64>,
 }
 
+/// FHIR period projection with string timestamps preserved as supplied.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
+pub struct Period {
+    /// Start instant/date/dateTime string, when supplied.
+    pub start: Option<String>,
+    /// End instant/date/dateTime string, when supplied.
+    pub end: Option<String>,
+}
+
+/// HealthcareService availability window.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
+pub struct AvailableTime {
+    /// FHIR daysOfWeek values.
+    pub days_of_week: Vec<String>,
+    /// Whether the service is available all day.
+    pub all_day: Option<bool>,
+    /// Opening time string.
+    pub available_start_time: Option<String>,
+    /// Closing time string.
+    pub available_end_time: Option<String>,
+}
+
+/// HealthcareService not-available interval.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
+pub struct NotAvailable {
+    /// Human-readable unavailable description.
+    pub description: Option<String>,
+    /// Optional period during which the service is not available.
+    pub during: Option<Period>,
+}
+
+/// HealthcareService eligibility component.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
+pub struct Eligibility {
+    /// Eligibility codings.
+    pub codes: Vec<Code>,
+    /// Eligibility comment/markdown.
+    pub comment: Option<String>,
+}
+
 /// Directory service record derived from FHIR `HealthcareService`.
 #[derive(Debug, Clone, Serialize, Deserialize, JsonSchema)]
 pub struct ServiceRecord {
     /// Resource id.
     pub id: String,
+    /// FHIR identifiers.
+    pub identifiers: Vec<Identifier>,
     /// Human-readable name.
     pub name: Option<String>,
     /// Whether the service is active.
@@ -123,20 +176,36 @@ pub struct ServiceRecord {
     pub locations: Vec<ResourceReference>,
     /// Coverage areas where the service is intended/available.
     pub coverage_areas: Vec<ResourceReference>,
+    /// Endpoint references.
+    pub endpoints: Vec<ResourceReference>,
     /// FHIR `category` codings.
     pub categories: Vec<Code>,
     /// FHIR `type` codings.
     pub service_types: Vec<Code>,
     /// FHIR `specialty` codings.
     pub specialties: Vec<Code>,
+    /// FHIR `serviceProvisionCode` codings.
+    pub service_provision_codes: Vec<Code>,
     /// FHIR `program` codings.
     pub programs: Vec<Code>,
+    /// FHIR `characteristic` codings.
+    pub characteristics: Vec<Code>,
     /// FHIR `communication` codings.
     pub communications: Vec<Code>,
     /// FHIR `referralMethod` codings.
     pub referral_methods: Vec<Code>,
+    /// Eligibility rules/comments.
+    pub eligibilities: Vec<Eligibility>,
     /// Whether an appointment is required, when supplied.
     pub appointment_required: Option<bool>,
+    /// Free-text comment from the source.
+    pub comment: Option<String>,
+    /// Extra details/markdown from the source.
+    pub extra_details: Option<String>,
+    /// Availability windows.
+    pub available_times: Vec<AvailableTime>,
+    /// Not-available periods.
+    pub not_available: Vec<NotAvailable>,
     /// FHIR `telecom` contacts.
     pub contacts: Vec<ContactPoint>,
     /// Source provenance.
@@ -150,10 +219,20 @@ pub struct ServiceRecord {
 pub struct OrganizationRecord {
     /// Resource id.
     pub id: String,
+    /// FHIR identifiers.
+    pub identifiers: Vec<Identifier>,
+    /// Organisation type codings.
+    pub organization_types: Vec<Code>,
     /// Organisation name.
     pub name: Option<String>,
+    /// Aliases/alternate names.
+    pub aliases: Vec<String>,
     /// Whether the organisation is active.
     pub active: Option<bool>,
+    /// Parent organisation.
+    pub part_of: Option<ResourceReference>,
+    /// Endpoint references.
+    pub endpoints: Vec<ResourceReference>,
     /// Contact points.
     pub contacts: Vec<ContactPoint>,
     /// Source provenance.
@@ -167,6 +246,8 @@ pub struct OrganizationRecord {
 pub struct LocationRecord {
     /// Resource id.
     pub id: String,
+    /// FHIR identifiers.
+    pub identifiers: Vec<Identifier>,
     /// Location name.
     pub name: Option<String>,
     /// active | suspended | inactive.
@@ -175,6 +256,8 @@ pub struct LocationRecord {
     pub mode: Option<String>,
     /// Location type codings.
     pub location_types: Vec<Code>,
+    /// Physical type codings.
+    pub physical_types: Vec<Code>,
     /// Contact points.
     pub contacts: Vec<ContactPoint>,
     /// Address.
@@ -183,6 +266,12 @@ pub struct LocationRecord {
     pub position: Option<GeoPosition>,
     /// Managing organisation.
     pub managing_organization: Option<ResourceReference>,
+    /// Parent location.
+    pub part_of: Option<ResourceReference>,
+    /// Endpoint references.
+    pub endpoints: Vec<ResourceReference>,
+    /// Hours of operation.
+    pub hours_of_operation: Vec<AvailableTime>,
     /// Source provenance.
     pub provenance: SourceProvenance,
     /// Raw FHIR resource.

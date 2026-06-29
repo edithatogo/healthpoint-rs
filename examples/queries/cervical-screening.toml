@@ -1,0 +1,4 @@
+# Example query parameters. This is not executed directly yet; it documents the intended saved-query shape.
+text = "cervical screening"
+service_types = ["http://snomed.info/sct|171149006"]
+limit = 10

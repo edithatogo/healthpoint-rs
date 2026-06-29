@@ -2,51 +2,60 @@
 
 ## Project structure
 
-- `conductor.json` declares setup and run entrypoints used by Conductor.
-- `bin/conductor-setup` links external secrets when available and runs Rust dependency checks.
-- `script/server` launches the MCP server.
-- `crates/healthpoint-core` contains stable domain types, queries, provenance, and traits.
-- `crates/healthpoint-client` contains HTTP/auth logic.
-- `crates/healthpoint-fhir` maps FHIR JSON into typed records.
-- `crates/healthpoint-cli` defines the terminal UX.
-- `crates/healthpoint-mcp` defines the read-only MCP surface.
-- `crates/healthpoint-osd-adapter` defines future tabular views.
-- `conductor/` stores current context, implementation tracks, and ADRs.
+This repository is a Rust workspace for Healthpoint API tooling.
 
-## Build and validation
+- `conductor.json` declares setup/run/context entrypoints used by Conductor.
+- `bin/conductor-setup` performs metadata preflight and full Cargo setup when Cargo is available.
+- `script/server` starts the read-only MCP server from source.
+- `conductor/` stores state, decisions, checkpoints, and implementation tracks.
+- `crates/healthpoint-core/` contains domain records, query model, validation, redaction, provenance, and resource URIs.
+- `crates/healthpoint-fhir/` contains tolerant FHIR JSON mappers.
+- `crates/healthpoint-client/` contains the async HTTP client.
+- `crates/healthpoint-cli/` defines the `healthpoint` command surface.
+- `crates/healthpoint-mcp/` defines the read-only MCP server.
+- `crates/healthpoint-export/` contains export helpers and manifests.
+- `crates/healthpoint-osd-adapter/` contains future open_social_data tabular views.
+- `crates/healthpoint-testkit/` contains synthetic fixtures only.
+
+## Build, test, and development commands
+
+Run from the repository root:
 
 ```bash
 bin/conductor-setup
 cargo fmt --all --check
 cargo check --workspace --all-targets
-cargo clippy --workspace --all-targets -- -D warnings
 cargo test --workspace
+cargo clippy --workspace --all-targets -- -D warnings
+cargo run -p healthpoint-cli -- fixture services --format human
 cargo run -p healthpoint-cli -- doctor
-cargo run -p healthpoint-cli -- search services --text "cervical screening" --limit 5 --format json
+cargo run -p healthpoint-mcp
 ```
 
-## Security and data handling
+If Cargo is unavailable and you only need metadata validation:
 
-Never commit:
-
-- `.env` or API keys,
-- real Healthpoint API payloads,
-- local caches,
-- logs/traces containing request headers,
-- generated CSV/JSONL/Parquet exports.
-
-Use synthetic FHIR fixtures only. Treat all Healthpoint-derived data as licensed and non-redistributable unless `docs/access-and-licensing.md` has been updated with explicit reviewed terms.
+```bash
+CONDUCTOR_ALLOW_NO_CARGO=1 bin/conductor-setup
+```
 
 ## Coding style
 
-Use Rust 2024 edition, thin command handlers, explicit domain types, no unsafe code, and provenance on all retrieved/exported records. Keep FHIR raw JSON available while adding typed projections. Update `conductor/state.json`, `conductor/tracks.md`, and `conductor/checkpoints/` whenever a meaningful implementation pass completes.
+Use safe Rust only. Keep command handlers thin and delegate domain logic to crates. Preserve raw FHIR JSON on typed records. Avoid adding heavyweight dependencies to `healthpoint-core`.
 
-## Pull requests
+## Testing guidelines
 
-Every PR should include:
+- Use synthetic fixtures in CI.
+- Do not commit real Healthpoint API responses.
+- Gate live tests behind explicit environment variables and document metadata-only findings.
+- Before changing FHIR mapping, update fixtures and schema/adapter docs.
 
-- a summary,
-- commands run,
-- affected Conductor track(s),
-- whether any API/licensing assumption changed,
-- whether real API data was used locally and how it was kept out of Git.
+## Security and configuration
+
+Do not commit `.env`, API keys, local caches, generated exports, traces, logs, databases, Parquet files, JSONL exports, or real API payloads. Secret values must be redacted from diagnostics and errors.
+
+## Conductor rules
+
+- Update `conductor/state.json` after meaningful implementation passes.
+- Add a checkpoint under `conductor/checkpoints/` before handoff.
+- Update track files when scope changes.
+- Add ADRs for architectural decisions that affect integrations, schema stability, licensing posture, or MCP surface.

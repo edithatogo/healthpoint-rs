@@ -1,0 +1,13 @@
+{
+  "mcpServers": {
+    "healthpoint": {
+      "command": "healthpoint-mcp",
+      "env": {
+        "HEALTHPOINT_API_KEY": "${HEALTHPOINT_API_KEY}",
+        "HEALTHPOINT_BASE_URL": "https://www.healthpointapi.com/",
+        "HEALTHPOINT_AUTH_SCHEME": "bearer",
+        "HEALTHPOINT_GEO_SEARCH_MODE": "healthpoint-lat-lon"
+      }
+    }
+  }
+}

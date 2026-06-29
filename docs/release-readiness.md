@@ -10,7 +10,9 @@ Before first public release:
 - [ ] Review Healthpoint terms for caching, bulk export, attribution, and redistribution.
 - [ ] Add `cargo dist` or equivalent binary release plan.
 - [ ] Add crate-level docs and examples.
-- [ ] Add MCP resource templates or explicitly defer them.
+- [ ] Add MCP resource templates or explicitly defer them after RMCP validation.
 - [ ] Add shell completions.
 - [ ] Decide whether `healthpoint-osd-adapter` remains internal or becomes a published crate.
 - [ ] Confirm generated data files are excluded from release artifacts.
+- [ ] Generate and commit `Cargo.lock` from a Rust-enabled environment.
+- [ ] Run `cargo deny check` after dependency resolution.

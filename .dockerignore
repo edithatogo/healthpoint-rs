@@ -1,0 +1,16 @@
+.git
+target
+.healthpoint
+.open-social-data
+.env
+.env.*
+!.env.example
+*.log
+*.trace
+*.har
+*.sqlite
+*.db
+*.parquet
+*.csv
+*.jsonl
+*.ndjson

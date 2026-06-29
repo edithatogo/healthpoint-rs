@@ -18,6 +18,15 @@ Confirm that `doctor` reports:
 }
 ```
 
+## Offline preflight
+
+```bash
+cargo run -p healthpoint-cli -- fixture services --format json
+cargo run -p healthpoint-cli -- schema service-record
+cargo run -p healthpoint-cli -- inspect search-url --text "cervical screening" --limit 5
+cargo run -p healthpoint-cli -- inspect resource-url HealthcareService synthetic-id
+```
+
 ## Smoke tests
 
 ```bash
@@ -32,6 +41,7 @@ Then copy a returned id/reference and test:
 cargo run -p healthpoint-cli -- get service <service-id> --format json
 cargo run -p healthpoint-cli -- get location <location-id> --format json
 cargo run -p healthpoint-cli -- get organization <organization-id> --format json
+cargo run -p healthpoint-cli -- get uri healthpoint://service/<service-id> --format json
 ```
 
 ## What to record

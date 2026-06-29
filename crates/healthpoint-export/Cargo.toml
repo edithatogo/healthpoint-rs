@@ -12,7 +12,12 @@ chrono.workspace = true
 csv.workspace = true
 healthpoint-core.workspace = true
 serde.workspace = true
+schemars.workspace = true
 serde_json.workspace = true
 
 [lints]
 workspace = true
+
+[dev-dependencies]
+healthpoint-fhir.workspace = true
+healthpoint-testkit.workspace = true

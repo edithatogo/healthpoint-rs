@@ -3,7 +3,7 @@
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 
-use crate::records::Code;
+use crate::{records::Code, Result};
 
 /// Latitude/longitude point for nearby search.
 #[derive(Debug, Clone, Copy, PartialEq, Serialize, Deserialize, JsonSchema)]
@@ -64,5 +64,41 @@ impl Default for ServiceQuery {
             limit: QueryLimit::default(),
             cursor: None,
         }
+    }
+}
+
+impl ServiceQuery {
+    /// Create an empty service query.
+    pub fn new() -> Self {
+        Self::default()
+    }
+
+    /// Set a text search term.
+    pub fn with_text(mut self, text: impl Into<String>) -> Self {
+        self.text = Some(text.into());
+        self
+    }
+
+    /// Add a service type code.
+    pub fn with_service_type(mut self, code: Code) -> Self {
+        self.service_types.push(code);
+        self
+    }
+
+    /// Add a SNOMED CT service type code.
+    pub fn with_snomed_type(self, code: impl Into<String>) -> Self {
+        self.with_service_type(Code::snomed(code))
+    }
+
+    /// Set nearby latitude/longitude and optional radius.
+    pub fn with_nearby(mut self, point: GeoPoint, radius_km: Option<f32>) -> Self {
+        self.nearby = Some(point);
+        self.radius_km = radius_km;
+        self
+    }
+
+    /// Validate the query according to conservative client limits.
+    pub fn validate(&self) -> Result<()> {
+        crate::validation::validate_service_query(self)
     }
 }

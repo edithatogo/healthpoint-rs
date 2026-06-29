@@ -8,18 +8,27 @@ Current `ServiceRecord` fields:
 
 ```text
 id
+identifiers
 name
 active
 provided_by
 locations
 coverage_areas
+endpoints
 categories
 service_types
 specialties
+service_provision_codes
 programs
+characteristics
 communications
 referral_methods
+eligibilities
 appointment_required
+comment
+extra_details
+available_times
+not_available
 contacts
 provenance
 raw_fhir
@@ -33,14 +42,19 @@ Current `LocationRecord` fields:
 
 ```text
 id
+identifiers
 name
 status
 mode
 location_types
+physical_types
 contacts
 address
 position
 managing_organization
+part_of
+endpoints
+hours_of_operation
 provenance
 raw_fhir
 ```
@@ -51,8 +65,13 @@ Current `OrganizationRecord` fields:
 
 ```text
 id
+identifiers
+organization_types
 name
+aliases
 active
+part_of
+endpoints
 contacts
 provenance
 raw_fhir

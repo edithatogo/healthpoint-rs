@@ -6,8 +6,23 @@ if [[ -n "${CONDUCTOR_ROOT_PATH:-}" && -f "$CONDUCTOR_ROOT_PATH/.env" ]]; then
   ln -sf "$CONDUCTOR_ROOT_PATH/.env" .env
 fi
 
+python3 - <<'PY'
+import json, pathlib, tomllib
+for p in pathlib.Path('.').rglob('*.json'):
+    if '.git' not in p.parts:
+        json.loads(p.read_text())
+for p in pathlib.Path('.').rglob('*.toml'):
+    if '.git' not in p.parts:
+        tomllib.loads(p.read_text())
+print('metadata preflight ok')
+PY
+
 if ! command -v cargo >/dev/null 2>&1; then
-  echo "Rust/Cargo is required. Install via rustup, then rerun bin/conductor-setup." >&2
+  if [[ "${CONDUCTOR_ALLOW_NO_CARGO:-}" == "1" ]]; then
+    echo "Rust/Cargo not found; metadata-only Conductor setup completed because CONDUCTOR_ALLOW_NO_CARGO=1." >&2
+    exit 0
+  fi
+  echo "Rust/Cargo is required for full setup. Install via rustup, or set CONDUCTOR_ALLOW_NO_CARGO=1 for metadata-only setup." >&2
   exit 1
 fi
 

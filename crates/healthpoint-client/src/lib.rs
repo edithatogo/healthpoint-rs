@@ -10,10 +10,11 @@ use std::time::Duration;
 
 use async_trait::async_trait;
 use healthpoint_core::{
-    DirectoryProvider, HealthpointError, LocationRecord, OrganizationRecord, Page, Result,
-    ServiceQuery, ServiceRecord, SourceProvenance,
+    redaction::redact_known_secrets, validate_resource_id, validate_service_query,
+    DirectoryProvider, HealthpointError, LocationRecord, OrganizationRecord, Page, ResponseMetadata,
+    Result, ServiceQuery, ServiceRecord, SourceProvenance,
 };
-use reqwest::{header, RequestBuilder, Url};
+use reqwest::{header, header::HeaderMap, RequestBuilder, Url};
 use serde_json::Value;
 
 /// Authentication strategy for Healthpoint API requests.
@@ -174,12 +175,18 @@ impl HealthpointClient {
                 GeoSearchMode::FhirNear => "fhir-near",
             },
             "timeout_secs": self.config.timeout.as_secs(),
+            "safety": {
+                "read_only": true,
+                "public_cache_default": false,
+                "secret_values_redacted": true,
+            }
         })
     }
 
     /// Build a HealthcareService search URL without sending it.
     pub fn service_search_url(&self, query: &ServiceQuery) -> Result<Url> {
-        if let Some(cursor) = absolute_same_origin_cursor(&self.config.base_url, query.cursor.as_deref())? {
+        validate_service_query(query)?;
+        if let Some(cursor) = cursor_as_same_origin_url(&self.config.base_url, query.cursor.as_deref())? {
             return Ok(cursor);
         }
         let mut url = self.resource_url("HealthcareService", None)?;
@@ -187,23 +194,33 @@ impl HealthpointClient {
         Ok(url)
     }
 
+    /// Build a resource URL without sending it.
+    pub fn inspect_resource_url(&self, resource_type: &str, id: &str) -> Result<Url> {
+        self.resource_url(resource_type, Some(id))
+    }
+
     fn provenance(&self) -> SourceProvenance {
         SourceProvenance::healthpoint(self.config.base_url.as_str())
     }
 
     fn resource_url(&self, resource_type: &str, id: Option<&str>) -> Result<Url> {
-        let mut url = self.config.base_url.clone();
-        let mut path = url.path().trim_end_matches('/').to_owned();
-        if !path.is_empty() {
-            path.push('/');
-        }
-        path.push_str(resource_type.trim_start_matches('/'));
+        validate_resource_type(resource_type)?;
         if let Some(id) = id {
-            path.push('/');
-            path.push_str(id);
+            validate_resource_id(id)?;
         }
-        url.set_path(&path);
+        let mut url = self.config.base_url.clone();
         url.set_query(None);
+        url.set_fragment(None);
+        {
+            let mut segments = url.path_segments_mut().map_err(|()| {
+                HealthpointError::Config("base URL cannot be a cannot-be-a-base URL".into())
+            })?;
+            segments.pop_if_empty();
+            segments.push(resource_type);
+            if let Some(id) = id {
+                segments.push(id);
+            }
+        }
         Ok(url)
     }
 
@@ -227,24 +244,30 @@ impl HealthpointClient {
         }
     }
 
-    async fn get_json(&self, url: Url) -> Result<Value> {
+    async fn get_json(&self, url: Url) -> Result<(Value, ResponseMetadata)> {
         let request = self.apply_auth(self.http.get(url))?;
         let response = request
             .send()
             .await
             .map_err(|err| HealthpointError::Request(err.to_string()))?;
         let status = response.status();
+        let metadata = response_metadata(response.headers());
         let body = response
             .text()
             .await
             .map_err(|err| HealthpointError::Request(err.to_string()))?;
         if !status.is_success() {
+            let message = match &self.config.api_key {
+                Some(secret) => redact_known_secrets(&body, [secret.as_str()]),
+                None => body,
+            };
             return Err(HealthpointError::Api {
                 status: status.as_u16(),
-                message: body,
+                message,
             });
         }
-        serde_json::from_str(&body).map_err(|err| HealthpointError::Parse(err.to_string()))
+        let value = serde_json::from_str(&body).map_err(|err| HealthpointError::Parse(err.to_string()))?;
+        Ok((value, metadata))
     }
 
     fn encode_service_query(&self, url: &mut Url, query: &ServiceQuery) {
@@ -263,7 +286,9 @@ impl HealthpointClient {
         }
         pairs.append_pair("_count", &query.limit.clamped().to_string());
         if let Some(cursor) = &query.cursor {
-            pairs.append_pair("_cursor", cursor);
+            if cursor_as_same_origin_url(&self.config.base_url, Some(cursor)).ok().flatten().is_none() {
+                pairs.append_pair("_cursor", cursor);
+            }
         }
         if let Some(point) = query.nearby {
             match self.config.geo_search_mode {
@@ -287,12 +312,30 @@ impl HealthpointClient {
     }
 }
 
-fn absolute_same_origin_cursor(base_url: &Url, cursor: Option<&str>) -> Result<Option<Url>> {
-    let Some(cursor) = cursor.filter(|value| !value.trim().is_empty()) else {
+fn validate_resource_type(resource_type: &str) -> Result<()> {
+    let valid = !resource_type.is_empty()
+        && resource_type.len() <= 64
+        && resource_type
+            .bytes()
+            .all(|b| b.is_ascii_alphanumeric());
+    if valid {
+        Ok(())
+    } else {
+        Err(HealthpointError::InvalidInput(format!(
+            "invalid FHIR resource type {resource_type:?}; expected ASCII letters/digits only"
+        )))
+    }
+}
+
+fn cursor_as_same_origin_url(base_url: &Url, cursor: Option<&str>) -> Result<Option<Url>> {
+    let Some(cursor) = cursor.map(str::trim).filter(|value| !value.is_empty()) else {
         return Ok(None);
     };
     let parsed = match Url::parse(cursor) {
         Ok(url) => url,
+        Err(_) if cursor.starts_with('/') || cursor.starts_with('?') => base_url
+            .join(cursor)
+            .map_err(|err| HealthpointError::Config(format!("invalid relative cursor: {err}")))?,
         Err(_) => return Ok(None),
     };
     if parsed.origin() != base_url.origin() {
@@ -303,11 +346,32 @@ fn absolute_same_origin_cursor(base_url: &Url, cursor: Option<&str>) -> Result<O
     Ok(Some(parsed))
 }
 
+fn response_metadata(headers: &HeaderMap) -> ResponseMetadata {
+    ResponseMetadata {
+        etag: header_value(headers, header::ETAG.as_str()),
+        last_modified: header_value(headers, header::LAST_MODIFIED.as_str()),
+        retry_after: header_value(headers, header::RETRY_AFTER.as_str()),
+        request_id: header_value(headers, "x-request-id")
+            .or_else(|| header_value(headers, "x-correlation-id")),
+        rate_limit_remaining: header_value(headers, "x-ratelimit-remaining")
+            .or_else(|| header_value(headers, "ratelimit-remaining")),
+        rate_limit_reset: header_value(headers, "x-ratelimit-reset")
+            .or_else(|| header_value(headers, "ratelimit-reset")),
+    }
+}
+
+fn header_value(headers: &HeaderMap, name: &str) -> Option<String> {
+    headers
+        .get(name)
+        .and_then(|value| value.to_str().ok())
+        .map(ToOwned::to_owned)
+}
+
 #[async_trait]
 impl DirectoryProvider for HealthpointClient {
     async fn search_services(&self, query: ServiceQuery) -> Result<Page<ServiceRecord>> {
         let url = self.service_search_url(&query)?;
-        let value = self.get_json(url).await?;
+        let (value, response_metadata) = self.get_json(url).await?;
         let total = healthpoint_fhir::total(&value);
         let next_cursor = healthpoint_fhir::next_link(&value);
         let provenance = self.provenance();
@@ -316,6 +380,7 @@ impl DirectoryProvider for HealthpointClient {
             items,
             next_cursor,
             total,
+            response_metadata,
             provenance,
         })
     }
@@ -323,7 +388,7 @@ impl DirectoryProvider for HealthpointClient {
     async fn get_service(&self, id: &str) -> Result<ServiceRecord> {
         let url = self.resource_url("HealthcareService", Some(id))?;
         let provenance = self.provenance();
-        let value = self.get_json(url).await?;
+        let (value, _) = self.get_json(url).await?;
         let mut records = healthpoint_fhir::services_from_fhir(value, provenance)?;
         records
             .pop()
@@ -333,14 +398,14 @@ impl DirectoryProvider for HealthpointClient {
     async fn get_organization(&self, id: &str) -> Result<OrganizationRecord> {
         let url = self.resource_url("Organization", Some(id))?;
         let provenance = self.provenance();
-        let value = self.get_json(url).await?;
+        let (value, _) = self.get_json(url).await?;
         healthpoint_fhir::organization_from_fhir(value, provenance)
     }
 
     async fn get_location(&self, id: &str) -> Result<LocationRecord> {
         let url = self.resource_url("Location", Some(id))?;
         let provenance = self.provenance();
-        let value = self.get_json(url).await?;
+        let (value, _) = self.get_json(url).await?;
         healthpoint_fhir::location_from_fhir(value, provenance)
     }
 }
@@ -387,10 +452,38 @@ mod tests {
     #[test]
     fn absolute_cursor_must_match_origin() {
         let base = Url::parse("https://example.test/fhir/").expect("valid URL");
-        assert!(absolute_same_origin_cursor(
+        assert!(cursor_as_same_origin_url(
             &base,
             Some("https://other.test/HealthcareService?page=2")
         )
         .is_err());
+    }
+
+    #[test]
+    fn relative_cursor_is_resolved_against_base() {
+        let base = Url::parse("https://example.test/fhir/").expect("valid URL");
+        let cursor = cursor_as_same_origin_url(&base, Some("/fhir/HealthcareService?page=2"))
+            .expect("valid cursor")
+            .expect("cursor parsed");
+        assert_eq!(cursor.as_str(), "https://example.test/fhir/HealthcareService?page=2");
+    }
+
+    #[test]
+    fn resource_ids_are_path_segments_not_paths() {
+        let config = ClientConfig::new(
+            Url::parse("https://example.test/fhir/").expect("valid URL"),
+            None,
+            AuthScheme::None,
+        );
+        let client = HealthpointClient::new(config);
+        assert!(client.inspect_resource_url("Location", "Location/bad").is_err());
+        assert!(client.inspect_resource_url("Location/bad", "loc-1").is_err());
+        assert_eq!(
+            client
+                .inspect_resource_url("Location", "loc-1")
+                .expect("URL builds")
+                .as_str(),
+            "https://example.test/fhir/Location/loc-1"
+        );
     }
 }

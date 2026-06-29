@@ -5,11 +5,14 @@
 use std::io::Write;
 
 use chrono::{DateTime, Utc};
-use healthpoint_core::{AccessPolicy, Result, ServiceRecord, SourceProvenance};
+use healthpoint_core::{
+    AccessPolicy, LocationRecord, OrganizationRecord, Result, ServiceRecord, SourceProvenance,
+};
+use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 
 /// Export manifest attached to generated files.
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, JsonSchema)]
 pub struct ExportManifest {
     /// Manifest schema version.
     pub schema_version: String,
@@ -39,6 +42,37 @@ impl ExportManifest {
     }
 }
 
+/// Supported data export formats for service records.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
+#[serde(rename_all = "kebab-case")]
+pub enum ServiceExportFormat {
+    /// Pretty JSON array.
+    Json,
+    /// Newline-delimited JSON.
+    Jsonl,
+    /// Conservative flat CSV.
+    Csv,
+}
+
+/// Write service records in a selected format.
+pub fn write_services<W: Write>(records: &[ServiceRecord], format: ServiceExportFormat, writer: W) -> Result<()> {
+    match format {
+        ServiceExportFormat::Json => write_services_json(records, writer),
+        ServiceExportFormat::Jsonl => write_services_jsonl(records, writer),
+        ServiceExportFormat::Csv => write_services_csv(records, writer),
+    }
+}
+
+/// Write service records as pretty JSON.
+pub fn write_services_json<W: Write>(records: &[ServiceRecord], mut writer: W) -> Result<()> {
+    serde_json::to_writer_pretty(&mut writer, records)
+        .map_err(|err| healthpoint_core::HealthpointError::Parse(err.to_string()))?;
+    writer
+        .write_all(b"\n")
+        .map_err(|err| healthpoint_core::HealthpointError::Request(err.to_string()))?;
+    Ok(())
+}
+
 /// Write records as newline-delimited JSON.
 pub fn write_services_jsonl<W: Write>(records: &[ServiceRecord], mut writer: W) -> Result<()> {
     for record in records {
@@ -60,11 +94,15 @@ pub fn write_services_csv<W: Write>(records: &[ServiceRecord], writer: W) -> Res
         "active",
         "provided_by_reference",
         "provided_by_display",
+        "category_codes",
         "service_type_codes",
         "specialty_codes",
+        "program_codes",
+        "communication_codes",
         "location_references",
         "coverage_area_references",
         "appointment_required",
+        "comment",
         "retrieved_at",
     ])
     .map_err(|err| healthpoint_core::HealthpointError::Request(err.to_string()))?;
@@ -72,30 +110,13 @@ pub fn write_services_csv<W: Write>(records: &[ServiceRecord], writer: W) -> Res
     for record in records {
         let provider = record.provided_by.as_ref();
         let active = record.active.map(|b| b.to_string()).unwrap_or_default();
-        let service_types = record
-            .service_types
-            .iter()
-            .map(|code| code.as_token())
-            .collect::<Vec<_>>()
-            .join(";");
-        let specialties = record
-            .specialties
-            .iter()
-            .map(|code| code.as_token())
-            .collect::<Vec<_>>()
-            .join(";");
-        let locations = record
-            .locations
-            .iter()
-            .map(|location| location.reference.clone())
-            .collect::<Vec<_>>()
-            .join(";");
-        let coverage_areas = record
-            .coverage_areas
-            .iter()
-            .map(|area| area.reference.clone())
-            .collect::<Vec<_>>()
-            .join(";");
+        let categories = join_codes(&record.categories);
+        let service_types = join_codes(&record.service_types);
+        let specialties = join_codes(&record.specialties);
+        let programs = join_codes(&record.programs);
+        let communications = join_codes(&record.communications);
+        let locations = join_references(&record.locations);
+        let coverage_areas = join_references(&record.coverage_areas);
         let appointment_required = record
             .appointment_required
             .map(|value| value.to_string())
@@ -107,11 +128,15 @@ pub fn write_services_csv<W: Write>(records: &[ServiceRecord], writer: W) -> Res
             active.as_str(),
             provider.map(|p| p.reference.as_str()).unwrap_or_default(),
             provider.and_then(|p| p.display.as_deref()).unwrap_or_default(),
+            categories.as_str(),
             service_types.as_str(),
             specialties.as_str(),
+            programs.as_str(),
+            communications.as_str(),
             locations.as_str(),
             coverage_areas.as_str(),
             appointment_required.as_str(),
+            record.comment.as_deref().unwrap_or_default(),
             retrieved_at.as_str(),
         ])
         .map_err(|err| healthpoint_core::HealthpointError::Request(err.to_string()))?;
@@ -119,4 +144,59 @@ pub fn write_services_csv<W: Write>(records: &[ServiceRecord], writer: W) -> Res
     wtr.flush()
         .map_err(|err| healthpoint_core::HealthpointError::Request(err.to_string()))?;
     Ok(())
+}
+
+/// Write location records as pretty JSON.
+pub fn write_locations_json<W: Write>(records: &[LocationRecord], mut writer: W) -> Result<()> {
+    serde_json::to_writer_pretty(&mut writer, records)
+        .map_err(|err| healthpoint_core::HealthpointError::Parse(err.to_string()))?;
+    writer
+        .write_all(b"\n")
+        .map_err(|err| healthpoint_core::HealthpointError::Request(err.to_string()))?;
+    Ok(())
+}
+
+/// Write organization records as pretty JSON.
+pub fn write_organizations_json<W: Write>(records: &[OrganizationRecord], mut writer: W) -> Result<()> {
+    serde_json::to_writer_pretty(&mut writer, records)
+        .map_err(|err| healthpoint_core::HealthpointError::Parse(err.to_string()))?;
+    writer
+        .write_all(b"\n")
+        .map_err(|err| healthpoint_core::HealthpointError::Request(err.to_string()))?;
+    Ok(())
+}
+
+fn join_codes(codes: &[healthpoint_core::Code]) -> String {
+    codes
+        .iter()
+        .map(|code| code.as_token())
+        .collect::<Vec<_>>()
+        .join(";")
+}
+
+fn join_references(references: &[healthpoint_core::ResourceReference]) -> String {
+    references
+        .iter()
+        .map(|reference| reference.reference.clone())
+        .collect::<Vec<_>>()
+        .join(";")
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn writes_csv_with_expected_headers() {
+        let records = healthpoint_fhir::services_from_fhir(
+            healthpoint_testkit::healthcare_service_bundle(),
+            healthpoint_core::SourceProvenance::healthpoint("mock"),
+        )
+        .expect("fixture maps");
+        let mut bytes = Vec::new();
+        write_services_csv(&records, &mut bytes).expect("csv writes");
+        let rendered = String::from_utf8(bytes).expect("utf8");
+        assert!(rendered.starts_with("id,name,active"));
+        assert!(rendered.contains("svc-cervical-screening-1"));
+    }
 }

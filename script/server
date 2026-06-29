@@ -2,4 +2,10 @@
 set -Eeuo pipefail
 
 export RUST_LOG=${RUST_LOG:-info,healthpoint=debug}
+
+if ! command -v cargo >/dev/null 2>&1; then
+  echo "cargo is required to run the MCP server from source" >&2
+  exit 1
+fi
+
 exec cargo run -p healthpoint-mcp

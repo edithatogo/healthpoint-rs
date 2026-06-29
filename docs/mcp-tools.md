@@ -12,6 +12,7 @@ healthpoint_find_nearby_services
 healthpoint_get_service
 healthpoint_get_location
 healthpoint_get_organization
+healthpoint_read_resource_uri
 ```
 
 All tools are:
@@ -22,6 +23,16 @@ All tools are:
 - provenance-rich,
 - designed to return JSON with source/access metadata,
 - explicit about not being clinical decision support.
+
+`healthpoint_read_resource_uri` accepts:
+
+```text
+healthpoint://service/{id}
+healthpoint://organization/{id}
+healthpoint://location/{id}
+```
+
+It mirrors planned MCP resources while avoiding compile-risk from resource-template wiring until the selected RMCP API is validated with a local Rust toolchain.
 
 ## Planned resource templates
 

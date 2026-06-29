@@ -9,7 +9,11 @@ repository.workspace = true
 publish = false
 
 [dependencies]
+async-trait.workspace = true
+healthpoint-core.workspace = true
+healthpoint-fhir.workspace = true
 serde_json.workspace = true
+tokio.workspace = true
 
 [lints]
 workspace = true

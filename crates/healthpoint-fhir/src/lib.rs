@@ -6,8 +6,9 @@
 #![forbid(unsafe_code)]
 
 use healthpoint_core::{
-    Address, Code, ContactPoint, GeoPosition, HealthpointError, LocationRecord,
-    OrganizationRecord, ResourceReference, Result, ServiceRecord, SourceProvenance,
+    Address, AvailableTime, Code, ContactPoint, Eligibility, GeoPosition, HealthpointError,
+    Identifier, LocationRecord, NotAvailable, OrganizationRecord, Period, ResourceReference,
+    Result, ServiceRecord, SourceProvenance,
 };
 use serde_json::Value;
 
@@ -21,20 +22,20 @@ pub fn locations_from_fhir(value: Value, provenance: SourceProvenance) -> Result
     resources_from_fhir(value, "Location", provenance, location_from_resource)
 }
 
+/// Convert a FHIR search response or single resource into organization records.
+pub fn organizations_from_fhir(
+    value: Value,
+    provenance: SourceProvenance,
+) -> Result<Vec<OrganizationRecord>> {
+    resources_from_fhir(value, "Organization", provenance, organization_from_resource)
+}
+
 /// Convert a FHIR Organization resource into an organisation record.
 pub fn organization_from_fhir(
     value: Value,
     provenance: SourceProvenance,
 ) -> Result<OrganizationRecord> {
-    ensure_resource_type(&value, "Organization")?;
-    Ok(OrganizationRecord {
-        id: required_id(&value)?,
-        name: string_field(&value, "name"),
-        active: bool_field(&value, "active"),
-        contacts: telecom_points(&value),
-        provenance,
-        raw_fhir: value,
-    })
+    organization_from_resource(value, provenance)
 }
 
 /// Convert a FHIR Location resource into a location record.
@@ -88,18 +89,44 @@ fn service_from_resource(value: Value, provenance: SourceProvenance) -> Result<S
     ensure_resource_type(&value, "HealthcareService")?;
     Ok(ServiceRecord {
         id: required_id(&value)?,
+        identifiers: identifiers_field(&value),
         name: string_field(&value, "name"),
         active: bool_field(&value, "active"),
         provided_by: value.get("providedBy").and_then(reference_from_value),
         locations: references_field(&value, "location"),
         coverage_areas: references_field(&value, "coverageArea"),
+        endpoints: references_field(&value, "endpoint"),
         categories: codeable_concepts_field(&value, "category"),
         service_types: codeable_concepts_field(&value, "type"),
         specialties: codeable_concepts_field(&value, "specialty"),
+        service_provision_codes: codeable_concepts_field(&value, "serviceProvisionCode"),
         programs: codeable_concepts_field(&value, "program"),
+        characteristics: codeable_concepts_field(&value, "characteristic"),
         communications: codeable_concepts_field(&value, "communication"),
         referral_methods: codeable_concepts_field(&value, "referralMethod"),
+        eligibilities: eligibilities_field(&value),
         appointment_required: bool_field(&value, "appointmentRequired"),
+        comment: string_field(&value, "comment"),
+        extra_details: string_field(&value, "extraDetails"),
+        available_times: available_times_field(&value, "availableTime"),
+        not_available: not_available_field(&value),
+        contacts: telecom_points(&value),
+        provenance,
+        raw_fhir: value,
+    })
+}
+
+fn organization_from_resource(value: Value, provenance: SourceProvenance) -> Result<OrganizationRecord> {
+    ensure_resource_type(&value, "Organization")?;
+    Ok(OrganizationRecord {
+        id: required_id(&value)?,
+        identifiers: identifiers_field(&value),
+        organization_types: codeable_concepts_field(&value, "type"),
+        name: string_field(&value, "name"),
+        aliases: string_array_field(&value, "alias"),
+        active: bool_field(&value, "active"),
+        part_of: value.get("partOf").and_then(reference_from_value),
+        endpoints: references_field(&value, "endpoint"),
         contacts: telecom_points(&value),
         provenance,
         raw_fhir: value,
@@ -110,16 +137,24 @@ fn location_from_resource(value: Value, provenance: SourceProvenance) -> Result<
     ensure_resource_type(&value, "Location")?;
     Ok(LocationRecord {
         id: required_id(&value)?,
+        identifiers: identifiers_field(&value),
         name: string_field(&value, "name"),
         status: string_field(&value, "status"),
         mode: string_field(&value, "mode"),
         location_types: codeable_concepts_field(&value, "type"),
+        physical_types: value
+            .get("physicalType")
+            .map(codes_from_codeable_concept)
+            .unwrap_or_default(),
         contacts: telecom_points(&value),
         address: value.get("address").and_then(address_from_value),
         position: value.get("position").and_then(position_from_value),
         managing_organization: value
             .get("managingOrganization")
             .and_then(reference_from_value),
+        part_of: value.get("partOf").and_then(reference_from_value),
+        endpoints: references_field(&value, "endpoint"),
+        hours_of_operation: available_times_field(&value, "hoursOfOperation"),
         provenance,
         raw_fhir: value,
     })
@@ -157,6 +192,17 @@ fn string_field(value: &Value, name: &str) -> Option<String> {
     value.get(name).and_then(Value::as_str).map(ToOwned::to_owned)
 }
 
+fn string_array_field(value: &Value, name: &str) -> Vec<String> {
+    value
+        .get(name)
+        .and_then(Value::as_array)
+        .into_iter()
+        .flatten()
+        .filter_map(Value::as_str)
+        .map(ToOwned::to_owned)
+        .collect()
+}
+
 fn bool_field(value: &Value, name: &str) -> Option<bool> {
     value.get(name).and_then(Value::as_bool)
 }
@@ -179,6 +225,20 @@ fn reference_from_value(value: &Value) -> Option<ResourceReference> {
             .and_then(Value::as_str)
             .map(ToOwned::to_owned),
     })
+}
+
+fn identifiers_field(value: &Value) -> Vec<Identifier> {
+    value
+        .get("identifier")
+        .and_then(Value::as_array)
+        .into_iter()
+        .flatten()
+        .map(|identifier| Identifier {
+            use_code: string_field(identifier, "use"),
+            system: string_field(identifier, "system"),
+            value: string_field(identifier, "value"),
+        })
+        .collect()
 }
 
 fn codeable_concepts_field(value: &Value, name: &str) -> Vec<Code> {
@@ -213,6 +273,59 @@ fn codes_from_codeable_concept(value: &Value) -> Vec<Code> {
         .collect()
 }
 
+fn eligibilities_field(value: &Value) -> Vec<Eligibility> {
+    value
+        .get("eligibility")
+        .and_then(Value::as_array)
+        .into_iter()
+        .flatten()
+        .map(|eligibility| Eligibility {
+            codes: eligibility
+                .get("code")
+                .map(codes_from_codeable_concept)
+                .unwrap_or_default(),
+            comment: string_field(eligibility, "comment"),
+        })
+        .collect()
+}
+
+fn available_times_field(value: &Value, name: &str) -> Vec<AvailableTime> {
+    value
+        .get(name)
+        .and_then(Value::as_array)
+        .into_iter()
+        .flatten()
+        .map(|available| AvailableTime {
+            days_of_week: string_array_field(available, "daysOfWeek"),
+            all_day: bool_field(available, "allDay"),
+            available_start_time: string_field(available, "availableStartTime")
+                .or_else(|| string_field(available, "openingTime")),
+            available_end_time: string_field(available, "availableEndTime")
+                .or_else(|| string_field(available, "closingTime")),
+        })
+        .collect()
+}
+
+fn not_available_field(value: &Value) -> Vec<NotAvailable> {
+    value
+        .get("notAvailable")
+        .and_then(Value::as_array)
+        .into_iter()
+        .flatten()
+        .map(|item| NotAvailable {
+            description: string_field(item, "description"),
+            during: item.get("during").map(period_from_value),
+        })
+        .collect()
+}
+
+fn period_from_value(value: &Value) -> Period {
+    Period {
+        start: string_field(value, "start"),
+        end: string_field(value, "end"),
+    }
+}
+
 fn telecom_points(value: &Value) -> Vec<ContactPoint> {
     value
         .get("telecom")
@@ -239,14 +352,7 @@ fn telecom_points(value: &Value) -> Vec<ContactPoint> {
 fn address_from_value(value: &Value) -> Option<Address> {
     Some(Address {
         text: string_field(value, "text"),
-        line: value
-            .get("line")
-            .and_then(Value::as_array)
-            .into_iter()
-            .flatten()
-            .filter_map(Value::as_str)
-            .map(ToOwned::to_owned)
-            .collect(),
+        line: string_array_field(value, "line"),
         city: string_field(value, "city"),
         district: string_field(value, "district"),
         state: string_field(value, "state"),
@@ -283,6 +389,8 @@ mod tests {
         assert_eq!(records[0].id, "svc-cervical-screening-1");
         assert_eq!(records[0].service_types[0].code, "171149006");
         assert_eq!(records[0].communications[0].code, "en");
+        assert_eq!(records[0].eligibilities[0].comment.as_deref(), Some("Synthetic eligibility comment"));
+        assert_eq!(records[0].available_times[0].available_start_time.as_deref(), Some("09:00:00"));
     }
 
     #[test]
@@ -296,6 +404,7 @@ mod tests {
         assert_eq!(record.id, "loc-auckland-clinic-1");
         assert_eq!(record.address.as_ref().and_then(|a| a.city.as_deref()), Some("Auckland"));
         assert_eq!(record.position.expect("position").latitude, -36.8485);
+        assert_eq!(record.hours_of_operation[0].days_of_week[0], "mon");
     }
 
     #[test]
@@ -308,5 +417,6 @@ mod tests {
             .expect("fixture maps");
         assert_eq!(record.id, "org-example-provider-1");
         assert_eq!(record.contacts[0].system.as_deref(), Some("phone"));
+        assert_eq!(record.aliases[0], "Synthetic CHT");
     }
 }

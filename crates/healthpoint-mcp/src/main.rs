@@ -1,7 +1,9 @@
 //! Read-only MCP server for Healthpoint.
 
 use healthpoint_client::HealthpointClient;
-use healthpoint_core::{Code, DirectoryProvider, GeoPoint, QueryLimit, ServiceQuery};
+use healthpoint_core::{
+    Code, DirectoryProvider, GeoPoint, HealthpointResourceUri, QueryLimit, ServiceQuery,
+};
 use rmcp::{
     handler::server::wrapper::Parameters, schemars::JsonSchema, tool, tool_router,
     transport::stdio, ServiceExt,
@@ -76,6 +78,12 @@ enum SnomedField {
 struct GetResourceParams {
     /// FHIR resource id.
     id: String,
+}
+
+#[derive(Debug, Deserialize, JsonSchema)]
+struct ReadResourceUriParams {
+    /// Resource URI such as healthpoint://service/<id>.
+    uri: String,
 }
 
 #[tool_router(server_handler)]
@@ -163,6 +171,21 @@ impl HealthpointMcpServer {
         Parameters(params): Parameters<GetResourceParams>,
     ) -> String {
         json_result(self.client.get_organization(&params.id).await)
+    }
+
+    #[tool(description = "Read a supported healthpoint:// resource URI. This mirrors planned MCP resources while keeping the operation explicit and read-only.")]
+    async fn healthpoint_read_resource_uri(
+        &self,
+        Parameters(params): Parameters<ReadResourceUriParams>,
+    ) -> String {
+        match HealthpointResourceUri::parse(&params.uri) {
+            Ok(HealthpointResourceUri::Service(id)) => json_result(self.client.get_service(&id).await),
+            Ok(HealthpointResourceUri::Location(id)) => json_result(self.client.get_location(&id).await),
+            Ok(HealthpointResourceUri::Organization(id)) => {
+                json_result(self.client.get_organization(&id).await)
+            }
+            Err(err) => serde_json::json!({ "error": err.to_string() }).to_string(),
+        }
     }
 }
 

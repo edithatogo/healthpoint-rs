@@ -1,6 +1,6 @@
 {
   "project": "healthpoint-rs",
-  "status": "implementation_spike_1",
+  "status": "environment_limit_reached_metadata_validated",
   "updated_at": "2026-06-29",
   "context_model": "conductor",
   "default_branch": "main",
@@ -12,29 +12,52 @@
     "local_only_exports_by_default",
     "rmcp_main_for_frontier_mcp_until_pinned",
     "open_social_data_adapter_without_hard_dependency",
-    "same_origin_pagination_cursor_guard"
+    "same_origin_pagination_cursor_guard",
+    "healthpoint_resource_uri_contract",
+    "json_schema_contracts_for_integration",
+    "synthetic_fixture_provider_for_offline_validation",
+    "environment_limit_documented"
   ],
   "implemented_surfaces": [
     "HealthpointClient configurable base URL/auth/geo mode",
-    "FHIR HealthcareService mapping",
-    "FHIR Location mapping",
-    "FHIR Organization mapping",
-    "CLI doctor/search/get/export-manifest",
-    "MCP diagnostic/search/SNOMED/nearby/get tools",
-    "OSD-style service/location/code/contact tabular rows"
+    "FHIR HealthcareService mapping with identifiers, eligibility, availability, characteristics, service provision codes, endpoints, comments, and raw FHIR preservation",
+    "FHIR Location mapping with identifiers, physical type, address, position, partOf, endpoints, and hours",
+    "FHIR Organization mapping with identifiers, types, aliases, partOf, endpoints, and contacts",
+    "redacted API error handling and redacted diagnostic status",
+    "safe FHIR id validation before path-segment construction",
+    "response metadata capture for ETag, Last-Modified, Retry-After, request-id, and rate-limit headers",
+    "CLI doctor/search/get/get-uri/inspect/export/fixture/schema/policy commands",
+    "local service exports with manifest sidecars",
+    "MCP diagnostic/search/SNOMED/nearby/get/read-resource-uri tools",
+    "healthpoint:// resource URI parser",
+    "offline FixtureDirectoryProvider",
+    "OSD-style services/locations/organizations/code/contact/eligibility/availability tabular rows",
+    "Conductor metadata-only setup path for environments without Cargo"
+  ],
+  "validated_in_current_environment": [
+    "JSON metadata parsed successfully",
+    "TOML metadata parsed successfully",
+    "git diff --check passed",
+    "naive Rust delimiter check passed",
+    "Conductor metadata-only setup passed",
+    "simple high-signal secret-pattern scan passed",
+    "environment limit documented in docs/environment-limitations.md"
   ],
   "blocked_by": [
+    "Rust/Cargo unavailable in current sandbox",
+    "apt-get network access timed out in current sandbox",
     "licensed_api_auth_details",
     "confirmed_endpoint_and_search_parameter_contracts",
     "Healthpoint redistribution/caching terms review",
-    "Rust toolchain unavailable in current sandbox"
+    "compile-time validation of rmcp API surface",
+    "Cargo.lock generation"
   ],
   "next_tracks": [
-    "compile-workspace",
-    "validate-client-auth",
-    "mock-server-tests",
-    "mcp-resource-templates",
+    "cargo-fmt-check-test-clippy-in-rust-enabled-environment",
+    "validate-client-auth-with-dylan-api-key",
+    "mock-server-tests-after-cargo-validation",
+    "mcp-resource-templates-after-rmcp-api-validation",
     "osd-tabular-view-dictionaries"
   ],
-  "latest_checkpoint": "conductor/checkpoints/2026-06-29-spike-1.md"
+  "latest_checkpoint": "conductor/checkpoints/2026-06-29-environment-limit.md"
 }

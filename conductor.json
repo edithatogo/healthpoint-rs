@@ -1,12 +1,16 @@
 {
   "scripts": {
     "setup": "bin/conductor-setup",
-    "run": "script/server"
+    "run": "script/server",
+    "metadata_check": "just metadata-check",
+    "doctor": "just doctor",
+    "fixture": "just fixture"
   },
   "context": {
     "state": "conductor/state.json",
     "brief": "conductor/brief.md",
     "tracks": "conductor/tracks.md",
-    "decisions": "conductor/decisions"
+    "decisions": "conductor/decisions",
+    "checkpoints": "conductor/checkpoints"
   }
 }

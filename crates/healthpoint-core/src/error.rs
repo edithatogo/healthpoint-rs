@@ -12,6 +12,10 @@ pub enum HealthpointError {
     #[error("configuration error: {0}")]
     Config(String),
 
+    /// Invalid caller-supplied input.
+    #[error("invalid input: {0}")]
+    InvalidInput(String),
+
     /// HTTP/API error.
     #[error("Healthpoint API error {status}: {message}")]
     Api {

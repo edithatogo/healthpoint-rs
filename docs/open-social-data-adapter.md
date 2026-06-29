@@ -7,9 +7,12 @@
 ```text
 services
 locations
+organizations
 service-locations
 service-codes
 service-contacts
+service-eligibilities
+service-availability
 ```
 
 The adapter currently returns simple string rows so it can later be converted to Polars, Arrow, or Parquet without forcing the core Healthpoint client to depend on a tabular engine.
@@ -29,9 +32,12 @@ redistribution_status: requires-review | allowed
 views:
   - services
   - locations
+  - organizations
   - service_locations
   - service_codes
   - service_contacts
+  - service_eligibilities
+  - service_availability
 ```
 
 Each generated dataset pack should carry:
@@ -44,3 +50,11 @@ Each generated dataset pack should carry:
 - quality report path,
 - schema/data dictionary,
 - refresh policy.
+
+## View dictionaries
+
+Column dictionaries live in `docs/open-social-data-view-dictionaries.md`.
+
+## Adapter contract
+
+The adapter must never infer that Healthpoint-derived rows are open. It should pass through `AccessPolicy` and `SourceProvenance` from `healthpoint-core` into any future catalogue or quality-report layer.
