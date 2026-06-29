@@ -37,7 +37,9 @@ impl ExportManifest {
             provenance,
             created_at: Utc::now(),
             contains_healthpoint_data,
-            warning: "Do not redistribute Healthpoint-derived data unless your licence/terms permit it.".into(),
+            warning:
+                "Do not redistribute Healthpoint-derived data unless your licence/terms permit it."
+                    .into(),
         }
     }
 }
@@ -55,7 +57,11 @@ pub enum ServiceExportFormat {
 }
 
 /// Write service records in a selected format.
-pub fn write_services<W: Write>(records: &[ServiceRecord], format: ServiceExportFormat, writer: W) -> Result<()> {
+pub fn write_services<W: Write>(
+    records: &[ServiceRecord],
+    format: ServiceExportFormat,
+    writer: W,
+) -> Result<()> {
     match format {
         ServiceExportFormat::Json => write_services_json(records, writer),
         ServiceExportFormat::Jsonl => write_services_jsonl(records, writer),
@@ -127,7 +133,9 @@ pub fn write_services_csv<W: Write>(records: &[ServiceRecord], writer: W) -> Res
             record.name.as_deref().unwrap_or_default(),
             active.as_str(),
             provider.map(|p| p.reference.as_str()).unwrap_or_default(),
-            provider.and_then(|p| p.display.as_deref()).unwrap_or_default(),
+            provider
+                .and_then(|p| p.display.as_deref())
+                .unwrap_or_default(),
             categories.as_str(),
             service_types.as_str(),
             specialties.as_str(),
@@ -157,7 +165,10 @@ pub fn write_locations_json<W: Write>(records: &[LocationRecord], mut writer: W)
 }
 
 /// Write organization records as pretty JSON.
-pub fn write_organizations_json<W: Write>(records: &[OrganizationRecord], mut writer: W) -> Result<()> {
+pub fn write_organizations_json<W: Write>(
+    records: &[OrganizationRecord],
+    mut writer: W,
+) -> Result<()> {
     serde_json::to_writer_pretty(&mut writer, records)
         .map_err(|err| healthpoint_core::HealthpointError::Parse(err.to_string()))?;
     writer

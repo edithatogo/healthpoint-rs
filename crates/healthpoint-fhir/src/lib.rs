@@ -13,12 +13,23 @@ use healthpoint_core::{
 use serde_json::Value;
 
 /// Convert a FHIR search response or single resource into service records.
-pub fn services_from_fhir(value: Value, provenance: SourceProvenance) -> Result<Vec<ServiceRecord>> {
-    resources_from_fhir(value, "HealthcareService", provenance, service_from_resource)
+pub fn services_from_fhir(
+    value: Value,
+    provenance: SourceProvenance,
+) -> Result<Vec<ServiceRecord>> {
+    resources_from_fhir(
+        value,
+        "HealthcareService",
+        provenance,
+        service_from_resource,
+    )
 }
 
 /// Convert a FHIR search response or single resource into location records.
-pub fn locations_from_fhir(value: Value, provenance: SourceProvenance) -> Result<Vec<LocationRecord>> {
+pub fn locations_from_fhir(
+    value: Value,
+    provenance: SourceProvenance,
+) -> Result<Vec<LocationRecord>> {
     resources_from_fhir(value, "Location", provenance, location_from_resource)
 }
 
@@ -27,7 +38,12 @@ pub fn organizations_from_fhir(
     value: Value,
     provenance: SourceProvenance,
 ) -> Result<Vec<OrganizationRecord>> {
-    resources_from_fhir(value, "Organization", provenance, organization_from_resource)
+    resources_from_fhir(
+        value,
+        "Organization",
+        provenance,
+        organization_from_resource,
+    )
 }
 
 /// Convert a FHIR Organization resource into an organisation record.
@@ -116,7 +132,10 @@ fn service_from_resource(value: Value, provenance: SourceProvenance) -> Result<S
     })
 }
 
-fn organization_from_resource(value: Value, provenance: SourceProvenance) -> Result<OrganizationRecord> {
+fn organization_from_resource(
+    value: Value,
+    provenance: SourceProvenance,
+) -> Result<OrganizationRecord> {
     ensure_resource_type(&value, "Organization")?;
     Ok(OrganizationRecord {
         id: required_id(&value)?,
@@ -189,7 +208,10 @@ fn required_id(value: &Value) -> Result<String> {
 }
 
 fn string_field(value: &Value, name: &str) -> Option<String> {
-    value.get(name).and_then(Value::as_str).map(ToOwned::to_owned)
+    value
+        .get(name)
+        .and_then(Value::as_str)
+        .map(ToOwned::to_owned)
 }
 
 fn string_array_field(value: &Value, name: &str) -> Vec<String> {
@@ -383,14 +405,22 @@ mod tests {
         assert!(next.contains("page=2"));
         assert_eq!(total(&value), Some(1));
 
-        let records = services_from_fhir(value, SourceProvenance::healthpoint("mock"))
-            .expect("fixture maps");
+        let records =
+            services_from_fhir(value, SourceProvenance::healthpoint("mock")).expect("fixture maps");
         assert_eq!(records.len(), 1);
         assert_eq!(records[0].id, "svc-cervical-screening-1");
         assert_eq!(records[0].service_types[0].code, "171149006");
         assert_eq!(records[0].communications[0].code, "en");
-        assert_eq!(records[0].eligibilities[0].comment.as_deref(), Some("Synthetic eligibility comment"));
-        assert_eq!(records[0].available_times[0].available_start_time.as_deref(), Some("09:00:00"));
+        assert_eq!(
+            records[0].eligibilities[0].comment.as_deref(),
+            Some("Synthetic eligibility comment")
+        );
+        assert_eq!(
+            records[0].available_times[0]
+                .available_start_time
+                .as_deref(),
+            Some("09:00:00")
+        );
     }
 
     #[test]
@@ -399,10 +429,13 @@ mod tests {
             "../../healthpoint-testkit/fixtures/fhir-location.json"
         ))
         .expect("fixture is valid JSON");
-        let record = location_from_fhir(value, SourceProvenance::healthpoint("mock"))
-            .expect("fixture maps");
+        let record =
+            location_from_fhir(value, SourceProvenance::healthpoint("mock")).expect("fixture maps");
         assert_eq!(record.id, "loc-auckland-clinic-1");
-        assert_eq!(record.address.as_ref().and_then(|a| a.city.as_deref()), Some("Auckland"));
+        assert_eq!(
+            record.address.as_ref().and_then(|a| a.city.as_deref()),
+            Some("Auckland")
+        );
         assert_eq!(record.position.expect("position").latitude, -36.8485);
         assert_eq!(record.hours_of_operation[0].days_of_week[0], "mon");
     }

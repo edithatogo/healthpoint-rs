@@ -1,0 +1,59 @@
+name: Release Binaries
+
+on:
+  push:
+    tags:
+      - "v*"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    name: Build ${{ matrix.target }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-latest
+            target: x86_64-unknown-linux-gnu
+            archive: tar.gz
+          - os: macos-latest
+            target: aarch64-apple-darwin
+            archive: tar.gz
+          - os: windows-latest
+            target: x86_64-pc-windows-msvc
+            archive: zip
+
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: ${{ matrix.target }}
+      - uses: Swatinem/rust-cache@v2
+      - name: Build release binaries
+        run: cargo build --release --locked --target ${{ matrix.target }} -p healthpoint-cli -p healthpoint-mcp
+      - name: Stage Unix artifacts
+        if: matrix.archive == 'tar.gz'
+        shell: bash
+        run: |
+          mkdir -p dist/healthpoint-rs-${{ matrix.target }}
+          cp target/${{ matrix.target }}/release/healthpoint dist/healthpoint-rs-${{ matrix.target }}/
+          cp target/${{ matrix.target }}/release/healthpoint-mcp dist/healthpoint-rs-${{ matrix.target }}/
+          cp README.md LICENSE server.json dist/healthpoint-rs-${{ matrix.target }}/
+          tar -C dist -czf healthpoint-rs-${{ matrix.target }}.tar.gz healthpoint-rs-${{ matrix.target }}
+      - name: Stage Windows artifacts
+        if: matrix.archive == 'zip'
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Force -Path dist/healthpoint-rs-${{ matrix.target }}
+          Copy-Item target/${{ matrix.target }}/release/healthpoint.exe dist/healthpoint-rs-${{ matrix.target }}/
+          Copy-Item target/${{ matrix.target }}/release/healthpoint-mcp.exe dist/healthpoint-rs-${{ matrix.target }}/
+          Copy-Item README.md, LICENSE, server.json dist/healthpoint-rs-${{ matrix.target }}/
+          Compress-Archive -Path dist/healthpoint-rs-${{ matrix.target }} -DestinationPath healthpoint-rs-${{ matrix.target }}.zip
+      - uses: actions/upload-artifact@v4
+        with:
+          name: healthpoint-rs-${{ matrix.target }}
+          path: healthpoint-rs-${{ matrix.target }}.${{ matrix.archive }}

@@ -32,21 +32,16 @@ pub enum RedistributionStatus {
 }
 
 /// Export policy chosen for a command/session.
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Default, Serialize, Deserialize, JsonSchema)]
 #[serde(rename_all = "kebab-case")]
 pub enum ExportPolicy {
     /// Outputs remain local to a licensed user.
+    #[default]
     LocalOnly,
     /// Outputs may be shared inside the user's licensed context.
     LicensedShare,
     /// Outputs are explicitly approved for open publication.
     OpenApproved,
-}
-
-impl Default for ExportPolicy {
-    fn default() -> Self {
-        Self::LocalOnly
-    }
 }
 
 /// Combined policy metadata attached to exported data.

@@ -1,8 +1,8 @@
-# RMCP dependency pin plan
+# RMCP dependency pin
 
-The workspace currently follows the `modelcontextprotocol/rust-sdk` `main` branch for frontier MCP features. That is intentional during the spike phase, but it is not a release posture.
+The workspace initially followed the `modelcontextprotocol/rust-sdk` `main` branch for frontier MCP features. It is now pinned to commit `67a30859443ab0fe79f2d50307c7d7bc9518f7e3`, which was validated locally with setup, fmt, check, test, and clippy.
 
-Before publishing binaries or crates:
+Before changing the RMCP pin:
 
 1. Run `cargo check -p healthpoint-mcp --all-targets`.
 2. Decide whether the used macros/API match a crates.io release.

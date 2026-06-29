@@ -47,15 +47,15 @@ pub fn service_rows(view: HealthpointView, services: &[ServiceRecord]) -> Vec<Ro
                     let mut row = Row::new();
                     row.insert("service_id".into(), service.id.clone());
                     row.insert("location_reference".into(), location.reference.clone());
-                    row.insert("location_display".into(), location.display.clone().unwrap_or_default());
+                    row.insert(
+                        "location_display".into(),
+                        location.display.clone().unwrap_or_default(),
+                    );
                     row
                 })
             })
             .collect(),
-        HealthpointView::ServiceCodes => services
-            .iter()
-            .flat_map(service_code_rows)
-            .collect(),
+        HealthpointView::ServiceCodes => services.iter().flat_map(service_code_rows).collect(),
         HealthpointView::ServiceContacts => services
             .iter()
             .flat_map(|service| {
@@ -69,10 +69,9 @@ pub fn service_rows(view: HealthpointView, services: &[ServiceRecord]) -> Vec<Ro
                 })
             })
             .collect(),
-        HealthpointView::ServiceEligibilities => services
-            .iter()
-            .flat_map(service_eligibility_rows)
-            .collect(),
+        HealthpointView::ServiceEligibilities => {
+            services.iter().flat_map(service_eligibility_rows).collect()
+        }
         HealthpointView::ServiceAvailability => services
             .iter()
             .flat_map(service_availability_rows)
@@ -137,7 +136,13 @@ pub fn organization_rows(organizations: &[OrganizationRecord]) -> Vec<Row> {
             let mut row = Row::new();
             row.insert("id".into(), organization.id.clone());
             row.insert("name".into(), organization.name.clone().unwrap_or_default());
-            row.insert("active".into(), organization.active.map(|value| value.to_string()).unwrap_or_default());
+            row.insert(
+                "active".into(),
+                organization
+                    .active
+                    .map(|value| value.to_string())
+                    .unwrap_or_default(),
+            );
             row.insert("aliases".into(), organization.aliases.join(";"));
             row.insert(
                 "part_of_reference".into(),
@@ -160,7 +165,10 @@ fn service_row(service: &ServiceRecord) -> Row {
     let mut row = Row::new();
     row.insert("id".into(), service.id.clone());
     row.insert("name".into(), service.name.clone().unwrap_or_default());
-    row.insert("active".into(), service.active.map(|b| b.to_string()).unwrap_or_default());
+    row.insert(
+        "active".into(),
+        service.active.map(|b| b.to_string()).unwrap_or_default(),
+    );
     row.insert(
         "provided_by_reference".into(),
         service
@@ -176,7 +184,10 @@ fn service_row(service: &ServiceRecord) -> Row {
             .map(|value| value.to_string())
             .unwrap_or_default(),
     );
-    row.insert("comment".into(), service.comment.clone().unwrap_or_default());
+    row.insert(
+        "comment".into(),
+        service.comment.clone().unwrap_or_default(),
+    );
     row.insert(
         "retrieved_at".into(),
         service.provenance.retrieved_at.to_rfc3339(),
@@ -227,7 +238,10 @@ fn service_eligibility_rows(service: &ServiceRecord) -> Vec<Row> {
                 row.insert("system".into(), code.system.unwrap_or_default());
                 row.insert("code".into(), code.code);
                 row.insert("display".into(), code.display.unwrap_or_default());
-                row.insert("comment".into(), eligibility.comment.clone().unwrap_or_default());
+                row.insert(
+                    "comment".into(),
+                    eligibility.comment.clone().unwrap_or_default(),
+                );
                 row
             })
         })
@@ -244,10 +258,19 @@ fn service_availability_rows(service: &ServiceRecord) -> Vec<Row> {
             row.insert("service_id".into(), service.id.clone());
             row.insert("availability_index".into(), index.to_string());
             row.insert("days_of_week".into(), availability.days_of_week.join(";"));
-            row.insert("all_day".into(), availability.all_day.map(|value| value.to_string()).unwrap_or_default());
+            row.insert(
+                "all_day".into(),
+                availability
+                    .all_day
+                    .map(|value| value.to_string())
+                    .unwrap_or_default(),
+            );
             row.insert(
                 "available_start_time".into(),
-                availability.available_start_time.clone().unwrap_or_default(),
+                availability
+                    .available_start_time
+                    .clone()
+                    .unwrap_or_default(),
             );
             row.insert(
                 "available_end_time".into(),
@@ -271,7 +294,10 @@ mod tests {
         )
         .expect("fixture maps");
         let rows = service_rows(HealthpointView::ServiceCodes, &services);
-        assert!(rows.iter().any(|row| row.get("field").map(String::as_str) == Some("communication")));
+        assert!(
+            rows.iter()
+                .any(|row| row.get("field").map(String::as_str) == Some("communication"))
+        );
     }
 
     #[test]
@@ -282,6 +308,9 @@ mod tests {
         )
         .expect("fixture maps");
         let rows = service_rows(HealthpointView::ServiceEligibilities, &services);
-        assert_eq!(rows[0].get("comment").map(String::as_str), Some("Synthetic eligibility comment"));
+        assert_eq!(
+            rows[0].get("comment").map(String::as_str),
+            Some("Synthetic eligibility comment")
+        );
     }
 }

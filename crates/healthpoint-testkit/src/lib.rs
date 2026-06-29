@@ -11,8 +11,10 @@ use serde_json::Value;
 
 /// Synthetic HealthcareService search bundle.
 pub fn healthcare_service_bundle() -> Value {
-    serde_json::from_str(include_str!("../fixtures/fhir-bundle-healthcare-service.json"))
-        .expect("synthetic fixture is valid JSON")
+    serde_json::from_str(include_str!(
+        "../fixtures/fhir-bundle-healthcare-service.json"
+    ))
+    .expect("synthetic fixture is valid JSON")
 }
 
 /// Synthetic Location resource.
@@ -79,10 +81,9 @@ impl DirectoryProvider for FixtureDirectoryProvider {
         if !query.service_types.is_empty() {
             items.retain(|service| {
                 query.service_types.iter().any(|wanted| {
-                    service
-                        .service_types
-                        .iter()
-                        .any(|actual| actual.as_token() == wanted.as_token() || actual.code == wanted.code)
+                    service.service_types.iter().any(|actual| {
+                        actual.as_token() == wanted.as_token() || actual.code == wanted.code
+                    })
                 })
             });
         }
@@ -114,7 +115,9 @@ impl DirectoryProvider for FixtureDirectoryProvider {
         if location.id == id {
             Ok(location)
         } else {
-            Err(HealthpointError::Parse(format!("fixture location {id:?} not found")))
+            Err(HealthpointError::Parse(format!(
+                "fixture location {id:?} not found"
+            )))
         }
     }
 }

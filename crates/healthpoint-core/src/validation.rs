@@ -72,7 +72,19 @@ mod tests {
 
     #[test]
     fn validates_geo_ranges() {
-        assert!(validate_geo_point(GeoPoint { lat: -36.8, lon: 174.7 }).is_ok());
-        assert!(validate_geo_point(GeoPoint { lat: -100.0, lon: 174.7 }).is_err());
+        assert!(
+            validate_geo_point(GeoPoint {
+                lat: -36.8,
+                lon: 174.7
+            })
+            .is_ok()
+        );
+        assert!(
+            validate_geo_point(GeoPoint {
+                lat: -100.0,
+                lon: 174.7
+            })
+            .is_err()
+        );
     }
 }

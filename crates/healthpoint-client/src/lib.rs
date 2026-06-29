@@ -10,11 +10,11 @@ use std::time::Duration;
 
 use async_trait::async_trait;
 use healthpoint_core::{
+    DirectoryProvider, HealthpointError, LocationRecord, OrganizationRecord, Page,
+    ResponseMetadata, Result, ServiceQuery, ServiceRecord, SourceProvenance,
     redaction::redact_known_secrets, validate_resource_id, validate_service_query,
-    DirectoryProvider, HealthpointError, LocationRecord, OrganizationRecord, Page, ResponseMetadata,
-    Result, ServiceQuery, ServiceRecord, SourceProvenance,
 };
-use reqwest::{header, header::HeaderMap, RequestBuilder, Url};
+use reqwest::{RequestBuilder, Url, header, header::HeaderMap};
 use serde_json::Value;
 
 /// Authentication strategy for Healthpoint API requests.
@@ -71,7 +71,9 @@ impl ClientConfig {
         let base_url = Url::parse(&base_url).map_err(|err| {
             HealthpointError::Config(format!("HEALTHPOINT_BASE_URL is not a valid URL: {err}"))
         })?;
-        let api_key = std::env::var("HEALTHPOINT_API_KEY").ok().filter(|s| !s.is_empty());
+        let api_key = std::env::var("HEALTHPOINT_API_KEY")
+            .ok()
+            .filter(|s| !s.is_empty());
         let auth_scheme = parse_auth_scheme(
             &std::env::var("HEALTHPOINT_AUTH_SCHEME").unwrap_or_else(|_| "bearer".into()),
         )?;
@@ -108,7 +110,9 @@ pub fn parse_auth_scheme(raw: &str) -> Result<AuthScheme> {
                 .split_once(':')
                 .map(|(_, name)| name.trim())
                 .filter(|name| !name.is_empty())
-                .ok_or_else(|| HealthpointError::Config("header auth scheme needs a name".into()))?;
+                .ok_or_else(|| {
+                    HealthpointError::Config("header auth scheme needs a name".into())
+                })?;
             Ok(AuthScheme::Header(header_name.to_owned()))
         }
         _ => Err(HealthpointError::Config(format!(
@@ -132,7 +136,9 @@ pub fn parse_geo_search_mode(raw: &str) -> Result<GeoSearchMode> {
 
 fn parse_timeout_secs(raw: &str) -> Result<Duration> {
     let secs: u64 = raw.trim().parse().map_err(|err| {
-        HealthpointError::Config(format!("HEALTHPOINT_TIMEOUT_SECS must be an integer: {err}"))
+        HealthpointError::Config(format!(
+            "HEALTHPOINT_TIMEOUT_SECS must be an integer: {err}"
+        ))
     })?;
     Ok(Duration::from_secs(secs.clamp(1, 300)))
 }
@@ -186,7 +192,9 @@ impl HealthpointClient {
     /// Build a HealthcareService search URL without sending it.
     pub fn service_search_url(&self, query: &ServiceQuery) -> Result<Url> {
         validate_service_query(query)?;
-        if let Some(cursor) = cursor_as_same_origin_url(&self.config.base_url, query.cursor.as_deref())? {
+        if let Some(cursor) =
+            cursor_as_same_origin_url(&self.config.base_url, query.cursor.as_deref())?
+        {
             return Ok(cursor);
         }
         let mut url = self.resource_url("HealthcareService", None)?;
@@ -236,9 +244,12 @@ impl HealthpointClient {
             AuthScheme::None => Ok(request),
             AuthScheme::Bearer => Ok(request.bearer_auth(api_key)),
             AuthScheme::Header(name) => {
-                let header_name = header::HeaderName::from_bytes(name.as_bytes()).map_err(|err| {
-                    HealthpointError::Config(format!("invalid auth header name {name:?}: {err}"))
-                })?;
+                let header_name =
+                    header::HeaderName::from_bytes(name.as_bytes()).map_err(|err| {
+                        HealthpointError::Config(format!(
+                            "invalid auth header name {name:?}: {err}"
+                        ))
+                    })?;
                 Ok(request.header(header_name, api_key))
             }
         }
@@ -266,7 +277,8 @@ impl HealthpointClient {
                 message,
             });
         }
-        let value = serde_json::from_str(&body).map_err(|err| HealthpointError::Parse(err.to_string()))?;
+        let value =
+            serde_json::from_str(&body).map_err(|err| HealthpointError::Parse(err.to_string()))?;
         Ok((value, metadata))
     }
 
@@ -286,7 +298,11 @@ impl HealthpointClient {
         }
         pairs.append_pair("_count", &query.limit.clamped().to_string());
         if let Some(cursor) = &query.cursor {
-            if cursor_as_same_origin_url(&self.config.base_url, Some(cursor)).ok().flatten().is_none() {
+            if cursor_as_same_origin_url(&self.config.base_url, Some(cursor))
+                .ok()
+                .flatten()
+                .is_none()
+            {
                 pairs.append_pair("_cursor", cursor);
             }
         }
@@ -315,9 +331,7 @@ impl HealthpointClient {
 fn validate_resource_type(resource_type: &str) -> Result<()> {
     let valid = !resource_type.is_empty()
         && resource_type.len() <= 64
-        && resource_type
-            .bytes()
-            .all(|b| b.is_ascii_alphanumeric());
+        && resource_type.bytes().all(|b| b.is_ascii_alphanumeric());
     if valid {
         Ok(())
     } else {
@@ -417,7 +431,10 @@ mod tests {
 
     #[test]
     fn auth_scheme_parses_named_headers() {
-        assert!(matches!(parse_auth_scheme("Bearer"), Ok(AuthScheme::Bearer)));
+        assert!(matches!(
+            parse_auth_scheme("Bearer"),
+            Ok(AuthScheme::Bearer)
+        ));
         assert!(matches!(
             parse_auth_scheme("header:X-Healthpoint-Key"),
             Ok(AuthScheme::Header(name)) if name == "X-Healthpoint-Key"
@@ -435,7 +452,10 @@ mod tests {
         let query = ServiceQuery {
             text: Some("cervical screening".into()),
             service_types: vec![Code::snomed("171149006")],
-            nearby: Some(GeoPoint { lat: -36.8, lon: 174.7 }),
+            nearby: Some(GeoPoint {
+                lat: -36.8,
+                lon: 174.7,
+            }),
             radius_km: Some(10.0),
             limit: QueryLimit(250),
             ..ServiceQuery::default()
@@ -452,11 +472,10 @@ mod tests {
     #[test]
     fn absolute_cursor_must_match_origin() {
         let base = Url::parse("https://example.test/fhir/").expect("valid URL");
-        assert!(cursor_as_same_origin_url(
-            &base,
-            Some("https://other.test/HealthcareService?page=2")
-        )
-        .is_err());
+        assert!(
+            cursor_as_same_origin_url(&base, Some("https://other.test/HealthcareService?page=2"))
+                .is_err()
+        );
     }
 
     #[test]
@@ -465,7 +484,10 @@ mod tests {
         let cursor = cursor_as_same_origin_url(&base, Some("/fhir/HealthcareService?page=2"))
             .expect("valid cursor")
             .expect("cursor parsed");
-        assert_eq!(cursor.as_str(), "https://example.test/fhir/HealthcareService?page=2");
+        assert_eq!(
+            cursor.as_str(),
+            "https://example.test/fhir/HealthcareService?page=2"
+        );
     }
 
     #[test]
@@ -476,8 +498,16 @@ mod tests {
             AuthScheme::None,
         );
         let client = HealthpointClient::new(config);
-        assert!(client.inspect_resource_url("Location", "Location/bad").is_err());
-        assert!(client.inspect_resource_url("Location/bad", "loc-1").is_err());
+        assert!(
+            client
+                .inspect_resource_url("Location", "Location/bad")
+                .is_err()
+        );
+        assert!(
+            client
+                .inspect_resource_url("Location/bad", "loc-1")
+                .is_err()
+        );
         assert_eq!(
             client
                 .inspect_resource_url("Location", "loc-1")

@@ -45,12 +45,18 @@ mod tests {
 
     #[test]
     fn literal_secret_redaction_ignores_tiny_values() {
-        assert_eq!(redact_known_secrets("token abcdef", ["abcdef"]), "token [REDACTED]");
+        assert_eq!(
+            redact_known_secrets("token abcdef", ["abcdef"]),
+            "token [REDACTED]"
+        );
         assert_eq!(redact_known_secrets("id abc", ["abc"]), "id abc");
     }
 
     #[test]
     fn common_pattern_redaction_removes_auth_lines() {
-        assert_eq!(redact_common_patterns("ok\nAuthorization: Bearer secret"), "ok\n[REDACTED]");
+        assert_eq!(
+            redact_common_patterns("ok\nAuthorization: Bearer secret"),
+            "ok\n[REDACTED]"
+        );
     }
 }

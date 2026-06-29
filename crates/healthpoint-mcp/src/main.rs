@@ -5,8 +5,8 @@ use healthpoint_core::{
     Code, DirectoryProvider, GeoPoint, HealthpointResourceUri, QueryLimit, ServiceQuery,
 };
 use rmcp::{
-    handler::server::wrapper::Parameters, schemars::JsonSchema, tool, tool_router,
-    transport::stdio, ServiceExt,
+    ServiceExt, handler::server::wrapper::Parameters, schemars::JsonSchema, tool, tool_router,
+    transport::stdio,
 };
 use serde::Deserialize;
 
@@ -88,24 +88,40 @@ struct ReadResourceUriParams {
 
 #[tool_router(server_handler)]
 impl HealthpointMcpServer {
-    #[tool(description = "Show redacted Healthpoint client configuration and readiness. Never returns the API key.")]
+    #[tool(
+        description = "Show redacted Healthpoint client configuration and readiness. Never returns the API key."
+    )]
     fn healthpoint_diagnostic_status(&self) -> String {
         serde_json::to_string_pretty(&self.client.diagnostic_status())
             .unwrap_or_else(|err| err.to_string())
     }
 
-    #[tool(description = "Search Healthpoint HealthcareService records. Read-only; requires a user-provided API key.")]
+    #[tool(
+        description = "Search Healthpoint HealthcareService records. Read-only; requires a user-provided API key."
+    )]
     async fn healthpoint_search_services(
         &self,
         Parameters(params): Parameters<SearchServicesParams>,
     ) -> String {
-        let mut service_types = params.service_type.iter().map(|raw| Code::from_token(raw)).collect::<Vec<_>>();
+        let mut service_types = params
+            .service_type
+            .iter()
+            .map(|raw| Code::from_token(raw))
+            .collect::<Vec<_>>();
         service_types.extend(params.snomed.iter().map(|raw| Code::snomed(raw.clone())));
         let query = ServiceQuery {
             text: params.text,
-            categories: params.category.iter().map(|raw| Code::from_token(raw)).collect(),
+            categories: params
+                .category
+                .iter()
+                .map(|raw| Code::from_token(raw))
+                .collect(),
             service_types,
-            specialties: params.specialty.iter().map(|raw| Code::from_token(raw)).collect(),
+            specialties: params
+                .specialty
+                .iter()
+                .map(|raw| Code::from_token(raw))
+                .collect(),
             limit: QueryLimit(params.limit.unwrap_or(10)),
             cursor: params.cursor,
             ..ServiceQuery::default()
@@ -113,7 +129,9 @@ impl HealthpointMcpServer {
         json_result(self.client.search_services(query).await)
     }
 
-    #[tool(description = "Search Healthpoint HealthcareService records by SNOMED CT code. Read-only.")]
+    #[tool(
+        description = "Search Healthpoint HealthcareService records by SNOMED CT code. Read-only."
+    )]
     async fn healthpoint_search_by_snomed(
         &self,
         Parameters(params): Parameters<SnomedSearchParams>,
@@ -131,7 +149,9 @@ impl HealthpointMcpServer {
         json_result(self.client.search_services(query).await)
     }
 
-    #[tool(description = "Find nearby Healthpoint HealthcareService records by latitude/longitude. Read-only.")]
+    #[tool(
+        description = "Find nearby Healthpoint HealthcareService records by latitude/longitude. Read-only."
+    )]
     async fn healthpoint_find_nearby_services(
         &self,
         Parameters(params): Parameters<NearbyServicesParams>,
@@ -155,13 +175,21 @@ impl HealthpointMcpServer {
         json_result(self.client.search_services(query).await)
     }
 
-    #[tool(description = "Get a single Healthpoint HealthcareService record by FHIR id. Read-only.")]
-    async fn healthpoint_get_service(&self, Parameters(params): Parameters<GetResourceParams>) -> String {
+    #[tool(
+        description = "Get a single Healthpoint HealthcareService record by FHIR id. Read-only."
+    )]
+    async fn healthpoint_get_service(
+        &self,
+        Parameters(params): Parameters<GetResourceParams>,
+    ) -> String {
         json_result(self.client.get_service(&params.id).await)
     }
 
     #[tool(description = "Get a single Healthpoint Location record by FHIR id. Read-only.")]
-    async fn healthpoint_get_location(&self, Parameters(params): Parameters<GetResourceParams>) -> String {
+    async fn healthpoint_get_location(
+        &self,
+        Parameters(params): Parameters<GetResourceParams>,
+    ) -> String {
         json_result(self.client.get_location(&params.id).await)
     }
 
@@ -173,14 +201,20 @@ impl HealthpointMcpServer {
         json_result(self.client.get_organization(&params.id).await)
     }
 
-    #[tool(description = "Read a supported healthpoint:// resource URI. This mirrors planned MCP resources while keeping the operation explicit and read-only.")]
+    #[tool(
+        description = "Read a supported healthpoint:// resource URI. This mirrors planned MCP resources while keeping the operation explicit and read-only."
+    )]
     async fn healthpoint_read_resource_uri(
         &self,
         Parameters(params): Parameters<ReadResourceUriParams>,
     ) -> String {
         match HealthpointResourceUri::parse(&params.uri) {
-            Ok(HealthpointResourceUri::Service(id)) => json_result(self.client.get_service(&id).await),
-            Ok(HealthpointResourceUri::Location(id)) => json_result(self.client.get_location(&id).await),
+            Ok(HealthpointResourceUri::Service(id)) => {
+                json_result(self.client.get_service(&id).await)
+            }
+            Ok(HealthpointResourceUri::Location(id)) => {
+                json_result(self.client.get_location(&id).await)
+            }
             Ok(HealthpointResourceUri::Organization(id)) => {
                 json_result(self.client.get_organization(&id).await)
             }

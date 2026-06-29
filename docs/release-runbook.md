@@ -23,6 +23,18 @@ cargo clippy --workspace --all-targets -- -D warnings
 cargo deny check
 ```
 
+## Binary workflow
+
+Tagged releases and manual dispatches run `.github/workflows/release.yml`.
+
+The workflow builds unsigned `healthpoint` and `healthpoint-mcp` binaries for:
+
+- `x86_64-unknown-linux-gnu`
+- `aarch64-apple-darwin`
+- `x86_64-pc-windows-msvc`
+
+Each artifact includes `README.md`, `LICENSE`, and `server.json`.
+
 ## Tagging
 
 Do not tag a public release until the MCP server has been tested with a real installed binary and at least one MCP client configuration.

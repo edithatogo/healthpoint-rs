@@ -1,6 +1,6 @@
 # Track 01 — Workspace foundation
 
-Status: partial
+Status: complete
 
 Implemented:
 
@@ -12,14 +12,17 @@ Implemented:
 - Conductor status command.
 - Interim schema generator.
 - Synthetic mock server smoke workflow.
+- Cargo.lock generation.
+- Local Rust validation with setup, fmt, check, test, and clippy.
 
 Current blocker:
 
-- This execution environment does not have Rust/Cargo, and package-manager network access timed out.
+- None for workspace foundation.
 
-Next validation in a Rust-enabled environment:
+Validated locally on 2026-06-30:
 
 ```bash
+bin/conductor-setup
 cargo fmt --all --check
 cargo check --workspace --all-targets
 cargo test --workspace

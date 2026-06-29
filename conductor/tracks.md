@@ -4,18 +4,18 @@
 
 | Track | Status | Current position |
 | --- | --- | --- |
-| 01. Workspace foundation | Partial | Workspace, CI, Conductor files, docs, crates, static preflight, and mock server exist; Rust validation still needs a Rust-enabled environment. |
+| 01. Workspace foundation | Complete | Workspace, CI, Conductor files, docs, crates, static preflight, mock server, Cargo.lock, setup, fmt, check, test, and clippy all validate locally. |
 | 02. Access and licensing boundary | Partial | Bring-your-own-key/local-only defaults, redaction, path validation, manifest warnings, and policy docs are encoded; formal terms review remains open. |
 | 03. FHIR mapping | Partial | Synthetic HealthcareService, Location, Organization, pagination, richer availability/eligibility/identifier mappings are implemented; live profile validation remains open. |
-| 04. CLI | Partial | doctor/search/get/get-uri/inspect/export/fixture/schema/policy commands are scaffolded; shell completions and compiled validation remain open. |
-| 05. MCP | Partial | RMCP stdio server exposes read-only tools plus explicit healthpoint:// URI reads; native resource templates/prompts remain planned after RMCP compile validation. |
+| 04. CLI | Partial | doctor/search/get/get-uri/inspect/export/fixture/schema/policy commands compile and test; shell completions and mock-server integration tests remain open. |
+| 05. MCP | Partial | RMCP stdio server compiles with read-only tools plus explicit healthpoint:// URI reads; native resource templates/prompts remain planned. |
 | 06. open_social_data bridge | Partial | Tabular adapter covers services, locations, organizations, codes, contacts, eligibility, and availability without hard dependency; initial data dictionaries exist. |
 | 07. Live validation | Planned | Requires Dylan's Healthpoint API key and licensed documentation; redacted live contract capture plan exists; do not commit payloads. |
-| 08. Release and distribution | Planned | Release runbook exists; still needs Cargo.lock, rmcp pin decision, and first CI run in GitHub/Rust-enabled environment. |
+| 08. Release and distribution | Partial | Cargo.lock, RMCP pin, release runbook, binary release workflow, packaging docs, and provenance plan exist; still needs GitHub CI confirmation. |
 
 ## Track 01 — Workspace foundation
 
-Status: partial
+Status: complete
 
 Tasks:
 
@@ -31,10 +31,10 @@ Tasks:
 - [x] Add Conductor status command for handoff.
 - [x] Validate JSON/TOML metadata in current environment.
 - [x] Pass `git diff --check` in current environment.
-- [ ] Run `cargo fmt --all --check` in a Rust-enabled environment.
-- [ ] Run `cargo check --workspace --all-targets` in a Rust-enabled environment.
-- [ ] Run `cargo test --workspace` in a Rust-enabled environment.
-- [ ] Run `cargo clippy --workspace --all-targets -- -D warnings` in a Rust-enabled environment.
+- [x] Run `cargo fmt --all --check` in a Rust-enabled environment.
+- [x] Run `cargo check --workspace --all-targets` in a Rust-enabled environment.
+- [x] Run `cargo test --workspace` in a Rust-enabled environment.
+- [x] Run `cargo clippy --workspace --all-targets -- -D warnings` in a Rust-enabled environment.
 
 ## Track 02 — Access and licensing boundary
 
@@ -106,7 +106,7 @@ Tasks:
 - [x] Add explicit `healthpoint_read_resource_uri` tool as a safe bridge to future resources.
 - [ ] Add native MCP resource templates after RMCP API compile validation.
 - [ ] Add MCP prompt templates.
-- [ ] Pin rmcp dependency once the selected API surface is validated.
+- [x] Pin rmcp dependency once the selected API surface is validated.
 
 ## Track 06 — open_social_data bridge
 
@@ -123,7 +123,7 @@ Tasks:
 
 ## Track 07 — Live validation
 
-Status: planned
+Status: partial
 
 Tasks:
 
@@ -142,11 +142,11 @@ Status: planned
 
 Tasks:
 
-- [ ] Generate `Cargo.lock` in a Rust-enabled environment.
-- [ ] Decide whether to pin `rmcp` to crates.io release, tag, or commit hash.
-- [ ] Add binary release workflow.
-- [ ] Add packaging docs for MCP clients.
-- [ ] Add release provenance/attestation plan.
+- [x] Generate `Cargo.lock` in a Rust-enabled environment.
+- [x] Decide whether to pin `rmcp` to crates.io release, tag, or commit hash.
+- [x] Add binary release workflow.
+- [x] Add packaging docs for MCP clients.
+- [x] Add release provenance/attestation plan.
 - [x] Add release runbook.
 - [x] Add issue/PR templates with safety and licensing gates.
 - [x] Add RMCP pin plan.

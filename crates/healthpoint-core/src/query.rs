@@ -3,7 +3,7 @@
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 
-use crate::{records::Code, Result};
+use crate::{Result, records::Code};
 
 /// Latitude/longitude point for nearby search.
 #[derive(Debug, Clone, Copy, PartialEq, Serialize, Deserialize, JsonSchema)]
@@ -32,7 +32,7 @@ impl QueryLimit {
 }
 
 /// Search query for `HealthcareService`.
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, JsonSchema)]
+#[derive(Debug, Clone, PartialEq, Default, Serialize, Deserialize, JsonSchema)]
 pub struct ServiceQuery {
     /// Full-text search term.
     pub text: Option<String>,
@@ -50,21 +50,6 @@ pub struct ServiceQuery {
     pub limit: QueryLimit,
     /// Cursor/token for the next page.
     pub cursor: Option<String>,
-}
-
-impl Default for ServiceQuery {
-    fn default() -> Self {
-        Self {
-            text: None,
-            categories: Vec::new(),
-            service_types: Vec::new(),
-            specialties: Vec::new(),
-            nearby: None,
-            radius_km: None,
-            limit: QueryLimit::default(),
-            cursor: None,
-        }
-    }
 }
 
 impl ServiceQuery {

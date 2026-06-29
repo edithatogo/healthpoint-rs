@@ -1,7 +1,7 @@
 {
   "project": "healthpoint-rs",
-  "status": "interim_hardening_metadata_ready_cargo_blocked",
-  "updated_at": "2026-06-29",
+  "status": "local_setup_validated_external_gates_remaining",
+  "updated_at": "2026-06-30",
   "context_model": "conductor",
   "default_branch": "main",
   "canonical_goal": "Rust-first Healthpoint API SDK, CLI, MCP server, and future open_social_data adapter",
@@ -10,7 +10,7 @@
     "fhir_first_not_dataframe_first",
     "bring_your_own_key",
     "local_only_exports_by_default",
-    "rmcp_main_for_frontier_mcp_until_pinned",
+    "rmcp_pinned_to_validated_commit",
     "open_social_data_adapter_without_hard_dependency",
     "same_origin_pagination_cursor_guard",
     "healthpoint_resource_uri_contract",
@@ -21,7 +21,12 @@
     "synthetic_http_mock_server",
     "interim_contract_schemas",
     "issue_templates_and_pr_safety_gates",
-    "release_and_threat_model_docs"
+    "release_and_threat_model_docs",
+    "rmcp_transport_io_feature_enabled_for_stdio_server",
+    "cargo_lock_generated",
+    "binary_release_workflow",
+    "mcp_packaging_docs",
+    "release_provenance_plan"
   ],
   "implemented_surfaces": [
     "HealthpointClient configurable base URL/auth/geo mode",
@@ -50,31 +55,29 @@
     "TOML metadata parsed successfully",
     "git diff --check passed",
     "naive Rust delimiter check passed",
-    "Conductor metadata-only setup passed",
+    "Conductor setup passed",
     "simple high-signal secret-pattern scan passed",
     "environment limit documented in docs/environment-limitations.md",
     "scripts/static-preflight.py passed",
     "scripts/generate-contract-schemas.py produced committed schemas",
     "bin/mock-healthpoint-server served synthetic CapabilityStatement and FHIR resources",
-    "bin/conductor-status rendered state without private context"
+    "bin/conductor-status rendered state without private context",
+    "cargo fmt --all --check passed",
+    "cargo check --workspace --all-targets passed",
+    "cargo test --workspace passed",
+    "cargo clippy --workspace --all-targets -- -D warnings passed"
   ],
   "blocked_by": [
-    "Rust/Cargo unavailable in current sandbox",
-    "apt-get network access timed out in current sandbox",
     "licensed_api_auth_details",
     "confirmed_endpoint_and_search_parameter_contracts",
-    "Healthpoint redistribution/caching terms review",
-    "compile-time validation of rmcp API surface",
-    "Cargo.lock generation"
+    "Healthpoint redistribution/caching terms review"
   ],
   "next_tracks": [
-    "cargo-fmt-check-test-clippy-in-rust-enabled-environment",
     "mock-server-backed-cli-smoke-after-cargo-validation",
     "validate-client-auth-with-dylan-api-key",
     "redacted-live-contract-capture",
-    "pin-rmcp-and-generate-cargo-lock",
     "native-mcp-resource-templates-after-rmcp-api-validation",
     "osd-tabular-view-dictionaries-and-license-gate"
   ],
-  "latest_checkpoint": "conductor/checkpoints/2026-06-29-interim-hardening.md"
+  "latest_checkpoint": "conductor/checkpoints/2026-06-30-local-setup-validated.md"
 }

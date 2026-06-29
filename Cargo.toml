@@ -48,8 +48,8 @@ tracing-subscriber = { version = "0.3", features = ["env-filter", "fmt", "json"]
 url = { version = "2", features = ["serde"] }
 uuid = { version = "1", features = ["serde", "v7"] }
 
-# Bleeding-edge MCP SDK. Pin to a tag before a public crate release if reproducibility matters more than frontier features.
-rmcp = { git = "https://github.com/modelcontextprotocol/rust-sdk", branch = "main", features = ["server"] }
+# Official Rust MCP SDK pinned to the commit validated by local setup gates.
+rmcp = { git = "https://github.com/modelcontextprotocol/rust-sdk", rev = "67a30859443ab0fe79f2d50307c7d7bc9518f7e3", features = ["server", "transport-io"] }
 
 healthpoint-core = { path = "crates/healthpoint-core" }
 healthpoint-fhir = { path = "crates/healthpoint-fhir" }

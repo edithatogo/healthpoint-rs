@@ -1,11 +1,14 @@
 //! Healthpoint CLI entrypoint.
 
-use std::{fs::File, path::{Path, PathBuf}};
+use std::{
+    fs::File,
+    path::{Path, PathBuf},
+};
 
 use anyhow::{Context, Result};
 use clap::{Args, Parser, Subcommand, ValueEnum};
 use healthpoint_client::{
-    parse_auth_scheme, parse_geo_search_mode, ClientConfig, HealthpointClient,
+    ClientConfig, HealthpointClient, parse_auth_scheme, parse_geo_search_mode,
 };
 use healthpoint_core::{
     AccessPolicy, Code, DirectoryProvider, GeoPoint, HealthpointResourceUri, LocationRecord,
@@ -17,9 +20,17 @@ use schemars::schema_for;
 use url::Url;
 
 #[derive(Debug, Parser)]
-#[command(name = "healthpoint", version, about = "Rust CLI for the Healthpoint HL7 FHIR API")]
+#[command(
+    name = "healthpoint",
+    version,
+    about = "Rust CLI for the Healthpoint HL7 FHIR API"
+)]
 struct Cli {
-    #[arg(long, env = "HEALTHPOINT_BASE_URL", default_value = "https://www.healthpointapi.com/")]
+    #[arg(
+        long,
+        env = "HEALTHPOINT_BASE_URL",
+        default_value = "https://www.healthpointapi.com/"
+    )]
     base_url: String,
 
     #[arg(long, env = "HEALTHPOINT_API_KEY", hide_env_values = true)]
@@ -28,7 +39,11 @@ struct Cli {
     #[arg(long, env = "HEALTHPOINT_AUTH_SCHEME", default_value = "bearer")]
     auth_scheme: String,
 
-    #[arg(long, env = "HEALTHPOINT_GEO_SEARCH_MODE", default_value = "healthpoint-lat-lon")]
+    #[arg(
+        long,
+        env = "HEALTHPOINT_GEO_SEARCH_MODE",
+        default_value = "healthpoint-lat-lon"
+    )]
     geo_search_mode: String,
 
     #[command(subcommand)]
@@ -192,7 +207,7 @@ enum ExportCommand {
         output: Option<PathBuf>,
     },
     /// Query services and write a local export plus manifest sidecar.
-    Services(ExportServicesArgs),
+    Services(Box<ExportServicesArgs>),
 }
 
 #[derive(Debug, Args)]
@@ -282,7 +297,10 @@ async fn main() -> Result<()> {
 
     match cli.command {
         Command::Doctor => {
-            println!("{}", serde_json::to_string_pretty(&client.diagnostic_status())?);
+            println!(
+                "{}",
+                serde_json::to_string_pretty(&client.diagnostic_status())?
+            );
         }
         Command::Search {
             command: SearchCommand::Services(args),
@@ -311,22 +329,20 @@ async fn main() -> Result<()> {
         }
         Command::Get {
             command: GetCommand::Uri(args),
-        } => {
-            match HealthpointResourceUri::parse(&args.uri)? {
-                HealthpointResourceUri::Service(id) => {
-                    let service = client.get_service(&id).await?;
-                    print_services(&[service], args.format)?;
-                }
-                HealthpointResourceUri::Location(id) => {
-                    let location = client.get_location(&id).await?;
-                    print_location(&location, args.format)?;
-                }
-                HealthpointResourceUri::Organization(id) => {
-                    let organization = client.get_organization(&id).await?;
-                    print_organization(&organization, args.format)?;
-                }
+        } => match HealthpointResourceUri::parse(&args.uri)? {
+            HealthpointResourceUri::Service(id) => {
+                let service = client.get_service(&id).await?;
+                print_services(&[service], args.format)?;
             }
-        }
+            HealthpointResourceUri::Location(id) => {
+                let location = client.get_location(&id).await?;
+                print_location(&location, args.format)?;
+            }
+            HealthpointResourceUri::Organization(id) => {
+                let organization = client.get_organization(&id).await?;
+                print_organization(&organization, args.format)?;
+            }
+        },
         Command::Inspect { command } => match command {
             InspectCommand::SearchUrl(args) => {
                 let query = args.to_query()?;
@@ -360,7 +376,11 @@ async fn main() -> Result<()> {
                 .unwrap_or_else(|| sidecar_manifest_path(&args.output));
             let manifest = ExportManifest::new(page.provenance, true);
             write_manifest(&manifest, Some(manifest_path.as_path()))?;
-            eprintln!("wrote {} records to {}", page.items.len(), args.output.display());
+            eprintln!(
+                "wrote {} records to {}",
+                page.items.len(),
+                args.output.display()
+            );
             eprintln!("wrote manifest to {}", manifest_path.display());
         }
         Command::Fixture { command } => {
@@ -384,7 +404,10 @@ async fn main() -> Result<()> {
         Command::Policy {
             command: PolicyCommand::Show,
         } => {
-            println!("{}", serde_json::to_string_pretty(&AccessPolicy::default())?);
+            println!(
+                "{}",
+                serde_json::to_string_pretty(&AccessPolicy::default())?
+            );
         }
         Command::Mcp => {
             println!("Run the read-only MCP server with: cargo run -p healthpoint-mcp");
@@ -415,12 +438,24 @@ impl ServiceQueryArgs {
             .iter()
             .map(|raw| Code::from_token(raw))
             .collect::<Vec<_>>();
-        service_types.extend(self.snomed_types.iter().map(|raw| Code::snomed(raw.clone())));
+        service_types.extend(
+            self.snomed_types
+                .iter()
+                .map(|raw| Code::snomed(raw.clone())),
+        );
         let query = ServiceQuery {
             text: self.text.clone(),
-            categories: self.categories.iter().map(|raw| Code::from_token(raw)).collect(),
+            categories: self
+                .categories
+                .iter()
+                .map(|raw| Code::from_token(raw))
+                .collect(),
             service_types,
-            specialties: self.specialties.iter().map(|raw| Code::from_token(raw)).collect(),
+            specialties: self
+                .specialties
+                .iter()
+                .map(|raw| Code::from_token(raw))
+                .collect(),
             nearby,
             radius_km: self.radius_km,
             limit: QueryLimit(self.limit),
@@ -434,8 +469,12 @@ impl ServiceQueryArgs {
 fn print_service_page(page: &Page<ServiceRecord>, format: OutputFormat) -> Result<()> {
     match format {
         OutputFormat::Json => println!("{}", serde_json::to_string_pretty(page)?),
-        OutputFormat::Jsonl => healthpoint_export::write_services_jsonl(&page.items, std::io::stdout())?,
-        OutputFormat::Csv => healthpoint_export::write_services_csv(&page.items, std::io::stdout())?,
+        OutputFormat::Jsonl => {
+            healthpoint_export::write_services_jsonl(&page.items, std::io::stdout())?
+        }
+        OutputFormat::Csv => {
+            healthpoint_export::write_services_csv(&page.items, std::io::stdout())?
+        }
         OutputFormat::Human => print_services_human(&page.items),
     }
     Ok(())
@@ -444,7 +483,9 @@ fn print_service_page(page: &Page<ServiceRecord>, format: OutputFormat) -> Resul
 fn print_services(records: &[ServiceRecord], format: OutputFormat) -> Result<()> {
     match format {
         OutputFormat::Json => println!("{}", serde_json::to_string_pretty(records)?),
-        OutputFormat::Jsonl => healthpoint_export::write_services_jsonl(records, std::io::stdout())?,
+        OutputFormat::Jsonl => {
+            healthpoint_export::write_services_jsonl(records, std::io::stdout())?
+        }
         OutputFormat::Csv => healthpoint_export::write_services_csv(records, std::io::stdout())?,
         OutputFormat::Human => print_services_human(records),
     }
@@ -454,11 +495,17 @@ fn print_services(records: &[ServiceRecord], format: OutputFormat) -> Result<()>
 fn print_organization(record: &OrganizationRecord, format: OutputFormat) -> Result<()> {
     match format {
         OutputFormat::Human => {
-            println!("{}\t{}", record.id, record.name.as_deref().unwrap_or("<unnamed>"));
+            println!(
+                "{}\t{}",
+                record.id,
+                record.name.as_deref().unwrap_or("<unnamed>")
+            );
         }
         OutputFormat::Json => println!("{}", serde_json::to_string_pretty(record)?),
         OutputFormat::Jsonl => println!("{}", serde_json::to_string(record)?),
-        OutputFormat::Csv => anyhow::bail!("CSV output is not implemented for single Organization records"),
+        OutputFormat::Csv => {
+            anyhow::bail!("CSV output is not implemented for single Organization records")
+        }
     }
     Ok(())
 }
@@ -466,14 +513,23 @@ fn print_organization(record: &OrganizationRecord, format: OutputFormat) -> Resu
 fn print_location(record: &LocationRecord, format: OutputFormat) -> Result<()> {
     match format {
         OutputFormat::Human => {
-            println!("{}\t{}", record.id, record.name.as_deref().unwrap_or("<unnamed>"));
+            println!(
+                "{}\t{}",
+                record.id,
+                record.name.as_deref().unwrap_or("<unnamed>")
+            );
             if let Some(address) = &record.address {
-                println!("  address: {}", address.text.as_deref().unwrap_or("<unspecified>"));
+                println!(
+                    "  address: {}",
+                    address.text.as_deref().unwrap_or("<unspecified>")
+                );
             }
         }
         OutputFormat::Json => println!("{}", serde_json::to_string_pretty(record)?),
         OutputFormat::Jsonl => println!("{}", serde_json::to_string(record)?),
-        OutputFormat::Csv => anyhow::bail!("CSV output is not implemented for single Location records"),
+        OutputFormat::Csv => {
+            anyhow::bail!("CSV output is not implemented for single Location records")
+        }
     }
     Ok(())
 }
@@ -497,7 +553,8 @@ fn write_manifest(manifest: &ExportManifest, output: Option<&Path>) -> Result<()
     match output {
         Some(path) => {
             create_parent_dir(path)?;
-            let file = File::create(path).with_context(|| format!("failed to create {}", path.display()))?;
+            let file = File::create(path)
+                .with_context(|| format!("failed to create {}", path.display()))?;
             serde_json::to_writer_pretty(file, manifest)?;
         }
         None => println!("{}", serde_json::to_string_pretty(manifest)?),
@@ -512,7 +569,10 @@ fn sidecar_manifest_path(output: &Path) -> PathBuf {
 }
 
 fn create_parent_dir(path: &Path) -> Result<()> {
-    if let Some(parent) = path.parent().filter(|parent| !parent.as_os_str().is_empty()) {
+    if let Some(parent) = path
+        .parent()
+        .filter(|parent| !parent.as_os_str().is_empty())
+    {
         std::fs::create_dir_all(parent)
             .with_context(|| format!("failed to create {}", parent.display()))?;
     }
@@ -521,9 +581,16 @@ fn create_parent_dir(path: &Path) -> Result<()> {
 
 fn print_services_human(records: &[ServiceRecord]) {
     for record in records {
-        println!("{}\t{}", record.id, record.name.as_deref().unwrap_or("<unnamed>"));
+        println!(
+            "{}\t{}",
+            record.id,
+            record.name.as_deref().unwrap_or("<unnamed>")
+        );
         if let Some(provider) = &record.provided_by {
-            println!("  provider: {}", provider.display.as_deref().unwrap_or(&provider.reference));
+            println!(
+                "  provider: {}",
+                provider.display.as_deref().unwrap_or(&provider.reference)
+            );
         }
         if !record.service_types.is_empty() {
             println!(
