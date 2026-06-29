@@ -1,0 +1,41 @@
+{
+  "resourceType": "Location",
+  "id": "loc-auckland-clinic-1",
+  "status": "active",
+  "mode": "instance",
+  "name": "Synthetic Auckland Clinic",
+  "type": [
+    {
+      "coding": [
+        {
+          "system": "http://terminology.hl7.org/CodeSystem/v3-RoleCode",
+          "code": "AMB",
+          "display": "Ambulatory"
+        }
+      ]
+    }
+  ],
+  "telecom": [
+    {
+      "system": "phone",
+      "value": "+64-9-111-1111",
+      "use": "work"
+    }
+  ],
+  "address": {
+    "text": "1 Synthetic Street, Auckland 1010, New Zealand",
+    "line": ["1 Synthetic Street"],
+    "city": "Auckland",
+    "state": "Auckland",
+    "postalCode": "1010",
+    "country": "NZ"
+  },
+  "position": {
+    "longitude": 174.7633,
+    "latitude": -36.8485
+  },
+  "managingOrganization": {
+    "reference": "Organization/org-example-provider-1",
+    "display": "Synthetic Community Health Trust"
+  }
+}

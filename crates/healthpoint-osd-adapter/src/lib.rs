@@ -7,7 +7,7 @@
 
 use std::collections::BTreeMap;
 
-use healthpoint_core::ServiceRecord;
+use healthpoint_core::{LocationRecord, ServiceRecord};
 use serde::{Deserialize, Serialize};
 
 /// Supported Healthpoint tabular views.
@@ -16,6 +16,8 @@ use serde::{Deserialize, Serialize};
 pub enum HealthpointView {
     /// One row per HealthcareService.
     Services,
+    /// One row per Location.
+    Locations,
     /// Many-to-many service-location edges.
     ServiceLocations,
     /// One row per service coding.
@@ -31,6 +33,7 @@ pub type Row = BTreeMap<String, String>;
 pub fn service_rows(view: HealthpointView, services: &[ServiceRecord]) -> Vec<Row> {
     match view {
         HealthpointView::Services => services.iter().map(service_row).collect(),
+        HealthpointView::Locations => Vec::new(),
         HealthpointView::ServiceLocations => services
             .iter()
             .flat_map(|service| {
@@ -45,29 +48,7 @@ pub fn service_rows(view: HealthpointView, services: &[ServiceRecord]) -> Vec<Ro
             .collect(),
         HealthpointView::ServiceCodes => services
             .iter()
-            .flat_map(|service| {
-                service
-                    .service_types
-                    .iter()
-                    .map(move |code| {
-                        let mut row = Row::new();
-                        row.insert("service_id".into(), service.id.clone());
-                        row.insert("field".into(), "type".into());
-                        row.insert("system".into(), code.system.clone().unwrap_or_default());
-                        row.insert("code".into(), code.code.clone());
-                        row.insert("display".into(), code.display.clone().unwrap_or_default());
-                        row
-                    })
-                    .chain(service.specialties.iter().map(move |code| {
-                        let mut row = Row::new();
-                        row.insert("service_id".into(), service.id.clone());
-                        row.insert("field".into(), "specialty".into());
-                        row.insert("system".into(), code.system.clone().unwrap_or_default());
-                        row.insert("code".into(), code.code.clone());
-                        row.insert("display".into(), code.display.clone().unwrap_or_default());
-                        row
-                    }))
-            })
+            .flat_map(service_code_rows)
             .collect(),
         HealthpointView::ServiceContacts => services
             .iter()
@@ -85,6 +66,55 @@ pub fn service_rows(view: HealthpointView, services: &[ServiceRecord]) -> Vec<Ro
     }
 }
 
+/// Convert locations into rows for the `locations` view.
+pub fn location_rows(locations: &[LocationRecord]) -> Vec<Row> {
+    locations
+        .iter()
+        .map(|location| {
+            let mut row = Row::new();
+            row.insert("id".into(), location.id.clone());
+            row.insert("name".into(), location.name.clone().unwrap_or_default());
+            row.insert("status".into(), location.status.clone().unwrap_or_default());
+            row.insert("mode".into(), location.mode.clone().unwrap_or_default());
+            row.insert(
+                "address_text".into(),
+                location
+                    .address
+                    .as_ref()
+                    .and_then(|address| address.text.clone())
+                    .unwrap_or_default(),
+            );
+            row.insert(
+                "latitude".into(),
+                location
+                    .position
+                    .map(|position| position.latitude.to_string())
+                    .unwrap_or_default(),
+            );
+            row.insert(
+                "longitude".into(),
+                location
+                    .position
+                    .map(|position| position.longitude.to_string())
+                    .unwrap_or_default(),
+            );
+            row.insert(
+                "managing_organization_reference".into(),
+                location
+                    .managing_organization
+                    .as_ref()
+                    .map(|org| org.reference.clone())
+                    .unwrap_or_default(),
+            );
+            row.insert(
+                "retrieved_at".into(),
+                location.provenance.retrieved_at.to_rfc3339(),
+            );
+            row
+        })
+        .collect()
+}
+
 fn service_row(service: &ServiceRecord) -> Row {
     let mut row = Row::new();
     row.insert("id".into(), service.id.clone());
@@ -99,8 +129,55 @@ fn service_row(service: &ServiceRecord) -> Row {
             .unwrap_or_default(),
     );
     row.insert(
+        "appointment_required".into(),
+        service
+            .appointment_required
+            .map(|value| value.to_string())
+            .unwrap_or_default(),
+    );
+    row.insert(
         "retrieved_at".into(),
         service.provenance.retrieved_at.to_rfc3339(),
     );
     row
+}
+
+fn service_code_rows(service: &ServiceRecord) -> Vec<Row> {
+    let mut rows = Vec::new();
+    for (field, codes) in [
+        ("category", &service.categories),
+        ("type", &service.service_types),
+        ("specialty", &service.specialties),
+        ("program", &service.programs),
+        ("communication", &service.communications),
+        ("referral_method", &service.referral_methods),
+    ] {
+        for code in codes {
+            let mut row = Row::new();
+            row.insert("service_id".into(), service.id.clone());
+            row.insert("field".into(), field.into());
+            row.insert("system".into(), code.system.clone().unwrap_or_default());
+            row.insert("code".into(), code.code.clone());
+            row.insert("display".into(), code.display.clone().unwrap_or_default());
+            rows.push(row);
+        }
+    }
+    rows
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn service_code_view_includes_communications() {
+        let value = healthpoint_testkit::healthcare_service_bundle();
+        let services = healthpoint_fhir::services_from_fhir(
+            value,
+            healthpoint_core::SourceProvenance::healthpoint("mock"),
+        )
+        .expect("fixture maps");
+        let rows = service_rows(HealthpointView::ServiceCodes, &services);
+        assert!(rows.iter().any(|row| row.get("field").map(String::as_str) == Some("communication")));
+    }
 }

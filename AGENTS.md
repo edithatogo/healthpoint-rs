@@ -22,6 +22,7 @@ cargo check --workspace --all-targets
 cargo clippy --workspace --all-targets -- -D warnings
 cargo test --workspace
 cargo run -p healthpoint-cli -- doctor
+cargo run -p healthpoint-cli -- search services --text "cervical screening" --limit 5 --format json
 ```
 
 ## Security and data handling
@@ -38,7 +39,7 @@ Use synthetic FHIR fixtures only. Treat all Healthpoint-derived data as licensed
 
 ## Coding style
 
-Use Rust 2024 edition, thin command handlers, explicit domain types, no unsafe code, and provenance on all retrieved/exported records. Keep FHIR raw JSON available while adding typed projections.
+Use Rust 2024 edition, thin command handlers, explicit domain types, no unsafe code, and provenance on all retrieved/exported records. Keep FHIR raw JSON available while adding typed projections. Update `conductor/state.json`, `conductor/tracks.md`, and `conductor/checkpoints/` whenever a meaningful implementation pass completes.
 
 ## Pull requests
 

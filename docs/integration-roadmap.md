@@ -21,7 +21,7 @@ substack-cli-ts
 
 ## Stable seams
 
-- `DirectoryProvider`: service/organisation read interface.
+- `DirectoryProvider`: service, location, and organisation read interface.
 - `ServiceQuery`: Healthpoint-independent query model.
 - `SourceProvenance` and `AccessPolicy`: data governance boundary.
 - `HealthpointView`: tabular view names for future OSD bridge.

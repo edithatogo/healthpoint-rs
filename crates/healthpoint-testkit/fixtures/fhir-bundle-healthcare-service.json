@@ -2,6 +2,16 @@
   "resourceType": "Bundle",
   "type": "searchset",
   "total": 1,
+  "link": [
+    {
+      "relation": "self",
+      "url": "https://example.test/HealthcareService?_count=1"
+    },
+    {
+      "relation": "next",
+      "url": "https://example.test/HealthcareService?_count=1&page=2"
+    }
+  ],
   "entry": [
     {
       "fullUrl": "https://example.test/HealthcareService/svc-cervical-screening-1",
@@ -11,13 +21,19 @@
         "active": true,
         "name": "Synthetic Cervical Screening Service",
         "providedBy": {
-          "reference": "Organization/org-1",
+          "reference": "Organization/org-example-provider-1",
           "display": "Synthetic Community Health Trust"
         },
         "location": [
           {
-            "reference": "Location/loc-1",
+            "reference": "Location/loc-auckland-clinic-1",
             "display": "Synthetic Clinic"
+          }
+        ],
+        "coverageArea": [
+          {
+            "reference": "Location/area-auckland",
+            "display": "Auckland region"
           }
         ],
         "type": [
@@ -43,6 +59,40 @@
             ]
           }
         ],
+        "program": [
+          {
+            "coding": [
+              {
+                "system": "https://example.test/programs",
+                "code": "screening",
+                "display": "Screening programme"
+              }
+            ]
+          }
+        ],
+        "communication": [
+          {
+            "coding": [
+              {
+                "system": "urn:ietf:bcp:47",
+                "code": "en",
+                "display": "English"
+              }
+            ]
+          }
+        ],
+        "referralMethod": [
+          {
+            "coding": [
+              {
+                "system": "https://example.test/referral-methods",
+                "code": "self-referral",
+                "display": "Self referral"
+              }
+            ]
+          }
+        ],
+        "appointmentRequired": false,
         "telecom": [
           {
             "system": "phone",

@@ -16,9 +16,9 @@ This repository is intentionally **code-first and data-light**:
 healthpoint-rs/
   crates/
     healthpoint-core/         # domain model, query model, provenance, provider traits
-    healthpoint-fhir/         # FHIR Bundle/Resource mapping, HealthcareService extraction
+    healthpoint-fhir/         # FHIR Bundle/Resource mapping and typed projections
     healthpoint-client/       # HTTP client, auth, request policy, pagination hooks
-    healthpoint-export/       # JSON/JSONL/CSV/Markdown/export manifests
+    healthpoint-export/       # JSON/JSONL/CSV/export manifests
     healthpoint-cli/          # `healthpoint` CLI
     healthpoint-mcp/          # read-only MCP server over the same core/client
     healthpoint-osd-adapter/  # future open_social_data bridge, no hard dependency yet
@@ -35,7 +35,9 @@ $EDITOR .env
 bin/conductor-setup
 cargo run -p healthpoint-cli -- doctor
 cargo run -p healthpoint-cli -- search services --text "cervical screening" --format json
+cargo run -p healthpoint-cli -- search services --snomed 171149006 --format json
 cargo run -p healthpoint-cli -- get service <id> --format json
+cargo run -p healthpoint-cli -- get location <id> --format json
 cargo run -p healthpoint-mcp
 ```
 
@@ -46,11 +48,50 @@ The MCP server is a separate binary so CLI and MCP can evolve independently whil
 ```bash
 export HEALTHPOINT_API_KEY="..."
 export HEALTHPOINT_BASE_URL="https://www.healthpointapi.com/"
-export HEALTHPOINT_AUTH_SCHEME="bearer"        # bearer | x-api-key | header:<name> | none
-export HEALTHPOINT_EXPORT_POLICY="local-only"  # local-only | licensed-share | open-approved
+export HEALTHPOINT_AUTH_SCHEME="bearer"                  # bearer | x-api-key | header:<name> | none
+export HEALTHPOINT_GEO_SEARCH_MODE="healthpoint-lat-lon" # healthpoint-lat-lon | fhir-near
+export HEALTHPOINT_TIMEOUT_SECS="30"
+export HEALTHPOINT_EXPORT_POLICY="local-only"            # local-only | licensed-share | open-approved
 ```
 
 The default assumes bearer-token auth because the public API landing page does not expose full developer authentication details. Use `HEALTHPOINT_AUTH_SCHEME=x-api-key` or `header:<name>` if your Healthpoint credentials require a named API-key header.
+
+## CLI examples
+
+```bash
+healthpoint doctor
+
+healthpoint search services \
+  --text "cervical screening" \
+  --snomed 171149006 \
+  --limit 10 \
+  --format json
+
+healthpoint search services \
+  --lat -36.8485 \
+  --lon 174.7633 \
+  --radius-km 10 \
+  --format csv
+
+healthpoint get service <service-id> --format json
+healthpoint get location <location-id> --format json
+healthpoint get organization <organization-id> --format json
+healthpoint export manifest --output .healthpoint/manifest.json
+```
+
+## MCP tools
+
+```text
+healthpoint_diagnostic_status
+healthpoint_search_services
+healthpoint_search_by_snomed
+healthpoint_find_nearby_services
+healthpoint_get_service
+healthpoint_get_location
+healthpoint_get_organization
+```
+
+See `docs/mcp-tools.md` for launch examples and planned resource templates.
 
 ## Design principles
 
@@ -67,4 +108,4 @@ This is not a clinical decision-support system. It retrieves and formats directo
 
 ## Current status
 
-Initial scaffold. The public Healthpoint material confirms HL7 FHIR and SNOMED CT orientation, but full endpoint/auth details are intentionally treated as configurable until validated against licensed API documentation.
+Implementation spike after initial scaffold. Synthetic mapping exists for `HealthcareService`, `Location`, and `Organization`. The public Healthpoint material confirms HL7 FHIR and SNOMED CT orientation, but full endpoint/auth details are intentionally treated as configurable until validated against licensed API documentation.

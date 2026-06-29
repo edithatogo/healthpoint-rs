@@ -63,6 +63,8 @@ pub fn write_services_csv<W: Write>(records: &[ServiceRecord], writer: W) -> Res
         "service_type_codes",
         "specialty_codes",
         "location_references",
+        "coverage_area_references",
+        "appointment_required",
         "retrieved_at",
     ])
     .map_err(|err| healthpoint_core::HealthpointError::Request(err.to_string()))?;
@@ -88,6 +90,16 @@ pub fn write_services_csv<W: Write>(records: &[ServiceRecord], writer: W) -> Res
             .map(|location| location.reference.clone())
             .collect::<Vec<_>>()
             .join(";");
+        let coverage_areas = record
+            .coverage_areas
+            .iter()
+            .map(|area| area.reference.clone())
+            .collect::<Vec<_>>()
+            .join(";");
+        let appointment_required = record
+            .appointment_required
+            .map(|value| value.to_string())
+            .unwrap_or_default();
         let retrieved_at = record.provenance.retrieved_at.to_rfc3339();
         wtr.write_record([
             record.id.as_str(),
@@ -98,6 +110,8 @@ pub fn write_services_csv<W: Write>(records: &[ServiceRecord], writer: W) -> Res
             service_types.as_str(),
             specialties.as_str(),
             locations.as_str(),
+            coverage_areas.as_str(),
+            appointment_required.as_str(),
             retrieved_at.as_str(),
         ])
         .map_err(|err| healthpoint_core::HealthpointError::Request(err.to_string()))?;

@@ -4,7 +4,9 @@ use std::{fs::File, path::PathBuf};
 
 use anyhow::{Context, Result};
 use clap::{Args, Parser, Subcommand, ValueEnum};
-use healthpoint_client::{parse_auth_scheme, ClientConfig, HealthpointClient};
+use healthpoint_client::{
+    parse_auth_scheme, parse_geo_search_mode, ClientConfig, HealthpointClient,
+};
 use healthpoint_core::{Code, DirectoryProvider, GeoPoint, QueryLimit, ServiceQuery};
 use url::Url;
 
@@ -19,6 +21,9 @@ struct Cli {
 
     #[arg(long, env = "HEALTHPOINT_AUTH_SCHEME", default_value = "bearer")]
     auth_scheme: String,
+
+    #[arg(long, env = "HEALTHPOINT_GEO_SEARCH_MODE", default_value = "healthpoint-lat-lon")]
+    geo_search_mode: String,
 
     #[command(subcommand)]
     command: Command,
@@ -63,9 +68,13 @@ struct ServiceSearchArgs {
     #[arg(long = "category")]
     categories: Vec<String>,
 
-    /// FHIR type token, e.g. a SNOMED CT code. Repeatable.
+    /// FHIR type token, e.g. `http://snomed.info/sct|171149006`. Repeatable.
     #[arg(long = "type")]
     service_types: Vec<String>,
+
+    /// Convenience SNOMED CT service-type code. Repeatable.
+    #[arg(long = "snomed")]
+    snomed_types: Vec<String>,
 
     /// FHIR specialty token. Repeatable.
     #[arg(long = "specialty")]
@@ -83,6 +92,10 @@ struct ServiceSearchArgs {
     #[arg(long)]
     radius_km: Option<f32>,
 
+    /// Pagination cursor from the previous page's `next_cursor`.
+    #[arg(long)]
+    cursor: Option<String>,
+
     /// Maximum records to return. Clamped to 1..100.
     #[arg(long, default_value_t = 25)]
     limit: u16,
@@ -98,6 +111,8 @@ enum GetCommand {
     Service(GetArgs),
     /// Get an Organization by id.
     Organization(GetArgs),
+    /// Get a Location by id.
+    Location(GetArgs),
 }
 
 #[derive(Debug, Args)]
@@ -124,6 +139,8 @@ enum ExportCommand {
 enum OutputFormat {
     Human,
     Json,
+    Jsonl,
+    Csv,
 }
 
 #[tokio::main]
@@ -147,6 +164,8 @@ async fn main() -> Result<()> {
             let page = client.search_services(query).await?;
             match args.format {
                 OutputFormat::Json => println!("{}", serde_json::to_string_pretty(&page)?),
+                OutputFormat::Jsonl => healthpoint_export::write_services_jsonl(&page.items, std::io::stdout())?,
+                OutputFormat::Csv => healthpoint_export::write_services_csv(&page.items, std::io::stdout())?,
                 OutputFormat::Human => print_services_human(&page.items),
             }
         }
@@ -156,6 +175,8 @@ async fn main() -> Result<()> {
             let service = client.get_service(&args.id).await?;
             match args.format {
                 OutputFormat::Json => println!("{}", serde_json::to_string_pretty(&service)?),
+                OutputFormat::Jsonl => healthpoint_export::write_services_jsonl(&[service], std::io::stdout())?,
+                OutputFormat::Csv => healthpoint_export::write_services_csv(&[service], std::io::stdout())?,
                 OutputFormat::Human => print_services_human(&[service]),
             }
         }
@@ -164,6 +185,12 @@ async fn main() -> Result<()> {
         } => {
             let org = client.get_organization(&args.id).await?;
             println!("{}", serde_json::to_string_pretty(&org)?);
+        }
+        Command::Get {
+            command: GetCommand::Location(args),
+        } => {
+            let location = client.get_location(&args.id).await?;
+            println!("{}", serde_json::to_string_pretty(&location)?);
         }
         Command::Export {
             command: ExportCommand::Manifest { output },
@@ -193,11 +220,9 @@ async fn main() -> Result<()> {
 fn build_client(cli: &Cli) -> Result<HealthpointClient> {
     let base_url = Url::parse(&cli.base_url).context("invalid --base-url")?;
     let auth_scheme = parse_auth_scheme(&cli.auth_scheme)?;
-    Ok(HealthpointClient::new(ClientConfig::new(
-        base_url,
-        cli.api_key.clone(),
-        auth_scheme,
-    )))
+    let mut config = ClientConfig::new(base_url, cli.api_key.clone(), auth_scheme);
+    config.geo_search_mode = parse_geo_search_mode(&cli.geo_search_mode)?;
+    Ok(HealthpointClient::new(config))
 }
 
 impl ServiceSearchArgs {
@@ -207,28 +232,18 @@ impl ServiceSearchArgs {
             (None, None) => None,
             _ => anyhow::bail!("both --lat and --lon are required for nearby search"),
         };
+        let mut service_types = self.service_types.iter().map(|raw| Code::from_token(raw)).collect::<Vec<_>>();
+        service_types.extend(self.snomed_types.iter().map(|raw| Code::snomed(raw.clone())));
         Ok(ServiceQuery {
             text: self.text.clone(),
-            categories: self.categories.iter().map(parse_code).collect(),
-            service_types: self.service_types.iter().map(parse_code).collect(),
-            specialties: self.specialties.iter().map(parse_code).collect(),
+            categories: self.categories.iter().map(|raw| Code::from_token(raw)).collect(),
+            service_types,
+            specialties: self.specialties.iter().map(|raw| Code::from_token(raw)).collect(),
             nearby,
             radius_km: self.radius_km,
             limit: QueryLimit(self.limit),
-            cursor: None,
+            cursor: self.cursor.clone(),
         })
-    }
-}
-
-fn parse_code(raw: &String) -> Code {
-    if let Some((system, code)) = raw.split_once('|') {
-        Code {
-            system: Some(system.to_owned()),
-            code: code.to_owned(),
-            display: None,
-        }
-    } else {
-        Code::bare(raw)
     }
 }
 
@@ -245,6 +260,17 @@ fn print_services_human(records: &[healthpoint_core::ServiceRecord]) {
                     .service_types
                     .iter()
                     .map(|code| code.display.as_deref().unwrap_or(&code.code))
+                    .collect::<Vec<_>>()
+                    .join(", ")
+            );
+        }
+        if !record.locations.is_empty() {
+            println!(
+                "  locations: {}",
+                record
+                    .locations
+                    .iter()
+                    .map(|location| location.display.as_deref().unwrap_or(&location.reference))
                     .collect::<Vec<_>>()
                     .join(", ")
             );

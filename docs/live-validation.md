@@ -1,0 +1,50 @@
+# Live validation checklist
+
+Live Healthpoint checks are deliberately key-gated and should not run in CI by default.
+
+## Before running
+
+```bash
+cp .env.example .env
+$EDITOR .env
+cargo run -p healthpoint-cli -- doctor
+```
+
+Confirm that `doctor` reports:
+
+```json
+{
+  "api_key_present": true
+}
+```
+
+## Smoke tests
+
+```bash
+cargo run -p healthpoint-cli -- search services --text "cervical screening" --limit 5 --format json
+cargo run -p healthpoint-cli -- search services --snomed 171149006 --limit 5 --format json
+cargo run -p healthpoint-cli -- search services --lat -36.8485 --lon 174.7633 --radius-km 10 --limit 5 --format json
+```
+
+Then copy a returned id/reference and test:
+
+```bash
+cargo run -p healthpoint-cli -- get service <service-id> --format json
+cargo run -p healthpoint-cli -- get location <location-id> --format json
+cargo run -p healthpoint-cli -- get organization <organization-id> --format json
+```
+
+## What to record
+
+Record only metadata, never real API payloads:
+
+- base URL shape,
+- auth scheme/header name,
+- working search params,
+- observed paging shape,
+- whether Location and Organization reads work,
+- status/error shapes,
+- rate-limit headers if supplied,
+- any required attribution/disclaimer language.
+
+Write findings to `docs/api-assumptions.md` and update the relevant Conductor track.

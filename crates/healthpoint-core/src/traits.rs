@@ -2,7 +2,7 @@
 
 use async_trait::async_trait;
 
-use crate::{OrganizationRecord, Page, Result, ServiceQuery, ServiceRecord};
+use crate::{LocationRecord, OrganizationRecord, Page, Result, ServiceQuery, ServiceRecord};
 
 /// Read-only directory provider.
 #[async_trait]
@@ -15,4 +15,7 @@ pub trait DirectoryProvider: Send + Sync {
 
     /// Get a single organisation.
     async fn get_organization(&self, id: &str) -> Result<OrganizationRecord>;
+
+    /// Get a single location.
+    async fn get_location(&self, id: &str) -> Result<LocationRecord>;
 }

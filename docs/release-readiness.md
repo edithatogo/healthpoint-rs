@@ -11,3 +11,6 @@ Before first public release:
 - [ ] Add `cargo dist` or equivalent binary release plan.
 - [ ] Add crate-level docs and examples.
 - [ ] Add MCP resource templates or explicitly defer them.
+- [ ] Add shell completions.
+- [ ] Decide whether `healthpoint-osd-adapter` remains internal or becomes a published crate.
+- [ ] Confirm generated data files are excluded from release artifacts.

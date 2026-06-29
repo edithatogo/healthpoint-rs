@@ -1,0 +1,19 @@
+# Machine-readable default access posture for healthpoint-rs.
+# This is intentionally conservative until Healthpoint terms/API documentation are reviewed.
+
+schema_version = "healthpoint.access-policy.v1"
+source_name = "Healthpoint API"
+access_mode = "bring-your-own-key"
+redistribution_status = "requires-review"
+default_export_policy = "local-only"
+public_cache_allowed = false
+public_proxy_allowed = false
+scraping_allowed = false
+bulk_dump_enabled_by_default = false
+real_payload_fixtures_allowed = false
+
+[review]
+terms_reviewed = false
+reviewed_at = ""
+reviewer = ""
+notes = "Update after reviewing Healthpoint API terms/licence for caching, redistribution, attribution, and rate limits."

@@ -9,3 +9,15 @@ pub fn healthcare_service_bundle() -> Value {
     serde_json::from_str(include_str!("../fixtures/fhir-bundle-healthcare-service.json"))
         .expect("synthetic fixture is valid JSON")
 }
+
+/// Synthetic Location resource.
+pub fn location() -> Value {
+    serde_json::from_str(include_str!("../fixtures/fhir-location.json"))
+        .expect("synthetic fixture is valid JSON")
+}
+
+/// Synthetic Organization resource.
+pub fn organization() -> Value {
+    serde_json::from_str(include_str!("../fixtures/fhir-organization.json"))
+        .expect("synthetic fixture is valid JSON")
+}

@@ -19,6 +19,16 @@
       "description": "bearer | x-api-key | header:<name> | none",
       "required": false,
       "default": "bearer"
+    },
+    "HEALTHPOINT_GEO_SEARCH_MODE": {
+      "description": "healthpoint-lat-lon | fhir-near",
+      "required": false,
+      "default": "healthpoint-lat-lon"
+    },
+    "HEALTHPOINT_TIMEOUT_SECS": {
+      "description": "HTTP timeout in seconds, clamped to 1..300.",
+      "required": false,
+      "default": "30"
     }
   }
 }

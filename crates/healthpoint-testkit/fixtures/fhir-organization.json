@@ -1,0 +1,18 @@
+{
+  "resourceType": "Organization",
+  "id": "org-example-provider-1",
+  "active": true,
+  "name": "Synthetic Community Health Trust",
+  "telecom": [
+    {
+      "system": "phone",
+      "value": "+64-9-222-2222",
+      "use": "work"
+    },
+    {
+      "system": "url",
+      "value": "https://example.test/org",
+      "use": "work"
+    }
+  ]
+}

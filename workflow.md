@@ -33,26 +33,26 @@ The default path is read-only, local-only, and bring-your-own-key. Any command t
 ### Milestone 2.1: Read-only client
 
 - Implement configurable base URL, auth scheme, and conservative request limits.
-- Support search/get for `HealthcareService` and get for `Organization`.
+- Support search/get for `HealthcareService` and get for `Organization` and `Location`.
 - Acceptance: mock-server tests pass; live tests remain ignored and key-gated.
 
 ### Milestone 2.2: CLI surface
 
-- Add `doctor`, `search services`, `get service`, `get organization`, and `export manifest`.
-- Add JSON and human output modes.
+- Add `doctor`, `search services`, `get service`, `get organization`, `get location`, and `export manifest`.
+- Add JSON, JSONL, CSV, and human output modes where appropriate.
 - Acceptance: CLI never prints secrets and all errors include remediation hints.
 
 ## Phase 3: MCP server
 
 ### Milestone 3.1: Read-only MCP tools
 
-- Expose `healthpoint_search_services`, `healthpoint_get_service`, and `healthpoint_get_organization`.
+- Expose diagnostic, service search, SNOMED search, nearby search, service get, location get, and organization get tools.
 - Add clear tool descriptions, schemas, limits, and licence warnings.
 - Acceptance: server launches over stdio and tool calls return provenance-rich JSON.
 
 ### Milestone 3.2: MCP resources and prompts
 
-- Add resource templates for `healthpoint://service/{id}` and `healthpoint://organization/{id}`.
+- Add resource templates for `healthpoint://service/{id}`, `healthpoint://organization/{id}`, and `healthpoint://location/{id}`.
 - Add prompts for safe directory summaries and code-mapping explanations.
 - Acceptance: resources are read-only and paginated where relevant.
 

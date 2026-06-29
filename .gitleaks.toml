@@ -1,0 +1,8 @@
+title = "healthpoint-rs gitleaks policy"
+
+[allowlist]
+description = "Synthetic examples and documented environment variable names only."
+paths = [
+  '''^crates/healthpoint-testkit/fixtures/''',
+  '''^\.env\.example$'''
+]

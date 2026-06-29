@@ -18,5 +18,8 @@ pub use error::{HealthpointError, Result};
 pub use page::Page;
 pub use provenance::SourceProvenance;
 pub use query::{GeoPoint, QueryLimit, ServiceQuery};
-pub use records::{Code, ContactPoint, OrganizationRecord, ResourceReference, ServiceRecord};
+pub use records::{
+    Address, Code, ContactPoint, GeoPosition, LocationRecord, OrganizationRecord,
+    ResourceReference, ServiceRecord,
+};
 pub use traits::DirectoryProvider;

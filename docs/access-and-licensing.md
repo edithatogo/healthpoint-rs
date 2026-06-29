@@ -26,6 +26,10 @@ The user creates local JSON/CSV/Parquet files under their own licence/access ter
 
 Disabled by default. Only use when Healthpoint terms or a specific written permission allow publication/redistribution of the relevant data/derived view.
 
+## Machine-readable policy stub
+
+The conservative default policy lives at `policy/healthpoint-access.toml`. It should remain `requires-review` until API terms/licence details are reviewed.
+
 ## Questions to answer from Healthpoint terms/API documentation
 
 - Authentication header/token requirements.
