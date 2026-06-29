@@ -1,0 +1,128 @@
+#!/usr/bin/env python3
+"""Synthetic Healthpoint-like FHIR server for offline contract testing.
+
+This is not a Healthpoint implementation. It serves only synthetic fixtures from
+`crates/healthpoint-testkit/fixtures` so the CLI/client can be exercised against
+real HTTP semantics without licensed data.
+"""
+from __future__ import annotations
+
+import argparse
+import json
+import pathlib
+import sys
+from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
+from urllib.parse import parse_qs, urlencode, urlparse
+
+ROOT = pathlib.Path(__file__).resolve().parents[1]
+FIXTURES = ROOT / "crates/healthpoint-testkit/fixtures"
+
+
+def load_json(name: str) -> dict:
+    return json.loads((FIXTURES / name).read_text(encoding="utf-8"))
+
+
+def synthetic_bundle(base_url: str, query: dict[str, list[str]]) -> dict:
+    bundle = load_json("fhir-bundle-healthcare-service.json")
+    count = int(query.get("_count", ["25"])[0] or "25")
+    bundle = json.loads(json.dumps(bundle))
+    bundle["total"] = min(bundle.get("total", 1), count)
+    link_query = {"page": "2"}
+    if count:
+        link_query["_count"] = str(count)
+    bundle["link"] = [
+        {"relation": "self", "url": base_url.rstrip("/") + "/HealthcareService?" + urlencode({k: v[-1] for k, v in query.items()})},
+        {"relation": "next", "url": base_url.rstrip("/") + "/HealthcareService?" + urlencode(link_query)},
+    ]
+    return bundle
+
+
+class Handler(BaseHTTPRequestHandler):
+    server_version = "SyntheticHealthpoint/0.1"
+
+    def log_message(self, fmt: str, *args: object) -> None:  # noqa: D401 - BaseHTTPRequestHandler signature
+        if getattr(self.server, "quiet", False):
+            return
+        super().log_message(fmt, *args)
+
+    def _json(self, status: int, payload: dict) -> None:
+        body = json.dumps(payload, indent=2).encode("utf-8")
+        self.send_response(status)
+        self.send_header("content-type", "application/fhir+json; charset=utf-8")
+        self.send_header("content-length", str(len(body)))
+        self.send_header("etag", 'W/"synthetic-healthpoint-rs"')
+        self.send_header("last-modified", "Mon, 29 Jun 2026 00:00:00 GMT")
+        self.send_header("x-request-id", "synthetic-request-id")
+        self.end_headers()
+        self.wfile.write(body)
+
+    def _base_url(self) -> str:
+        host = self.headers.get("host", f"127.0.0.1:{self.server.server_port}")
+        return f"http://{host}"
+
+    def do_GET(self) -> None:  # noqa: N802 - stdlib callback name
+        parsed = urlparse(self.path)
+        path = parsed.path.rstrip("/") or "/"
+        query = parse_qs(parsed.query)
+
+        if path in {"/", "/metadata"}:
+            self._json(200, {
+                "resourceType": "CapabilityStatement",
+                "status": "draft",
+                "kind": "instance",
+                "software": {"name": "Synthetic healthpoint-rs test server"},
+                "fhirVersion": "4.0.1",
+                "format": ["json"],
+                "rest": [{"mode": "server", "resource": [
+                    {"type": "HealthcareService"},
+                    {"type": "Location"},
+                    {"type": "Organization"},
+                ]}],
+            })
+            return
+
+        if path == "/HealthcareService":
+            self._json(200, synthetic_bundle(self._base_url(), query))
+            return
+
+        if path == "/HealthcareService/svc-cervical-screening-1":
+            bundle = load_json("fhir-bundle-healthcare-service.json")
+            self._json(200, bundle["entry"][0]["resource"])
+            return
+
+        if path == "/Location/loc-auckland-clinic-1":
+            self._json(200, load_json("fhir-location.json"))
+            return
+
+        if path == "/Organization/org-example-provider-1":
+            self._json(200, load_json("fhir-organization.json"))
+            return
+
+        self._json(404, {
+            "resourceType": "OperationOutcome",
+            "issue": [{
+                "severity": "error",
+                "code": "not-found",
+                "diagnostics": f"No synthetic route for {path}",
+            }],
+        })
+
+
+def main() -> int:
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--host", default="127.0.0.1")
+    parser.add_argument("--port", type=int, default=int(__import__("os").environ.get("PORT", "8787")))
+    parser.add_argument("--quiet", action="store_true")
+    args = parser.parse_args()
+    server = ThreadingHTTPServer((args.host, args.port), Handler)
+    server.quiet = args.quiet  # type: ignore[attr-defined]
+    print(f"synthetic Healthpoint-like FHIR server listening on http://{args.host}:{args.port}", file=sys.stderr)
+    try:
+        server.serve_forever()
+    except KeyboardInterrupt:
+        return 130
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

@@ -1,0 +1,43 @@
+name: Mock server smoke
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  smoke:
+    name: Synthetic HTTP smoke
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Start synthetic server
+        run: |
+          bin/mock-healthpoint-server --port 8787 --quiet >mock.log 2>&1 &
+          echo $! > mock.pid
+          sleep 1
+      - name: Query metadata and resources
+        run: |
+          python3 - <<'PY'
+          import json, urllib.request
+          base = 'http://127.0.0.1:8787'
+          for path, expected in [
+              ('/metadata', 'CapabilityStatement'),
+              ('/HealthcareService?_count=1', 'Bundle'),
+              ('/HealthcareService/svc-cervical-screening-1', 'HealthcareService'),
+              ('/Location/loc-auckland-clinic-1', 'Location'),
+              ('/Organization/org-example-provider-1', 'Organization'),
+          ]:
+              with urllib.request.urlopen(base + path, timeout=5) as response:
+                  data = json.load(response)
+              assert data.get('resourceType') == expected, (path, data.get('resourceType'))
+          print('synthetic HTTP smoke ok')
+          PY
+      - name: Stop synthetic server
+        if: always()
+        run: |
+          kill "$(cat mock.pid)" 2>/dev/null || true

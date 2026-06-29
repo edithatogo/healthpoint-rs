@@ -1,0 +1,8 @@
+[term]
+color = "auto"
+
+[alias]
+xtask-preflight = "run --package healthpoint-cli -- doctor"
+
+[future-incompat-report]
+frequency = "always"

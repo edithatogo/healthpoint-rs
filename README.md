@@ -130,6 +130,29 @@ healthpoint schema export-manifest
 
 Those schemas are intended to help future integration with `open_social_data`, MCP clients, and any cross-repo data catalogue layer without prematurely forcing Healthpoint's FHIR graph into a dataframe-first shape.
 
+
+## Offline readiness tools
+
+These commands work before any live Healthpoint validation and are useful in sandboxes or CI metadata jobs:
+
+```bash
+CONDUCTOR_ALLOW_NO_CARGO=1 bin/conductor-setup
+bin/conductor-status
+scripts/static-preflight.py
+scripts/generate-contract-schemas.py
+bin/mock-healthpoint-server --port 8787
+```
+
+After Rust is available, the mock server gives the CLI a synthetic HTTP target:
+
+```bash
+export HEALTHPOINT_BASE_URL="http://127.0.0.1:8787/"
+export HEALTHPOINT_AUTH_SCHEME="none"
+cargo run -p healthpoint-cli -- search services --snomed 171149006 --format json
+```
+
+See `docs/mock-server.md`, `docs/static-preflight.md`, and `docs/live-contract-capture.md`.
+
 ## Development environment
 
 See `docs/development-environment.md` for native Rust and devcontainer setup.

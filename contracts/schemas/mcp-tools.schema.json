@@ -1,0 +1,30 @@
+{
+  "$id": "https://github.com/edithatogo/healthpoint-rs/contracts/schemas/mcp-tools.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": true,
+  "properties": {
+    "tools": {
+      "items": {
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "params_schema": {
+            "type": "object"
+          },
+          "read_only": {
+            "const": true
+          }
+        },
+        "required": [
+          "name",
+          "read_only"
+        ],
+        "type": "object"
+      },
+      "type": "array"
+    }
+  },
+  "title": "mcp-tools",
+  "type": "object"
+}

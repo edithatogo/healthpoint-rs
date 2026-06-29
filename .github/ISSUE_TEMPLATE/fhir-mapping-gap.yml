@@ -1,0 +1,30 @@
+name: FHIR mapping gap
+about: Track unmapped or incorrectly mapped FHIR fields using synthetic/redacted examples only.
+title: "FHIR mapping: <resource.field>"
+labels: ["fhir", "mapping"]
+body:
+  - type: input
+    id: resource
+    attributes:
+      label: FHIR resource
+      placeholder: HealthcareService / Location / Organization
+    validations:
+      required: true
+  - type: input
+    id: field
+    attributes:
+      label: Field or path
+      placeholder: HealthcareService.availableTime
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected typed projection
+    validations:
+      required: true
+  - type: textarea
+    id: synthetic_example
+    attributes:
+      label: Synthetic or redacted example
+      description: Use fake values only.

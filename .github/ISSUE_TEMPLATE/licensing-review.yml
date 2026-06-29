@@ -1,0 +1,40 @@
+name: Licensing/access review
+about: Track Healthpoint terms, caching, attribution, redistribution, and rate-limit decisions.
+title: "Licensing review: <topic>"
+labels: ["licensing", "access-policy"]
+body:
+  - type: dropdown
+    id: topic
+    attributes:
+      label: Topic
+      options:
+        - API key handling
+        - local caching
+        - local export
+        - redistribution
+        - attribution
+        - open_social_data integration
+        - rate limits
+        - other
+    validations:
+      required: true
+  - type: textarea
+    id: source
+    attributes:
+      label: Source / clause / correspondence summary
+      description: Summarise; do not paste confidential contract text unless permitted.
+    validations:
+      required: true
+  - type: dropdown
+    id: decision
+    attributes:
+      label: Proposed policy decision
+      options:
+        - no-change
+        - prohibit
+        - local-only
+        - licensed-share
+        - open-approved
+        - needs-legal-review
+    validations:
+      required: true

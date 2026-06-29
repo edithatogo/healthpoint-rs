@@ -1,0 +1,39 @@
+#!/usr/bin/env python3
+"""Print a compact Conductor handoff/status view."""
+from __future__ import annotations
+
+import json
+import pathlib
+import textwrap
+
+ROOT = pathlib.Path(__file__).resolve().parents[1]
+state = json.loads((ROOT / "conductor/state.json").read_text(encoding="utf-8"))
+tracks = (ROOT / "conductor/tracks.md").read_text(encoding="utf-8")
+
+print(f"Project: {state.get('project')}")
+print(f"Status:  {state.get('status')}")
+print(f"Updated: {state.get('updated_at')}")
+print(f"Goal:    {state.get('canonical_goal')}")
+print(f"Latest:  {state.get('latest_checkpoint')}")
+print()
+print("Current decisions:")
+for item in state.get("current_decisions", []):
+    print(f"  - {item}")
+print()
+print("Blocked by:")
+for item in state.get("blocked_by", []):
+    print(f"  - {item}")
+print()
+print("Next tracks:")
+for item in state.get("next_tracks", []):
+    print(f"  - {item}")
+print()
+print("Track summary:")
+inside = False
+for line in tracks.splitlines():
+    if line.startswith("| Track |"):
+        inside = True
+    if inside:
+        print(textwrap.shorten(line, width=140, placeholder=" …"))
+        if line.strip() == "":
+            break

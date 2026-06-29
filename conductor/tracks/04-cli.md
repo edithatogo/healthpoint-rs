@@ -23,3 +23,4 @@ Open:
 - Compile validation.
 - Shell completions.
 - Mock-server integration tests.
+- Validate CLI against synthetic HTTP server after Cargo check passes.

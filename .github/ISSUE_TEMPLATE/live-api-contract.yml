@@ -1,0 +1,38 @@
+name: Live API contract validation
+about: Track redacted validation of Healthpoint endpoint/auth/search behaviour.
+title: "Live contract: <area>"
+labels: ["live-validation", "licensed-api", "needs-redaction"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Do not paste API keys, real IDs, real service data, raw response bodies, screenshots, traces, or logs.
+  - type: input
+    id: area
+    attributes:
+      label: Area
+      placeholder: auth / search / pagination / resource-read / headers
+    validations:
+      required: true
+  - type: textarea
+    id: redacted_finding
+    attributes:
+      label: Redacted finding
+      description: Endpoint shape, parameter names, status code, or header names only.
+    validations:
+      required: true
+  - type: dropdown
+    id: status
+    attributes:
+      label: Status
+      options:
+        - confirmed
+        - contradicted-current-assumption
+        - inconclusive
+        - blocked
+    validations:
+      required: true
+  - type: textarea
+    id: followup
+    attributes:
+      label: Follow-up

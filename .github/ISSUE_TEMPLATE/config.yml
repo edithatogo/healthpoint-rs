@@ -1,0 +1,5 @@
+blank_issues_enabled: true
+contact_links:
+  - name: Healthpoint API access
+    url: https://www.healthpointapi.com/
+    about: Request or manage Healthpoint API access directly with Healthpoint.

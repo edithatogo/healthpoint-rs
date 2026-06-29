@@ -15,18 +15,12 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: JSON/TOML validation
-        run: |
-          python3 - <<'PY'
-          import json, pathlib, tomllib
-          for p in pathlib.Path('.').rglob('*.json'):
-              if '.git' not in p.parts:
-                  json.loads(p.read_text())
-          for p in pathlib.Path('.').rglob('*.toml'):
-              if '.git' not in p.parts:
-                  tomllib.loads(p.read_text())
-          print('json/toml ok')
-          PY
+      - name: Metadata-only static preflight
+        run: scripts/static-preflight.py
+      - name: Generate interim contract schemas
+        run: scripts/generate-contract-schemas.py
+      - name: Ensure generated schemas are committed
+        run: git diff --exit-code -- contracts/schemas
       - name: Whitespace diff check
         run: git diff --check
 

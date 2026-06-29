@@ -6,16 +6,8 @@ if [[ -n "${CONDUCTOR_ROOT_PATH:-}" && -f "$CONDUCTOR_ROOT_PATH/.env" ]]; then
   ln -sf "$CONDUCTOR_ROOT_PATH/.env" .env
 fi
 
-python3 - <<'PY'
-import json, pathlib, tomllib
-for p in pathlib.Path('.').rglob('*.json'):
-    if '.git' not in p.parts:
-        json.loads(p.read_text())
-for p in pathlib.Path('.').rglob('*.toml'):
-    if '.git' not in p.parts:
-        tomllib.loads(p.read_text())
-print('metadata preflight ok')
-PY
+scripts/static-preflight.py
+scripts/generate-contract-schemas.py
 
 if ! command -v cargo >/dev/null 2>&1; then
   if [[ "${CONDUCTOR_ALLOW_NO_CARGO:-}" == "1" ]]; then

@@ -1,6 +1,6 @@
 {
   "project": "healthpoint-rs",
-  "status": "environment_limit_reached_metadata_validated",
+  "status": "interim_hardening_metadata_ready_cargo_blocked",
   "updated_at": "2026-06-29",
   "context_model": "conductor",
   "default_branch": "main",
@@ -16,7 +16,12 @@
     "healthpoint_resource_uri_contract",
     "json_schema_contracts_for_integration",
     "synthetic_fixture_provider_for_offline_validation",
-    "environment_limit_documented"
+    "environment_limit_documented",
+    "metadata_static_preflight_script",
+    "synthetic_http_mock_server",
+    "interim_contract_schemas",
+    "issue_templates_and_pr_safety_gates",
+    "release_and_threat_model_docs"
   ],
   "implemented_surfaces": [
     "HealthpointClient configurable base URL/auth/geo mode",
@@ -32,7 +37,13 @@
     "healthpoint:// resource URI parser",
     "offline FixtureDirectoryProvider",
     "OSD-style services/locations/organizations/code/contact/eligibility/availability tabular rows",
-    "Conductor metadata-only setup path for environments without Cargo"
+    "Conductor metadata-only setup path for environments without Cargo",
+    "metadata-only static preflight script and GitHub workflow wiring",
+    "synthetic Healthpoint-like FHIR HTTP mock server",
+    "interim JSON Schema contracts under contracts/schemas",
+    "Conductor status command and expanded handoff documentation",
+    "GitHub issue templates and PR safety checklist",
+    "release runbook, threat model, live contract capture plan, RMCP pin plan"
   ],
   "validated_in_current_environment": [
     "JSON metadata parsed successfully",
@@ -41,7 +52,11 @@
     "naive Rust delimiter check passed",
     "Conductor metadata-only setup passed",
     "simple high-signal secret-pattern scan passed",
-    "environment limit documented in docs/environment-limitations.md"
+    "environment limit documented in docs/environment-limitations.md",
+    "scripts/static-preflight.py passed",
+    "scripts/generate-contract-schemas.py produced committed schemas",
+    "bin/mock-healthpoint-server served synthetic CapabilityStatement and FHIR resources",
+    "bin/conductor-status rendered state without private context"
   ],
   "blocked_by": [
     "Rust/Cargo unavailable in current sandbox",
@@ -54,10 +69,12 @@
   ],
   "next_tracks": [
     "cargo-fmt-check-test-clippy-in-rust-enabled-environment",
+    "mock-server-backed-cli-smoke-after-cargo-validation",
     "validate-client-auth-with-dylan-api-key",
-    "mock-server-tests-after-cargo-validation",
-    "mcp-resource-templates-after-rmcp-api-validation",
-    "osd-tabular-view-dictionaries"
+    "redacted-live-contract-capture",
+    "pin-rmcp-and-generate-cargo-lock",
+    "native-mcp-resource-templates-after-rmcp-api-validation",
+    "osd-tabular-view-dictionaries-and-license-gate"
   ],
-  "latest_checkpoint": "conductor/checkpoints/2026-06-29-environment-limit.md"
+  "latest_checkpoint": "conductor/checkpoints/2026-06-29-interim-hardening.md"
 }

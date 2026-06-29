@@ -3,6 +3,14 @@ set shell := ["bash", "-eu", "-o", "pipefail", "-c"]
 setup:
   bin/conductor-setup
 
+status:
+  bin/conductor-status
+
+preflight:
+  scripts/static-preflight.py
+  scripts/generate-contract-schemas.py
+  git diff --check
+
 fmt:
   cargo fmt --all
 
@@ -15,18 +23,35 @@ clippy:
 test:
   cargo test --workspace
 
-ci: fmt check clippy test
+deny:
+  cargo deny check
+
+ci: preflight fmt check clippy test deny
 
 metadata-check:
+  scripts/static-preflight.py
+
+schemas:
+  scripts/generate-contract-schemas.py
+
+mock-server:
+  bin/mock-healthpoint-server --port 8787
+
+mock-smoke:
+  #!/usr/bin/env bash
+  set -euo pipefail
+  bin/mock-healthpoint-server --port 8787 --quiet > /tmp/healthpoint-mock.log 2>&1 &
+  pid=$$!
+  trap 'kill "$pid" 2>/dev/null || true' EXIT
+  sleep 1
   python3 - <<'PY'
-  import json, pathlib, tomllib
-  for p in pathlib.Path('.').rglob('*.json'):
-      if '.git' not in p.parts:
-          json.loads(p.read_text())
-  for p in pathlib.Path('.').rglob('*.toml'):
-      if '.git' not in p.parts:
-          tomllib.loads(p.read_text())
-  print('json/toml ok')
+  import json, urllib.request
+  base='http://127.0.0.1:8787'
+  for path, expected in [('/metadata','CapabilityStatement'),('/HealthcareService?_count=1','Bundle'),('/HealthcareService/svc-cervical-screening-1','HealthcareService')]:
+      with urllib.request.urlopen(base+path, timeout=5) as response:
+          data=json.load(response)
+      assert data.get('resourceType') == expected, (path, data.get('resourceType'))
+  print('mock smoke ok')
   PY
 
 mcp:

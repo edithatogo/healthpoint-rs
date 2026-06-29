@@ -1,0 +1,21 @@
+name: Documentation links
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '0 17 * * 1'
+
+permissions:
+  contents: read
+
+jobs:
+  lychee:
+    name: Link check
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: lycheeverse/lychee-action@v2
+        with:
+          args: --no-progress --exclude-mail --exclude 'localhost|127.0.0.1' './**/*.md'
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

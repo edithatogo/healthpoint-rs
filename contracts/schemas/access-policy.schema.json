@@ -1,0 +1,38 @@
+{
+  "$id": "https://github.com/edithatogo/healthpoint-rs/contracts/schemas/access-policy.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": true,
+  "properties": {
+    "access_mode": {
+      "enum": [
+        "public",
+        "bring_your_own_key",
+        "licensed",
+        "unknown"
+      ]
+    },
+    "export_policy": {
+      "enum": [
+        "local_only",
+        "licensed_share",
+        "open_approved"
+      ]
+    },
+    "notes": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "redistribution": {
+      "enum": [
+        "allowed",
+        "prohibited",
+        "unknown",
+        "requires_review"
+      ]
+    }
+  },
+  "title": "access-policy",
+  "type": "object"
+}

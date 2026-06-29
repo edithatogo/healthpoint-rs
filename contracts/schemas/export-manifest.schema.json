@@ -1,0 +1,58 @@
+{
+  "$id": "https://github.com/edithatogo/healthpoint-rs/contracts/schemas/export-manifest.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": true,
+  "properties": {
+    "contains_healthpoint_data": {
+      "type": "boolean"
+    },
+    "created_at": {
+      "type": "string"
+    },
+    "manifest_version": {
+      "type": "string"
+    },
+    "provenance": {
+      "additionalProperties": true,
+      "properties": {
+        "access_mode": {
+          "type": "string"
+        },
+        "redistribution": {
+          "type": "string"
+        },
+        "retrieved_at": {
+          "type": "string"
+        },
+        "source_name": {
+          "type": "string"
+        },
+        "source_url": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "type": "object"
+    },
+    "tool": {
+      "type": "string"
+    },
+    "tool_version": {
+      "type": "string"
+    },
+    "warnings": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    }
+  },
+  "title": "export-manifest",
+  "type": "object"
+}

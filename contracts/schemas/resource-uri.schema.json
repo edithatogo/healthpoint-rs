@@ -1,0 +1,7 @@
+{
+  "$id": "https://github.com/edithatogo/healthpoint-rs/contracts/schemas/resource-uri.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "pattern": "^healthpoint://(service|location|organization)/[A-Za-z0-9][A-Za-z0-9.\\-]{0,127}$",
+  "title": "resource-uri",
+  "type": "string"
+}

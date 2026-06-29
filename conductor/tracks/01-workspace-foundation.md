@@ -8,6 +8,10 @@ Implemented:
 - CI/secret-scan/dependabot/cargo-deny scaffolding.
 - Conductor setup/run/metadata-check scripts.
 - Metadata-only setup fallback for non-Rust sandboxes.
+- Static preflight checker.
+- Conductor status command.
+- Interim schema generator.
+- Synthetic mock server smoke workflow.
 
 Current blocker:
 
