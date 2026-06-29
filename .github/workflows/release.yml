@@ -146,8 +146,14 @@ jobs:
           fi
           publish_crate() {
             local crate="$1"
+            local log_file
+            log_file="$(mktemp)"
             for attempt in 1 2 3 4 5; do
-              if cargo publish -p "$crate" --locked; then
+              if cargo publish -p "$crate" --locked 2>&1 | tee "$log_file"; then
+                return 0
+              fi
+              if grep -qiE 'already uploaded|already exists|crate version .* is already uploaded' "$log_file"; then
+                echo "$crate is already published; continuing."
                 return 0
               fi
               sleep $((attempt * 20))
@@ -156,12 +162,12 @@ jobs:
           }
           publish_crate healthpoint-core
           publish_crate healthpoint-fhir
+          publish_crate healthpoint-testkit
           publish_crate healthpoint-client
           publish_crate healthpoint-export
-          publish_crate healthpoint-testkit
           publish_crate healthpoint-osd-adapter
-          publish_crate healthpoint-cli
           publish_crate healthpoint-mcp
+          publish_crate healthpoint-cli
 
   github-release:
     name: Create GitHub release
