@@ -23,7 +23,7 @@ jobs:
       - uses: dtolnay/rust-toolchain@stable
       - name: Validate local registry requirements
         run: scripts/check-mcp-registry-submission.py
-      - name: Verify crates are published
+      - name: Check crates.io publication status
         shell: bash
         run: |
           version=$(python3 - <<'PY'
@@ -31,9 +31,19 @@ jobs:
           print(tomllib.load(open('Cargo.toml','rb'))['workspace']['package']['version'])
           PY
           )
+          missing=0
           for crate in healthpoint-core healthpoint-fhir healthpoint-client healthpoint-export healthpoint-testkit healthpoint-osd-adapter healthpoint-cli healthpoint-mcp; do
-            cargo search "$crate" --limit 1 | grep "^$crate = \"$version\""
+            if cargo search "$crate" --limit 1 | grep "^$crate = \"$version\""; then
+              echo "published: $crate $version"
+            else
+              echo "not-yet-published: $crate $version"
+              missing=1
+            fi
           done
+          if [[ "$missing" -ne 0 && "${{ inputs.submit_official }}" == "true" ]]; then
+            echo "All crates must be published before official MCP registry submission." >&2
+            exit 1
+          fi
       - name: Official registry submit gate
         if: inputs.submit_official == true
         shell: bash
