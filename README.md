@@ -49,14 +49,14 @@ The MCP server is a separate binary so CLI and MCP can evolve independently whil
 
 ```bash
 export HEALTHPOINT_API_KEY="..."
-export HEALTHPOINT_BASE_URL="https://www.healthpointapi.com/"
-export HEALTHPOINT_AUTH_SCHEME="bearer"                  # bearer | x-api-key | header:<name> | none
+export HEALTHPOINT_BASE_URL="https://uat.healthpointapi.com/baseR4/"
+export HEALTHPOINT_AUTH_SCHEME="x-api-key"               # bearer | x-api-key | header:<name> | none
 export HEALTHPOINT_GEO_SEARCH_MODE="healthpoint-lat-lon" # healthpoint-lat-lon | fhir-near
 export HEALTHPOINT_TIMEOUT_SECS="30"
 export HEALTHPOINT_EXPORT_POLICY="local-only"            # local-only | licensed-share | open-approved
 ```
 
-The default assumes bearer-token auth because the public API landing page does not expose full developer authentication details. Use `HEALTHPOINT_AUTH_SCHEME=x-api-key` or `header:<name>` if your Healthpoint credentials require a named API-key header.
+Healthpoint portal validation on 2026-06-30 confirmed UAT calls use the `x-api-key` header against `https://uat.healthpointapi.com/baseR4/`. See `docs/healthpoint-api-access.md` for observed endpoint and license notes.
 
 ## CLI examples
 

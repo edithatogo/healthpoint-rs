@@ -10,6 +10,14 @@ $EDITOR .env
 cargo run -p healthpoint-cli -- doctor
 ```
 
+Use the verified UAT defaults unless Healthpoint has explicitly issued different credentials:
+
+```bash
+HEALTHPOINT_BASE_URL=https://uat.healthpointapi.com/baseR4/
+HEALTHPOINT_AUTH_SCHEME=x-api-key
+HEALTHPOINT_EXPORT_POLICY=local-only
+```
+
 Confirm that `doctor` reports:
 
 ```json
@@ -58,3 +66,8 @@ Record only metadata, never real API payloads:
 - any required attribution/disclaimer language.
 
 Write findings to `docs/api-assumptions.md` and update the relevant Conductor track.
+
+See also:
+
+- `docs/healthpoint-api-access.md`
+- `docs/healthpoint-license-notes.md`
