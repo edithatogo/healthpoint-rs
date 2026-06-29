@@ -26,19 +26,18 @@ The user creates local JSON/CSV/Parquet files under their own licence/access ter
 
 Disabled by default. Only use when Healthpoint terms or a specific written permission allow publication/redistribution of the relevant data/derived view.
 
-## Machine-readable policy stub
+## Machine-readable policy
 
-The conservative default policy lives at `policy/healthpoint-access.toml`. It should remain `requires-review` until API terms/licence details are reviewed.
+The conservative default policy lives at `policy/healthpoint-access.toml`. It now reflects the portal review and the June 2026 licence variation retrieved from VUW Outlook. The contract evidence is stored only under ignored local storage and must not be committed.
 
 ## Questions to answer from Healthpoint terms/API documentation
 
 - Authentication header/token requirements.
 - Allowed caching duration and storage constraints.
-- Bulk export and rate-limit constraints.
-- Attribution requirements.
-- Whether derived aggregate or tabular outputs may be redistributed.
-- Whether public mirrors/proxies are prohibited.
-- Required currency/disclaimer language.
+- Exact publication acknowledgement wording for each output venue.
+- Whether any aggregate, tabular, or open_social_data-derived output can be redistributed beyond academic publications.
+- Whether any public demo, hosted MCP server, or proxy would require a separate written approval.
+- Required currency/disclaimer language for published research artifacts.
 
 ## Non-goals
 

@@ -34,6 +34,8 @@ The portal listed two environments:
 
 The dashboard usage window observed was 2026-05-30 to 2026-07-01.
 
+The June 2026 API and Data Licence variation retrieved from VUW Outlook specifies production limits for the executed academic non-commercial research use: 100,000 API calls per day and 350 requests per second. Use the lower portal-observed or contract-stated limit when in doubt, and keep live validation metadata-only.
+
 ## Data model
 
 Healthpoint documents the API as HL7 FHIR R4-aligned. Primary resources observed in the documentation:

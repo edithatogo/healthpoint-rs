@@ -1,6 +1,6 @@
 {
   "project": "healthpoint-rs",
-  "status": "local_setup_validated_external_gates_remaining",
+  "status": "release_readiness_hardened_external_approval_remaining",
   "updated_at": "2026-06-30",
   "context_model": "conductor",
   "default_branch": "main",
@@ -16,6 +16,10 @@
     "healthpoint_resource_uri_contract",
     "json_schema_contracts_for_integration",
     "synthetic_fixture_provider_for_offline_validation",
+    "portal_terms_reviewed_conservative_policy_encoded",
+    "june_2026_vuw_contract_retrieved_and_encoded",
+    "native_mcp_resources_and_prompts",
+    "vuw_outlook_contract_evidence_ignored_local_only",
     "environment_limit_documented",
     "metadata_static_preflight_script",
     "synthetic_http_mock_server",
@@ -45,6 +49,7 @@
     "CLI doctor/search/get/get-uri/inspect/export/fixture/schema/policy commands",
     "local service exports with manifest sidecars",
     "MCP diagnostic/search/SNOMED/nearby/get/read-resource-uri tools",
+    "MCP native resources, resource templates, and prompt templates",
     "healthpoint:// resource URI parser",
     "offline FixtureDirectoryProvider",
     "OSD-style services/locations/organizations/code/contact/eligibility/availability tabular rows",
@@ -75,19 +80,16 @@
     "cargo check --workspace --all-targets --locked passed",
     "cargo test --workspace --locked passed",
     "cargo clippy --workspace --all-targets --locked -- -D warnings passed",
-    "cargo deny check passed"
+    "cargo deny check passed",
+    "MCP JSON-RPC smoke against synthetic server listed resources/templates/prompts and read policy/query resources"
   ],
   "blocked_by": [
-    "licensed_api_auth_details",
-    "confirmed_endpoint_and_search_parameter_contracts",
-    "Healthpoint redistribution/caching terms review"
+    "Healthpoint written approval for public-data, hosted proxy, redistribution, open_social_data publication, AI dataset, or non-research commercial use",
+    "metadata-only follow-up captures for broader pagination, nearby, direct-read, and rate-limit shapes"
   ],
   "next_tracks": [
-    "mock-server-backed-cli-smoke-after-cargo-validation",
-    "validate-client-auth-with-dylan-api-key",
-    "redacted-live-contract-capture",
-    "native-mcp-resource-templates-after-rmcp-api-validation",
-    "osd-tabular-view-dictionaries-and-license-gate"
+    "capture-additional-live-metadata-without-payloads",
+    "obtain-healthpoint-written-approval-before-production-or-public-data-release"
   ],
-  "latest_checkpoint": "conductor/checkpoints/2026-06-30-bleeding-edge-hardening.md"
+  "latest_checkpoint": "conductor/checkpoints/2026-06-30-release-readiness-mcp-contracts.md"
 }

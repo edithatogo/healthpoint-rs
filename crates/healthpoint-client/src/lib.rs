@@ -438,6 +438,11 @@ impl DirectoryProvider for HealthpointClient {
 mod tests {
     use super::*;
     use healthpoint_core::{Code, GeoPoint, QueryLimit};
+    use std::{
+        io::{Read, Write},
+        net::TcpListener,
+        thread,
+    };
 
     #[test]
     fn auth_scheme_parses_named_headers() {
@@ -541,5 +546,99 @@ mod tests {
                 .as_str(),
             "https://example.test/fhir/Location/loc-1"
         );
+    }
+
+    #[tokio::test]
+    async fn mock_search_captures_paging_headers_and_auth() {
+        let (base_url, request) = spawn_one_response(
+            "200 OK",
+            &[
+                ("Content-Type", "application/fhir+json"),
+                ("ETag", "W/\"abc\""),
+                ("x-ratelimit-remaining", "42"),
+            ],
+            r#"{"resourceType":"Bundle","type":"searchset","total":1,"link":[{"relation":"next","url":"/baseR4/HealthcareService?page=2"}],"entry":[{"resource":{"resourceType":"HealthcareService","id":"svc-1","name":"Synthetic service"}}]}"#,
+        );
+        let client = HealthpointClient::new(ClientConfig::new(
+            base_url,
+            Some("secret-key".into()),
+            AuthScheme::Header("x-api-key".into()),
+        ));
+
+        let page = client
+            .search_services(ServiceQuery::new().with_branch_region("primary", "Southland"))
+            .await
+            .expect("mock search succeeds");
+
+        let raw_request = request.join().expect("server thread joins");
+        assert!(raw_request.contains("x-api-key: secret-key"));
+        assert!(raw_request.contains("branch-code=primary"));
+        assert_eq!(page.total, Some(1));
+        assert_eq!(
+            page.next_cursor.as_deref(),
+            Some("/baseR4/HealthcareService?page=2")
+        );
+        assert_eq!(page.response_metadata.etag.as_deref(), Some("W/\"abc\""));
+        assert_eq!(
+            page.response_metadata.rate_limit_remaining.as_deref(),
+            Some("42")
+        );
+    }
+
+    #[tokio::test]
+    async fn mock_api_error_redacts_auth_secret() {
+        let (base_url, _request) = spawn_one_response(
+            "403 Forbidden",
+            &[("Content-Type", "application/json")],
+            r#"{"error":"bad key secret-key denied"}"#,
+        );
+        let client = HealthpointClient::new(ClientConfig::new(
+            base_url,
+            Some("secret-key".into()),
+            AuthScheme::Header("x-api-key".into()),
+        ));
+
+        let err = client
+            .get_service("svc-1")
+            .await
+            .expect_err("mock API error propagates");
+        match err {
+            HealthpointError::Api { message, .. } => {
+                assert!(!message.contains("secret-key"));
+                assert!(message.contains("[REDACTED]"));
+            }
+            other => panic!("expected API error, got {other:?}"),
+        }
+    }
+
+    fn spawn_one_response(
+        status: &'static str,
+        headers: &'static [(&'static str, &'static str)],
+        body: &'static str,
+    ) -> (Url, thread::JoinHandle<String>) {
+        let listener = TcpListener::bind("127.0.0.1:0").expect("bind test server");
+        let addr = listener.local_addr().expect("read local addr");
+        let handle = thread::spawn(move || {
+            let (mut stream, _) = listener.accept().expect("accept request");
+            let mut buffer = [0_u8; 4096];
+            let read = stream.read(&mut buffer).expect("read request");
+            let mut response = format!("HTTP/1.1 {status}\r\nContent-Length: {}\r\n", body.len());
+            for (name, value) in headers {
+                response.push_str(name);
+                response.push_str(": ");
+                response.push_str(value);
+                response.push_str("\r\n");
+            }
+            response.push_str("\r\n");
+            response.push_str(body);
+            stream
+                .write_all(response.as_bytes())
+                .expect("write response");
+            String::from_utf8_lossy(&buffer[..read]).into_owned()
+        });
+        (
+            Url::parse(&format!("http://{addr}/baseR4/")).expect("valid base URL"),
+            handle,
+        )
     }
 }

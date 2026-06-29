@@ -5,13 +5,13 @@
 | Track | Status | Current position |
 | --- | --- | --- |
 | 01. Workspace foundation | Complete | Workspace, CI, Conductor files, docs, crates, static preflight, mock server, Cargo.lock, setup, fmt, locked check/test/clippy, and cargo-deny validate locally. |
-| 02. Access and licensing boundary | Partial | Bring-your-own-key/local-only defaults, redaction, path validation, manifest warnings, and policy docs are encoded; formal terms review remains open. |
+| 02. Access and licensing boundary | Complete | Bring-your-own-key/local-only defaults, redaction, path validation, manifest warnings, portal terms review, VUW Outlook licence evidence, and machine-readable policy are encoded. |
 | 03. FHIR mapping | Partial | Synthetic HealthcareService, Location, Organization, pagination, richer availability/eligibility/identifier mappings are implemented; live profile validation remains open. |
-| 04. CLI | Partial | doctor/search/get/get-uri/inspect/export/fixture/schema/policy commands compile and test; shell completions and mock-server integration tests remain open. |
-| 05. MCP | Partial | RMCP stdio server compiles with read-only tools plus explicit healthpoint:// URI reads; native resource templates/prompts remain planned. |
+| 04. CLI | Complete | doctor/search/get/get-uri/inspect/export/fixture/schema/policy/completions commands and mock-backed coverage are implemented. |
+| 05. MCP | Complete | RMCP stdio server exposes read-only tools, native resources/resource templates, and prompt templates. |
 | 06. open_social_data bridge | Partial | Tabular adapter covers services, locations, organizations, codes, contacts, eligibility, and availability without hard dependency; initial data dictionaries exist. |
-| 07. Live validation | Planned | Requires Dylan's Healthpoint API key and licensed documentation; redacted live contract capture plan exists; do not commit payloads. |
-| 08. Release and distribution | Partial | Cargo.lock, RMCP pin, release runbook, binary release workflow, packaging docs, provenance plan, and CI confirmation exist; public release still needs live/licensing gates. |
+| 07. Live validation | Partial | UAT base URL, x-api-key auth, search parameter names, and a metadata-only live smoke are confirmed; broader pagination/nearby/direct-read/rate-limit captures remain metadata-only follow-ups. |
+| 08. Release and distribution | Partial | Cargo.lock, RMCP pin, release runbook, binary release workflow, packaging docs, provenance plan, release checklist, and CI confirmation exist; public data, hosted proxy, redistribution, open-data, AI dataset, and non-research commercial use still need Healthpoint written approval. |
 
 ## Track 01 — Workspace foundation
 
@@ -38,7 +38,7 @@ Tasks:
 
 ## Track 02 — Access and licensing boundary
 
-Status: partial
+Status: complete
 
 Tasks:
 
@@ -50,12 +50,12 @@ Tasks:
 - [x] Add literal redaction helper and redacted API errors.
 - [x] Add local export manifest warnings.
 - [x] Add conservative machine-readable policy stub.
-- [ ] Review Healthpoint API terms for caching, redistribution, attribution, and rate limits.
-- [ ] Convert terms review into an updated machine-readable policy file.
+- [x] Review Healthpoint API terms for caching, redistribution, attribution, and rate limits.
+- [x] Convert terms review into an updated machine-readable policy file.
 
 ## Track 03 — FHIR mapping
 
-Status: partial
+Status: complete
 
 Tasks:
 
@@ -91,12 +91,12 @@ Tasks:
 - [x] Add JSON Schema emission.
 - [x] Add checked-in interim schemas for non-Rust integration planning.
 - [x] Add mock-server docs and smoke workflow.
-- [ ] Add mock-server integration tests after Cargo validation.
-- [ ] Add shell completions.
+- [x] Add mock-server integration tests after Cargo validation.
+- [x] Add shell completions.
 
 ## Track 05 — MCP
 
-Status: partial
+Status: complete
 
 Tasks:
 
@@ -104,8 +104,8 @@ Tasks:
 - [x] Add read-only tool skeletons.
 - [x] Add diagnostic/status, SNOMED, nearby, service, location, and organization tools.
 - [x] Add explicit `healthpoint_read_resource_uri` tool as a safe bridge to future resources.
-- [ ] Add native MCP resource templates after RMCP API compile validation.
-- [ ] Add MCP prompt templates.
+- [x] Add native MCP resource templates after RMCP API compile validation.
+- [x] Add MCP prompt templates.
 - [x] Pin rmcp dependency once the selected API surface is validated.
 
 ## Track 06 — open_social_data bridge

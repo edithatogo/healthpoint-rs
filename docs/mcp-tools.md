@@ -2,7 +2,7 @@
 
 The MCP server is read-only and runs over stdio. It shares `healthpoint-client` with the CLI, so API-key handling, base URL configuration, provenance, and request limits remain consistent.
 
-## Tools in the current spike
+## Tools
 
 ```text
 healthpoint_diagnostic_status
@@ -34,22 +34,41 @@ healthpoint://organization/{id}
 healthpoint://location/{id}
 ```
 
-It mirrors planned MCP resources while avoiding compile-risk from resource-template wiring until the selected RMCP API is validated with a local Rust toolchain.
+It mirrors the native MCP resource reader so clients can use either explicit tools or `resources/read`.
 
-## Planned resource templates
+## Native resources and templates
+
+Static resources:
+
+```text
+healthpoint://diagnostic/status
+healthpoint://api/access-notes
+healthpoint://access/policy
+```
+
+Resource templates:
 
 ```text
 healthpoint://service/{id}
 healthpoint://organization/{id}
 healthpoint://location/{id}
-healthpoint://query/services?type={code}&limit={limit}
+healthpoint://query/services?text={text}&region={region}&limit={limit}
 ```
 
-Resource support is deliberately deferred until the RMCP API is validated locally, because the current dependency is intentionally tracking `modelcontextprotocol/rust-sdk` main.
+The dynamic templates are readable through `resources/read` and return JSON. The query template supports `text`, `region`, `branch-code`, `type`, `category`, `specialty`, and `limit` query parameters. Use `healthpoint_search_services` when a client prefers tool calls over resource reads.
+
+## Prompts
+
+```text
+healthpoint_safe_search
+healthpoint_license_check
+```
+
+These prompts keep Healthpoint usage read-only, attributed, local-only by default, and explicit about the no-public-cache/no-redistribution boundary.
 
 ## Guardrails
 
-- No bulk dump tool until licensing/rate-limit terms are reviewed.
+- No bulk dump tool without Healthpoint written approval.
 - No public cache/proxy mode.
 - No write tools.
 - Secrets must never appear in tool outputs or MCP errors.
