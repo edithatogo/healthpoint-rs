@@ -4,14 +4,14 @@
 
 | Track | Status | Current position |
 | --- | --- | --- |
-| 01. Workspace foundation | Complete | Workspace, CI, Conductor files, docs, crates, static preflight, mock server, Cargo.lock, setup, fmt, check, test, and clippy all validate locally. |
+| 01. Workspace foundation | Complete | Workspace, CI, Conductor files, docs, crates, static preflight, mock server, Cargo.lock, setup, fmt, locked check/test/clippy, and cargo-deny validate locally. |
 | 02. Access and licensing boundary | Partial | Bring-your-own-key/local-only defaults, redaction, path validation, manifest warnings, and policy docs are encoded; formal terms review remains open. |
 | 03. FHIR mapping | Partial | Synthetic HealthcareService, Location, Organization, pagination, richer availability/eligibility/identifier mappings are implemented; live profile validation remains open. |
 | 04. CLI | Partial | doctor/search/get/get-uri/inspect/export/fixture/schema/policy commands compile and test; shell completions and mock-server integration tests remain open. |
 | 05. MCP | Partial | RMCP stdio server compiles with read-only tools plus explicit healthpoint:// URI reads; native resource templates/prompts remain planned. |
 | 06. open_social_data bridge | Partial | Tabular adapter covers services, locations, organizations, codes, contacts, eligibility, and availability without hard dependency; initial data dictionaries exist. |
 | 07. Live validation | Planned | Requires Dylan's Healthpoint API key and licensed documentation; redacted live contract capture plan exists; do not commit payloads. |
-| 08. Release and distribution | Partial | Cargo.lock, RMCP pin, release runbook, binary release workflow, packaging docs, and provenance plan exist; still needs GitHub CI confirmation. |
+| 08. Release and distribution | Partial | Cargo.lock, RMCP pin, release runbook, binary release workflow, packaging docs, provenance plan, and CI confirmation exist; public release still needs live/licensing gates. |
 
 ## Track 01 — Workspace foundation
 

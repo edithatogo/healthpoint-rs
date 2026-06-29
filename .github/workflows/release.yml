@@ -6,6 +6,10 @@ on:
       - "v*"
   workflow_dispatch:
 
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
+
 permissions:
   contents: read
 
@@ -28,7 +32,7 @@ jobs:
             archive: zip
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - uses: dtolnay/rust-toolchain@stable
         with:
           targets: ${{ matrix.target }}
@@ -53,7 +57,7 @@ jobs:
           Copy-Item target/${{ matrix.target }}/release/healthpoint-mcp.exe dist/healthpoint-rs-${{ matrix.target }}/
           Copy-Item README.md, LICENSE, server.json dist/healthpoint-rs-${{ matrix.target }}/
           Compress-Archive -Path dist/healthpoint-rs-${{ matrix.target }} -DestinationPath healthpoint-rs-${{ matrix.target }}.zip
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: healthpoint-rs-${{ matrix.target }}
           path: healthpoint-rs-${{ matrix.target }}.${{ matrix.archive }}

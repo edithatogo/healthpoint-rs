@@ -26,7 +26,13 @@
     "cargo_lock_generated",
     "binary_release_workflow",
     "mcp_packaging_docs",
-    "release_provenance_plan"
+    "release_provenance_plan",
+    "rust_1_88_msrv",
+    "reqwest_0_13",
+    "daily_dependency_automation",
+    "cross_platform_ci",
+    "locked_cargo_ci",
+    "current_github_actions"
   ],
   "implemented_surfaces": [
     "HealthpointClient configurable base URL/auth/geo mode",
@@ -48,7 +54,10 @@
     "interim JSON Schema contracts under contracts/schemas",
     "Conductor status command and expanded handoff documentation",
     "GitHub issue templates and PR safety checklist",
-    "release runbook, threat model, live contract capture plan, RMCP pin plan"
+    "release runbook, threat model, live contract capture plan, RMCP pin plan",
+    "Linux/macOS/Windows CI with locked Cargo commands",
+    "MSRV CI check for Rust 1.88",
+    "daily Dependabot and Renovate dependency automation"
   ],
   "validated_in_current_environment": [
     "JSON metadata parsed successfully",
@@ -63,9 +72,9 @@
     "bin/mock-healthpoint-server served synthetic CapabilityStatement and FHIR resources",
     "bin/conductor-status rendered state without private context",
     "cargo fmt --all --check passed",
-    "cargo check --workspace --all-targets passed",
-    "cargo test --workspace passed",
-    "cargo clippy --workspace --all-targets -- -D warnings passed",
+    "cargo check --workspace --all-targets --locked passed",
+    "cargo test --workspace --locked passed",
+    "cargo clippy --workspace --all-targets --locked -- -D warnings passed",
     "cargo deny check passed"
   ],
   "blocked_by": [
@@ -80,5 +89,5 @@
     "native-mcp-resource-templates-after-rmcp-api-validation",
     "osd-tabular-view-dictionaries-and-license-gate"
   ],
-  "latest_checkpoint": "conductor/checkpoints/2026-06-30-local-setup-validated.md"
+  "latest_checkpoint": "conductor/checkpoints/2026-06-30-bleeding-edge-hardening.md"
 }

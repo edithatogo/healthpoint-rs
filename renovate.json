@@ -1,7 +1,9 @@
 {
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
-  "extends": ["config:recommended"],
+  "extends": ["config:recommended", ":semanticCommits", ":automergeDigest"],
   "labels": ["dependencies"],
+  "timezone": "Australia/Sydney",
+  "schedule": ["before 6am every weekday"],
   "packageRules": [
     {
       "matchManagers": ["cargo"],

@@ -297,14 +297,13 @@ impl HealthpointClient {
             pairs.append_pair("specialty", &code.as_token());
         }
         pairs.append_pair("_count", &query.limit.clamped().to_string());
-        if let Some(cursor) = &query.cursor {
-            if cursor_as_same_origin_url(&self.config.base_url, Some(cursor))
+        if let Some(cursor) = &query.cursor
+            && cursor_as_same_origin_url(&self.config.base_url, Some(cursor))
                 .ok()
                 .flatten()
                 .is_none()
-            {
-                pairs.append_pair("_cursor", cursor);
-            }
+        {
+            pairs.append_pair("_cursor", cursor);
         }
         if let Some(point) = query.nearby {
             match self.config.geo_search_mode {

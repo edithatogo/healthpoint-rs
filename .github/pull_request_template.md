@@ -4,7 +4,7 @@
 
 - [ ] `scripts/static-preflight.py`
 - [ ] `cargo fmt --all --check`
-- [ ] `cargo check --workspace --all-targets`
+- [ ] `cargo check --workspace --all-targets --locked`
 - [ ] `cargo test --workspace`
 - [ ] `cargo clippy --workspace --all-targets -- -D warnings`
 - [ ] `cargo deny check`
@@ -17,4 +17,3 @@
 - [ ] Conductor tracks/state/checkpoints were updated when scope changed.
 
 ## Notes
-

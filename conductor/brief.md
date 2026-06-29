@@ -50,9 +50,9 @@ The current sandbox has no Cargo/Rust. Metadata validation passes, but compile/t
 
 ```bash
 cargo fmt --all --check
-cargo check --workspace --all-targets
-cargo test --workspace
-cargo clippy --workspace --all-targets -- -D warnings
+cargo check --workspace --all-targets --locked
+cargo test --workspace --locked
+cargo clippy --workspace --all-targets --locked -- -D warnings
 cargo run -p healthpoint-cli -- fixture services --format human
 cargo run -p healthpoint-cli -- inspect search-url --text "cervical screening" --snomed 171149006
 ```

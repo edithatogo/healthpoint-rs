@@ -8,9 +8,10 @@ Preferred:
 rustup toolchain install stable --component rustfmt,clippy
 bin/conductor-setup
 cargo fmt --all --check
-cargo check --workspace --all-targets
-cargo test --workspace
-cargo clippy --workspace --all-targets -- -D warnings
+cargo check --workspace --all-targets --locked
+cargo test --workspace --locked
+cargo clippy --workspace --all-targets --locked -- -D warnings
+cargo deny check
 ```
 
 ## Dev container
@@ -25,8 +26,8 @@ docker run --rm -it -v "$PWD:/workspace" -w /workspace healthpoint-rs-dev bash
 Inside the container:
 
 ```bash
-cargo check --workspace --all-targets
-cargo test --workspace
+cargo check --workspace --all-targets --locked
+cargo test --workspace --locked
 ```
 
 ## Metadata-only setup

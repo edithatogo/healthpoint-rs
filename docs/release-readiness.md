@@ -3,6 +3,8 @@
 Before first public release:
 
 - [x] Validate workspace compile/test on Rust stable.
+- [x] Add cross-platform Rust CI on Linux, macOS, and Windows.
+- [x] Add MSRV check for Rust 1.88.
 - [x] Pin `rmcp` dependency to a release/tag/commit instead of git-main.
 - [ ] Validate Healthpoint auth scheme against licensed docs.
 - [ ] Confirm FHIR search parameter names.
@@ -16,3 +18,4 @@ Before first public release:
 - [ ] Confirm generated data files are excluded from release artifacts.
 - [x] Generate and commit `Cargo.lock` from a Rust-enabled environment.
 - [x] Run `cargo deny check` after dependency resolution.
+- [x] Enable daily dependency automation for Cargo and GitHub Actions.
