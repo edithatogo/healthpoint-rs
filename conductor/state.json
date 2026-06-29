@@ -42,7 +42,8 @@
     "crates_io_publish_workflow_requires_CARGO_REGISTRY_TOKEN",
     "mcp_registry_submission_workflow_requires_published_crates_and_registry_credentials",
     "main_branch_protection_requires_review_and_required_checks",
-    "glama_registry_metadata_requires_explicit_user_endpoint"
+    "glama_registry_metadata_requires_explicit_user_endpoint",
+    "repository_auto_merge_enabled_for_review_gated_prs"
   ],
   "implemented_surfaces": [
     "HealthpointClient configurable base URL/auth/geo mode",
@@ -75,7 +76,8 @@
     "tag-driven GitHub release workflow with checksum artifacts and crates.io publish job",
     "main branch protection with required CI, secret scan, mock smoke, review, conversation resolution, and admin enforcement",
     "local mcp-publisher 1.7.9 installation",
-    "release hardening PR for cargo metadata snapshots, GitHub artifact attestations, SBOM/attestation documentation, and Glama metadata"
+    "release hardening PR for cargo metadata snapshots, GitHub artifact attestations, SBOM/attestation documentation, and Glama metadata",
+    "auto-merge armed for PR 22 once write-access approval lands"
   ],
   "validated_in_current_environment": [
     "JSON metadata parsed successfully",
@@ -100,7 +102,9 @@
     "healthpoint-core cargo publish dry-run passed",
     "cargo package --list passed for dependent publish crates",
     "release workflow run 28407239423 validated release inputs, package validation, cross-platform binary builds, and GitHub release update before failing on empty CARGO_REGISTRY_TOKEN",
-    "PR 22 checks passed on initial release-hardening head before review-feedback fix"
+    "PR 22 checks passed on initial release-hardening head before review-feedback fix",
+    "PR 22 checks passed on latest head f4034d0",
+    "mcp-publisher publish currently blocks on authentication and should wait until crates.io packages exist"
   ],
   "blocked_by": [
     "Healthpoint written approval for public-data, hosted proxy, redistribution, open_social_data publication, AI dataset, or non-research commercial use",

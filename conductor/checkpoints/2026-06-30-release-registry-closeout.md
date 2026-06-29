@@ -12,10 +12,14 @@ Date: 2026-06-30
 - Added cargo metadata snapshots to release archives, GitHub artifact attestation workflow wiring, SBOM/attestation documentation, and `glama.json`.
 - Addressed registry review feedback by requiring an explicit `HEALTHPOINT_BASE_URL` in Glama metadata instead of defaulting installations to UAT or production.
 - Updated issues `#15`, `#16`, `#20`, and `#21` with current completion and blocker status.
+- Confirmed all PR `#22` checks passed on latest head `f4034d0`.
+- Enabled repository auto-merge and armed PR `#22` for squash auto-merge once a write-access approving review lands.
+- Confirmed `healthpoint-mcp` and `healthpoint-core` are not yet externally visible on crates.io.
+- Confirmed `mcp-publisher publish server.json` is blocked on MCP publisher authentication and should wait until crates.io publication succeeds.
 
 ## Remaining blockers
 
-- PR `#22` is open because branch protection requires at least one approving review from a reviewer with write access and required checks on the latest head.
+- PR `#22` is open because branch protection requires at least one approving review from a reviewer with write access. Auto-merge is armed.
 - Crates.io publication is blocked until `CARGO_REGISTRY_TOKEN` is replaced/re-saved with a valid crates.io API token.
 - Official MCP registry publication is blocked until the Cargo package/version exists on crates.io.
 - Third-party MCP directory submissions remain account-gated or packaging-gated.
