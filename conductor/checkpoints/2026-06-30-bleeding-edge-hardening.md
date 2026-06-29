@@ -16,6 +16,7 @@ The repository dependency, CI, release, and code-quality posture was upgraded af
   - `actions/upload-artifact@v7`
   - `gitleaks/gitleaks-action@v3`
 - Added cross-platform Rust CI on Linux, macOS, and Windows.
+- Added `.gitattributes` LF policy so rustfmt checks are stable on Windows.
 - Added an explicit Rust 1.88 MSRV check.
 - Switched CI and docs to locked Cargo commands.
 - Increased Dependabot cadence to daily for Cargo and GitHub Actions.
