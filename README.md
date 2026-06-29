@@ -167,6 +167,12 @@ See `docs/development-environment.md` for native Rust and devcontainer setup.
 6. **Conductor-managed context**: implementation tracks, decisions, and repo state live alongside the code.
 7. **Synthetic fixtures only**: offline testing is done with testkit resources, never real Healthpoint payloads.
 
+## MCP Registry metadata
+
+- MCP Registry name: `mcp-name: io.github.edithatogo/healthpoint-rs`
+
+This visible marker is required for Cargo/crates.io ownership verification by the official MCP Registry.
+
 ## Safety boundary
 
 This is not a clinical decision-support system. It retrieves and formats directory/service information from Healthpoint for licensed users. Any downstream use should preserve Healthpoint attribution, currency, caveats, and licensing obligations.

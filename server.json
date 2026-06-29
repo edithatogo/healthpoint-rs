@@ -1,60 +1,13 @@
 {
-  "name": "healthpoint-rs",
-  "version": "0.1.0",
+  "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+  "name": "io.github.edithatogo/healthpoint-rs",
+  "title": "healthpoint-rs",
   "description": "Read-only MCP server for licensed Healthpoint HL7 FHIR API access.",
-  "command": "healthpoint-mcp",
-  "transport": "stdio",
-  "env": {
-    "HEALTHPOINT_API_KEY": {
-      "description": "User-provided licensed Healthpoint API key/token.",
-      "required": true,
-      "secret": true
-    },
-    "HEALTHPOINT_BASE_URL": {
-      "description": "Healthpoint API base URL.",
-      "required": false,
-      "default": "https://www.healthpointapi.com/"
-    },
-    "HEALTHPOINT_AUTH_SCHEME": {
-      "description": "bearer | x-api-key | header:<name> | none",
-      "required": false,
-      "default": "bearer"
-    },
-    "HEALTHPOINT_GEO_SEARCH_MODE": {
-      "description": "healthpoint-lat-lon | fhir-near",
-      "required": false,
-      "default": "healthpoint-lat-lon"
-    },
-    "HEALTHPOINT_TIMEOUT_SECS": {
-      "description": "HTTP timeout in seconds, clamped to 1..300.",
-      "required": false,
-      "default": "30"
-    }
-  },
-  "packages": [
-    {
-      "registry": "crates.io",
-      "name": "healthpoint-mcp",
-      "version": "0.1.0",
-      "package": "healthpoint-mcp",
-      "binaries": [
-        "healthpoint-mcp"
-      ]
-    },
-    {
-      "registry": "crates.io",
-      "name": "healthpoint-cli",
-      "version": "0.1.0",
-      "package": "healthpoint-cli",
-      "binaries": [
-        "healthpoint"
-      ]
-    }
-  ],
   "repository": {
-    "type": "git",
-    "url": "https://github.com/edithatogo/healthpoint-rs"
+    "url": "https://github.com/edithatogo/healthpoint-rs",
+    "source": "github"
   },
+  "version": "0.1.0",
   "license": "Apache-2.0",
   "homepage": "https://github.com/edithatogo/healthpoint-rs",
   "keywords": [
@@ -63,5 +16,52 @@
     "mcp",
     "snomed",
     "healthcare"
+  ],
+  "packages": [
+    {
+      "registryType": "cargo",
+      "identifier": "healthpoint-mcp",
+      "version": "0.1.0",
+      "transport": {
+        "type": "stdio"
+      },
+      "environmentVariables": [
+        {
+          "name": "HEALTHPOINT_API_KEY",
+          "description": "User-provided licensed Healthpoint API key/token.",
+          "isRequired": true,
+          "format": "string",
+          "isSecret": true
+        },
+        {
+          "name": "HEALTHPOINT_BASE_URL",
+          "description": "Healthpoint API base URL.",
+          "isRequired": false,
+          "format": "string",
+          "default": "https://uat.healthpointapi.com/baseR4/"
+        },
+        {
+          "name": "HEALTHPOINT_AUTH_SCHEME",
+          "description": "bearer | x-api-key | header:<name> | none",
+          "isRequired": false,
+          "format": "string",
+          "default": "x-api-key"
+        },
+        {
+          "name": "HEALTHPOINT_GEO_SEARCH_MODE",
+          "description": "healthpoint-lat-lon | fhir-near",
+          "isRequired": false,
+          "format": "string",
+          "default": "healthpoint-lat-lon"
+        },
+        {
+          "name": "HEALTHPOINT_TIMEOUT_SECS",
+          "description": "HTTP timeout in seconds, clamped to 1..300.",
+          "isRequired": false,
+          "format": "string",
+          "default": "30"
+        }
+      ]
+    }
   ]
 }

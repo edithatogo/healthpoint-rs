@@ -75,20 +75,30 @@ def main() -> int:
     workspace = tomllib.loads((ROOT / "Cargo.toml").read_text(encoding="utf-8"))
     version = workspace["workspace"]["package"]["version"]
 
-    if server.get("name") != "healthpoint-rs":
-        errors.append("server.json name must be healthpoint-rs")
+    if server.get("$schema") != "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json":
+        errors.append("server.json must use the official MCP Registry schema URL")
+    if server.get("name") != "io.github.edithatogo/healthpoint-rs":
+        errors.append("server.json name must be io.github.edithatogo/healthpoint-rs for GitHub auth")
     if server.get("version") != version:
         errors.append("server.json version must match workspace.package.version")
-    if server.get("transport") != "stdio":
-        errors.append("server.json transport must be stdio")
-    if server.get("command") != "healthpoint-mcp":
-        errors.append("server.json command must be healthpoint-mcp")
-    if not server.get("env", {}).get("HEALTHPOINT_API_KEY", {}).get("secret"):
-        errors.append("HEALTHPOINT_API_KEY must be marked secret")
+    repository = server.get("repository", {})
+    if repository.get("url") != "https://github.com/edithatogo/healthpoint-rs" or repository.get("source") != "github":
+        errors.append("server.json repository must point to the GitHub source repository")
     packages = server.get("packages", [])
-    cargo_packages = [pkg for pkg in packages if pkg.get("registry") == "crates.io"]
-    if not any(pkg.get("name") == "healthpoint-mcp" and pkg.get("version") == version for pkg in cargo_packages):
-        errors.append("server.json packages must include healthpoint-mcp on crates.io at the workspace version")
+    cargo_packages = [pkg for pkg in packages if pkg.get("registryType") == "cargo"]
+    mcp_pkg = next((pkg for pkg in cargo_packages if pkg.get("identifier") == "healthpoint-mcp"), None)
+    if not mcp_pkg:
+        errors.append("server.json packages must include healthpoint-mcp with registryType cargo")
+    elif mcp_pkg.get("version") != version:
+        errors.append("healthpoint-mcp package version must match workspace version")
+    elif mcp_pkg.get("transport", {}).get("type") != "stdio":
+        errors.append("healthpoint-mcp package transport must be stdio")
+    env_vars = {item.get("name"): item for item in (mcp_pkg or {}).get("environmentVariables", [])}
+    if not env_vars.get("HEALTHPOINT_API_KEY", {}).get("isSecret"):
+        errors.append("HEALTHPOINT_API_KEY must be marked isSecret")
+    readme = (ROOT / "README.md").read_text(encoding="utf-8")
+    if "mcp-name: io.github.edithatogo/healthpoint-rs" not in readme:
+        errors.append("README.md must contain visible Cargo ownership token mcp-name: io.github.edithatogo/healthpoint-rs")
 
     metadata = json.loads(cargo("metadata", "--format-version", "1", "--no-deps"))
     names = {pkg["name"] for pkg in metadata["packages"]}
