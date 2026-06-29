@@ -94,6 +94,7 @@ jobs:
           cp target/${{ matrix.target }}/release/healthpoint dist/healthpoint-rs-${{ matrix.target }}/
           cp target/${{ matrix.target }}/release/healthpoint-mcp dist/healthpoint-rs-${{ matrix.target }}/
           cp README.md LICENSE server.json dist/healthpoint-rs-${{ matrix.target }}/
+          cargo metadata --locked --format-version 1 > dist/healthpoint-rs-${{ matrix.target }}/cargo-metadata.json
           tar -C dist -czf healthpoint-rs-${{ matrix.target }}.tar.gz healthpoint-rs-${{ matrix.target }}
           shasum -a 256 healthpoint-rs-${{ matrix.target }}.tar.gz > healthpoint-rs-${{ matrix.target }}.tar.gz.sha256
       - name: Stage Windows artifacts
@@ -104,8 +105,14 @@ jobs:
           Copy-Item target/${{ matrix.target }}/release/healthpoint.exe dist/healthpoint-rs-${{ matrix.target }}/
           Copy-Item target/${{ matrix.target }}/release/healthpoint-mcp.exe dist/healthpoint-rs-${{ matrix.target }}/
           Copy-Item README.md, LICENSE, server.json dist/healthpoint-rs-${{ matrix.target }}/
+          cargo metadata --locked --format-version 1 | Out-File -Encoding utf8 dist/healthpoint-rs-${{ matrix.target }}/cargo-metadata.json
           Compress-Archive -Path dist/healthpoint-rs-${{ matrix.target }} -DestinationPath healthpoint-rs-${{ matrix.target }}.zip
           Get-FileHash healthpoint-rs-${{ matrix.target }}.zip -Algorithm SHA256 | ForEach-Object { "$($_.Hash.ToLower())  healthpoint-rs-${{ matrix.target }}.zip" } | Set-Content healthpoint-rs-${{ matrix.target }}.zip.sha256
+      - uses: actions/attest-build-provenance@v3
+        with:
+          subject-path: |
+            healthpoint-rs-${{ matrix.target }}.${{ matrix.archive }}
+            healthpoint-rs-${{ matrix.target }}.${{ matrix.archive }}.sha256
       - uses: actions/upload-artifact@v7
         with:
           name: healthpoint-rs-${{ matrix.target }}

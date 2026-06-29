@@ -1,0 +1,28 @@
+{
+  "$schema": "https://glama.ai/mcp/schemas/server.json",
+  "name": "healthpoint-rs",
+  "displayName": "healthpoint-rs",
+  "description": "Read-only MCP server for licensed Healthpoint HL7 FHIR API access.",
+  "license": "Apache-2.0",
+  "repository": "https://github.com/edithatogo/healthpoint-rs",
+  "homepage": "https://github.com/edithatogo/healthpoint-rs",
+  "categories": ["healthcare", "api", "fhir"],
+  "transport": "stdio",
+  "install": {
+    "command": "cargo",
+    "args": ["install", "healthpoint-mcp"]
+  },
+  "run": {
+    "command": "healthpoint-mcp",
+    "env": {
+      "HEALTHPOINT_API_KEY": {"required": true, "secret": true},
+      "HEALTHPOINT_BASE_URL": {"required": false, "default": "https://uat.healthpointapi.com/baseR4/"},
+      "HEALTHPOINT_AUTH_SCHEME": {"required": false, "default": "x-api-key"}
+    }
+  },
+  "quality": {
+    "readOnly": true,
+    "noBundledData": true,
+    "requiresUserProvidedLicense": true
+  }
+}
