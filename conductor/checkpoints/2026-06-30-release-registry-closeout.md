@@ -16,10 +16,12 @@ Date: 2026-06-30
 - Enabled repository auto-merge and armed PR `#22` for squash auto-merge once a write-access approving review lands.
 - Confirmed `healthpoint-mcp` and `healthpoint-core` are not yet externally visible on crates.io.
 - Confirmed `mcp-publisher publish server.json` is blocked on MCP publisher authentication and should wait until crates.io publication succeeds.
+- Resolved outdated review conversations on PR `#22`.
+- Merged PR `#22` into `main`.
+- Corrected branch protection required checks from workflow-level names to actual job/check names.
 
 ## Remaining blockers
 
-- PR `#22` is open because branch protection requires at least one approving review from a reviewer with write access. Auto-merge is armed.
 - Crates.io publication is blocked until `CARGO_REGISTRY_TOKEN` is replaced/re-saved with a valid crates.io API token.
 - Official MCP registry publication is blocked until the Cargo package/version exists on crates.io.
 - Third-party MCP directory submissions remain account-gated or packaging-gated.
@@ -27,8 +29,7 @@ Date: 2026-06-30
 
 ## Next actions
 
-1. Approve and merge PR `#22`.
-2. Replace the GitHub Actions `CARGO_REGISTRY_TOKEN` secret with a valid crates.io publish token.
-3. Rerun the release workflow with `publish_crates=true`.
-4. Run `~/.local/bin/mcp-publisher login github` and publish to the official MCP registry after crates.io publication succeeds.
-5. Submit third-party registry entries after official package publication is externally visible.
+1. Replace the GitHub Actions `CARGO_REGISTRY_TOKEN` secret with a valid crates.io publish token.
+2. Rerun the release workflow with `publish_crates=true`.
+3. Run `~/.local/bin/mcp-publisher login github` and publish to the official MCP registry after crates.io publication succeeds.
+4. Submit third-party registry entries after official package publication is externally visible.
