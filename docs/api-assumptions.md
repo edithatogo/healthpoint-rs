@@ -14,7 +14,7 @@ The public Healthpoint page confirms HL7 FHIR and SNOMED CT orientation, but doe
 ## Configurable assumptions
 
 - `HEALTHPOINT_BASE_URL` sets the API root.
-- `HEALTHPOINT_AUTH_SCHEME` sets bearer/header/none auth.
+- `HEALTHPOINT_AUTH_SCHEME` sets bearer/header/none auth. The verified Healthpoint UAT setting is `x-api-key`.
 - `HEALTHPOINT_GEO_SEARCH_MODE` sets nearby encoding: `healthpoint-lat-lon` or `fhir-near`.
 - `HEALTHPOINT_TIMEOUT_SECS` sets the per-request timeout, clamped to 1..300 seconds.
 - Text search currently encodes as `_content=<term>`.

@@ -71,3 +71,7 @@ See also:
 
 - `docs/healthpoint-api-access.md`
 - `docs/healthpoint-license-notes.md`
+
+## GitHub Actions smoke
+
+The repository has a manual `Live smoke` workflow. It uses the `HEALTHPOINT_API_KEY` repository secret and runs `healthpoint smoke`, which confirms authentication and parsing without printing Healthpoint payloads.

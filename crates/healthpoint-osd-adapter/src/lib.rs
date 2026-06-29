@@ -35,6 +35,102 @@ pub enum HealthpointView {
 /// Simple row representation suitable for CSV/Parquet adapters.
 pub type Row = BTreeMap<String, String>;
 
+/// Column dictionary for a supported tabular view.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub struct ViewDictionary {
+    /// View identifier.
+    pub view: &'static str,
+    /// Human-readable description.
+    pub description: &'static str,
+    /// Ordered column names.
+    pub columns: Vec<&'static str>,
+}
+
+/// Return dictionaries for all stable tabular views.
+pub fn all_view_dictionaries() -> Vec<ViewDictionary> {
+    vec![
+        ViewDictionary {
+            view: "services",
+            description: "One row per FHIR HealthcareService.",
+            columns: vec![
+                "id",
+                "name",
+                "active",
+                "provided_by_reference",
+                "appointment_required",
+                "comment",
+                "retrieved_at",
+            ],
+        },
+        ViewDictionary {
+            view: "locations",
+            description: "One row per FHIR Location.",
+            columns: vec![
+                "id",
+                "name",
+                "status",
+                "mode",
+                "address_text",
+                "latitude",
+                "longitude",
+                "managing_organization_reference",
+                "retrieved_at",
+            ],
+        },
+        ViewDictionary {
+            view: "organizations",
+            description: "One row per FHIR Organization.",
+            columns: vec![
+                "id",
+                "name",
+                "active",
+                "aliases",
+                "part_of_reference",
+                "retrieved_at",
+            ],
+        },
+        ViewDictionary {
+            view: "service-locations",
+            description: "Service to location reference edges.",
+            columns: vec!["service_id", "location_reference", "location_display"],
+        },
+        ViewDictionary {
+            view: "service-codes",
+            description: "FHIR/Healthpoint service coding rows.",
+            columns: vec!["service_id", "field", "system", "code", "display"],
+        },
+        ViewDictionary {
+            view: "service-contacts",
+            description: "Service contact point rows.",
+            columns: vec!["service_id", "system", "value", "use"],
+        },
+        ViewDictionary {
+            view: "service-eligibilities",
+            description: "Service eligibility rows.",
+            columns: vec![
+                "service_id",
+                "eligibility_index",
+                "system",
+                "code",
+                "display",
+                "comment",
+            ],
+        },
+        ViewDictionary {
+            view: "service-availability",
+            description: "Service availability window rows.",
+            columns: vec![
+                "service_id",
+                "availability_index",
+                "days_of_week",
+                "all_day",
+                "available_start_time",
+                "available_end_time",
+            ],
+        },
+    ]
+}
+
 /// Convert services into a named tabular view.
 pub fn service_rows(view: HealthpointView, services: &[ServiceRecord]) -> Vec<Row> {
     match view {

@@ -9,8 +9,8 @@
       "command": "healthpoint-mcp",
       "env": {
         "HEALTHPOINT_API_KEY": "...",
-        "HEALTHPOINT_BASE_URL": "https://www.healthpointapi.com/",
-        "HEALTHPOINT_AUTH_SCHEME": "bearer",
+        "HEALTHPOINT_BASE_URL": "https://uat.healthpointapi.com/baseR4/",
+        "HEALTHPOINT_AUTH_SCHEME": "x-api-key",
         "HEALTHPOINT_GEO_SEARCH_MODE": "healthpoint-lat-lon"
       }
     }
@@ -28,7 +28,7 @@
       "args": ["run", "-p", "healthpoint-mcp"],
       "env": {
         "HEALTHPOINT_API_KEY": "...",
-        "HEALTHPOINT_BASE_URL": "https://www.healthpointapi.com/"
+        "HEALTHPOINT_BASE_URL": "https://uat.healthpointapi.com/baseR4/"
       }
     }
   }

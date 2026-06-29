@@ -6,7 +6,8 @@ use std::{
 };
 
 use anyhow::{Context, Result};
-use clap::{Args, Parser, Subcommand, ValueEnum};
+use clap::{Args, CommandFactory, Parser, Subcommand, ValueEnum};
+use clap_complete::Shell;
 use healthpoint_client::{
     ClientConfig, HealthpointClient, parse_auth_scheme, parse_geo_search_mode,
 };
@@ -15,6 +16,7 @@ use healthpoint_core::{
     OrganizationRecord, Page, QueryLimit, ServiceQuery, ServiceRecord,
 };
 use healthpoint_export::{ExportManifest, ServiceExportFormat};
+use healthpoint_osd_adapter::all_view_dictionaries;
 use healthpoint_testkit::FixtureDirectoryProvider;
 use schemars::schema_for;
 use url::Url;
@@ -29,14 +31,14 @@ struct Cli {
     #[arg(
         long,
         env = "HEALTHPOINT_BASE_URL",
-        default_value = "https://www.healthpointapi.com/"
+        default_value = "https://uat.healthpointapi.com/baseR4/"
     )]
     base_url: String,
 
     #[arg(long, env = "HEALTHPOINT_API_KEY", hide_env_values = true)]
     api_key: Option<String>,
 
-    #[arg(long, env = "HEALTHPOINT_AUTH_SCHEME", default_value = "bearer")]
+    #[arg(long, env = "HEALTHPOINT_AUTH_SCHEME", default_value = "x-api-key")]
     auth_scheme: String,
 
     #[arg(
@@ -90,6 +92,19 @@ enum Command {
         #[command(subcommand)]
         command: PolicyCommand,
     },
+    /// Run a metadata-only live smoke check; never prints real payloads.
+    Smoke(SmokeArgs),
+    /// Show open_social_data adapter metadata.
+    Osd {
+        #[command(subcommand)]
+        command: OsdCommand,
+    },
+    /// Generate shell completion scripts.
+    Completions {
+        /// Target shell.
+        #[arg(value_enum)]
+        shell: Shell,
+    },
     /// Explain how to launch the MCP server binary.
     Mcp,
 }
@@ -97,7 +112,7 @@ enum Command {
 #[derive(Debug, Subcommand)]
 enum SearchCommand {
     /// Search FHIR HealthcareService resources.
-    Services(ServiceSearchArgs),
+    Services(Box<ServiceSearchArgs>),
 }
 
 #[derive(Debug, Args)]
@@ -131,6 +146,22 @@ struct ServiceQueryArgs {
     /// FHIR specialty token. Repeatable.
     #[arg(long = "specialty")]
     specialties: Vec<String>,
+
+    /// Healthpoint branch code, e.g. primary.
+    #[arg(long = "branch-code")]
+    branch_code: Option<String>,
+
+    /// Healthpoint region, e.g. Southland.
+    #[arg(long)]
+    region: Option<String>,
+
+    /// Healthpoint DHB region, e.g. Southern.
+    #[arg(long = "dhb-region")]
+    dhb_region: Option<String>,
+
+    /// Healthpoint subregion, e.g. Ashburton.
+    #[arg(long)]
+    subregion: Option<String>,
 
     /// Latitude for nearby search.
     #[arg(long)]
@@ -188,7 +219,7 @@ struct UriGetArgs {
 #[derive(Debug, Subcommand)]
 enum InspectCommand {
     /// Build a HealthcareService search URL without sending it.
-    SearchUrl(ServiceQueryArgs),
+    SearchUrl(Box<ServiceQueryArgs>),
     /// Build a resource URL without sending it.
     ResourceUrl {
         /// FHIR resource type, e.g. HealthcareService, Location, Organization.
@@ -228,6 +259,17 @@ struct ExportServicesArgs {
     format: DataExportFormat,
 }
 
+#[derive(Debug, Args)]
+struct SmokeArgs {
+    /// Branch code used for the tiny UAT smoke query.
+    #[arg(long, default_value = "primary")]
+    branch_code: String,
+
+    /// Region used for the tiny UAT smoke query.
+    #[arg(long, default_value = "Southland")]
+    region: String,
+}
+
 #[derive(Debug, Subcommand)]
 enum FixtureCommand {
     /// Print the synthetic HealthcareService fixture after typed mapping.
@@ -246,6 +288,16 @@ enum FixtureCommand {
 enum PolicyCommand {
     /// Show the default conservative access policy.
     Show,
+}
+
+#[derive(Debug, Subcommand)]
+enum OsdCommand {
+    /// Show supported tabular views and columns.
+    Views {
+        /// Output format.
+        #[arg(long, value_enum, default_value = "human")]
+        format: OutputFormat,
+    },
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, ValueEnum)]
@@ -409,6 +461,63 @@ async fn main() -> Result<()> {
                 serde_json::to_string_pretty(&AccessPolicy::default())?
             );
         }
+        Command::Smoke(args) => {
+            let query = ServiceQuery {
+                branch_code: Some(args.branch_code),
+                region: Some(args.region),
+                limit: QueryLimit(1),
+                ..ServiceQuery::default()
+            };
+            let page = client.search_services(query).await?;
+            println!(
+                "{}",
+                serde_json::to_string_pretty(&serde_json::json!({
+                    "ok": true,
+                    "base_url": cli.base_url,
+                    "auth_scheme": client.diagnostic_status()["auth_scheme"],
+                    "resource_type": "Bundle",
+                    "returned_records": page.items.len(),
+                    "total": page.total,
+                    "contains_payload": false,
+                    "note": "Smoke command confirms authentication and parsing without printing Healthpoint payloads."
+                }))?
+            );
+        }
+        Command::Osd {
+            command: OsdCommand::Views { format },
+        } => {
+            let dictionaries = all_view_dictionaries();
+            match format {
+                OutputFormat::Json => println!("{}", serde_json::to_string_pretty(&dictionaries)?),
+                OutputFormat::Jsonl => {
+                    for dictionary in dictionaries {
+                        println!("{}", serde_json::to_string(&dictionary)?);
+                    }
+                }
+                OutputFormat::Csv => {
+                    println!("view,description,columns");
+                    for dictionary in dictionaries {
+                        println!(
+                            "{},{},{}",
+                            dictionary.view,
+                            dictionary.description.replace(',', " "),
+                            dictionary.columns.join(";")
+                        );
+                    }
+                }
+                OutputFormat::Human => {
+                    for dictionary in dictionaries {
+                        println!("{}\t{}", dictionary.view, dictionary.description);
+                        println!("  columns: {}", dictionary.columns.join(", "));
+                    }
+                }
+            }
+        }
+        Command::Completions { shell } => {
+            let mut command = Cli::command();
+            let name = command.get_name().to_owned();
+            clap_complete::generate(shell, &mut command, name, &mut std::io::stdout());
+        }
         Command::Mcp => {
             println!("Run the read-only MCP server with: cargo run -p healthpoint-mcp");
             println!("For installed binaries: healthpoint-mcp");
@@ -456,6 +565,10 @@ impl ServiceQueryArgs {
                 .iter()
                 .map(|raw| Code::from_token(raw))
                 .collect(),
+            branch_code: self.branch_code.clone(),
+            region: self.region.clone(),
+            dhb_region: self.dhb_region.clone(),
+            subregion: self.subregion.clone(),
             nearby,
             radius_km: self.radius_km,
             limit: QueryLimit(self.limit),

@@ -36,6 +36,7 @@ anyhow = "1"
 async-trait = "0.1"
 chrono = { version = "0.4", features = ["serde", "clock"] }
 clap = { version = "4.5", features = ["derive", "env"] }
+clap_complete = "4.5"
 csv = "1.3"
 reqwest = { version = "0.13", default-features = false, features = ["json", "rustls", "gzip", "brotli", "deflate"] }
 schemars = { version = "1", features = ["chrono04", "url2"] }
@@ -55,4 +56,5 @@ healthpoint-core = { path = "crates/healthpoint-core" }
 healthpoint-fhir = { path = "crates/healthpoint-fhir" }
 healthpoint-client = { path = "crates/healthpoint-client" }
 healthpoint-export = { path = "crates/healthpoint-export" }
+healthpoint-osd-adapter = { path = "crates/healthpoint-osd-adapter" }
 healthpoint-testkit = { path = "crates/healthpoint-testkit" }

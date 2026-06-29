@@ -42,6 +42,14 @@ pub struct ServiceQuery {
     pub service_types: Vec<Code>,
     /// FHIR specialty codes.
     pub specialties: Vec<Code>,
+    /// Healthpoint branch code, encoded as `branch-code`.
+    pub branch_code: Option<String>,
+    /// Healthpoint region parameter.
+    pub region: Option<String>,
+    /// Healthpoint DHB region parameter, encoded as `dhb-region`.
+    pub dhb_region: Option<String>,
+    /// Healthpoint subregion parameter.
+    pub subregion: Option<String>,
     /// Nearby point.
     pub nearby: Option<GeoPoint>,
     /// Nearby radius in kilometres, if supported by the upstream API.
@@ -73,6 +81,17 @@ impl ServiceQuery {
     /// Add a SNOMED CT service type code.
     pub fn with_snomed_type(self, code: impl Into<String>) -> Self {
         self.with_service_type(Code::snomed(code))
+    }
+
+    /// Set Healthpoint branch and region parameters.
+    pub fn with_branch_region(
+        mut self,
+        branch_code: impl Into<String>,
+        region: impl Into<String>,
+    ) -> Self {
+        self.branch_code = Some(branch_code.into());
+        self.region = Some(region.into());
+        self
     }
 
     /// Set nearby latitude/longitude and optional radius.

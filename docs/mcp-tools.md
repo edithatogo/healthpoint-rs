@@ -6,6 +6,8 @@ The MCP server is read-only and runs over stdio. It shares `healthpoint-client` 
 
 ```text
 healthpoint_diagnostic_status
+healthpoint_api_access_notes
+healthpoint_access_policy
 healthpoint_search_services
 healthpoint_search_by_snomed
 healthpoint_find_nearby_services
@@ -69,8 +71,8 @@ Claude-style local server entry:
       "command": "healthpoint-mcp",
       "env": {
         "HEALTHPOINT_API_KEY": "...",
-        "HEALTHPOINT_BASE_URL": "https://www.healthpointapi.com/",
-        "HEALTHPOINT_AUTH_SCHEME": "bearer"
+        "HEALTHPOINT_BASE_URL": "https://uat.healthpointapi.com/baseR4/",
+        "HEALTHPOINT_AUTH_SCHEME": "x-api-key"
       }
     }
   }

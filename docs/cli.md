@@ -15,6 +15,8 @@ healthpoint fixture organization
 healthpoint schema service-record
 healthpoint inspect search-url --text "cervical screening" --snomed 171149006
 healthpoint inspect resource-url HealthcareService svc-example
+healthpoint osd views --format human
+healthpoint completions zsh > .healthpoint/completions/healthpoint.zsh
 ```
 
 `inspect search-url` validates query arguments and renders the URL that would be requested. It does not send the request and does not require an API key.
@@ -26,11 +28,31 @@ These require a valid API key/licence:
 ```bash
 healthpoint search services --text "cervical screening" --limit 10 --format json
 healthpoint search services --snomed 171149006 --limit 10 --format human
+healthpoint search services --branch-code primary --region Southland --limit 10 --format json
 healthpoint search services --lat -36.8485 --lon 174.7633 --radius-km 10 --format csv
 healthpoint get service <id> --format json
 healthpoint get location <id> --format json
 healthpoint get organization <id> --format json
 healthpoint get uri healthpoint://service/<id> --format json
+```
+
+## Metadata-only live smoke
+
+This checks API authentication and FHIR parsing without printing Healthpoint payloads:
+
+```bash
+healthpoint smoke
+```
+
+The command returns counts and status metadata only.
+
+## Shell completions
+
+```bash
+mkdir -p .healthpoint/completions
+healthpoint completions zsh > .healthpoint/completions/healthpoint.zsh
+healthpoint completions bash > .healthpoint/completions/healthpoint.bash
+healthpoint completions fish > .healthpoint/completions/healthpoint.fish
 ```
 
 ## Local export commands

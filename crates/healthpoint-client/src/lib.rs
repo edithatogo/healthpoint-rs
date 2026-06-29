@@ -1,8 +1,7 @@
 //! Async Healthpoint API client.
 //!
-//! Authentication, base URL, and geography parameter strategy are configurable because the public
-//! landing page does not publish a complete developer reference. The code defaults to safe,
-//! read-only FHIR search semantics.
+//! Authentication, base URL, and geography parameter strategy are configurable. The defaults track
+//! the verified Healthpoint UAT FHIR endpoint and stay read-only.
 
 #![forbid(unsafe_code)]
 
@@ -67,7 +66,7 @@ impl ClientConfig {
     /// Create a config from environment variables.
     pub fn from_env() -> Result<Self> {
         let base_url = std::env::var("HEALTHPOINT_BASE_URL")
-            .unwrap_or_else(|_| "https://www.healthpointapi.com/".to_owned());
+            .unwrap_or_else(|_| "https://uat.healthpointapi.com/baseR4/".to_owned());
         let base_url = Url::parse(&base_url).map_err(|err| {
             HealthpointError::Config(format!("HEALTHPOINT_BASE_URL is not a valid URL: {err}"))
         })?;
@@ -75,7 +74,7 @@ impl ClientConfig {
             .ok()
             .filter(|s| !s.is_empty());
         let auth_scheme = parse_auth_scheme(
-            &std::env::var("HEALTHPOINT_AUTH_SCHEME").unwrap_or_else(|_| "bearer".into()),
+            &std::env::var("HEALTHPOINT_AUTH_SCHEME").unwrap_or_else(|_| "x-api-key".into()),
         )?;
         let geo_search_mode = parse_geo_search_mode(
             &std::env::var("HEALTHPOINT_GEO_SEARCH_MODE")
@@ -296,6 +295,18 @@ impl HealthpointClient {
         for code in &query.specialties {
             pairs.append_pair("specialty", &code.as_token());
         }
+        if let Some(branch_code) = &query.branch_code {
+            pairs.append_pair("branch-code", branch_code);
+        }
+        if let Some(region) = &query.region {
+            pairs.append_pair("region", region);
+        }
+        if let Some(dhb_region) = &query.dhb_region {
+            pairs.append_pair("dhb-region", dhb_region);
+        }
+        if let Some(subregion) = &query.subregion {
+            pairs.append_pair("subregion", subregion);
+        }
         pairs.append_pair("_count", &query.limit.clamped().to_string());
         if let Some(cursor) = &query.cursor
             && cursor_as_same_origin_url(&self.config.base_url, Some(cursor))
@@ -466,6 +477,22 @@ mod tests {
         assert!(rendered.contains("type=http%3A%2F%2Fsnomed.info%2Fsct%7C171149006"));
         assert!(rendered.contains("_count=100"));
         assert!(rendered.contains("latitude=-36.8"));
+    }
+
+    #[test]
+    fn service_url_encodes_healthpoint_specific_parameters() {
+        let config = ClientConfig::new(
+            Url::parse("https://uat.healthpointapi.com/baseR4/").expect("valid URL"),
+            None,
+            AuthScheme::None,
+        );
+        let client = HealthpointClient::new(config);
+        let query = ServiceQuery::new().with_branch_region("primary", "Southland");
+        let url = client.service_search_url(&query).expect("URL builds");
+        let rendered = url.as_str();
+        assert!(rendered.starts_with("https://uat.healthpointapi.com/baseR4/HealthcareService?"));
+        assert!(rendered.contains("branch-code=primary"));
+        assert!(rendered.contains("region=Southland"));
     }
 
     #[test]

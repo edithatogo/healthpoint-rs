@@ -52,9 +52,9 @@ cargo run -p healthpoint-cli -- schema service-record
 Only after offline Rust validation passes, run live tests with a licensed Healthpoint key. Do not commit live payloads.
 
 ```bash
-export HEALTHPOINT_BASE_URL="https://www.healthpointapi.com/"
+export HEALTHPOINT_BASE_URL="https://uat.healthpointapi.com/baseR4/"
 export HEALTHPOINT_API_KEY="..."
-export HEALTHPOINT_AUTH_SCHEME="bearer" # or x-api-key/header:<name> if required by the licence docs
+export HEALTHPOINT_AUTH_SCHEME="x-api-key"
 
 cargo run -p healthpoint-cli -- doctor
 cargo run -p healthpoint-cli -- inspect search-url --snomed 171149006 --limit 5

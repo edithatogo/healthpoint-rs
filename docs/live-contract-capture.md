@@ -42,8 +42,8 @@ Create a local untracked file such as `.healthpoint/live-contract-notes.toml`:
 
 ```toml
 [auth]
-base_url = "https://www.healthpointapi.com/"
-scheme = "bearer" # bearer | x-api-key | header:<name>
+base_url = "https://uat.healthpointapi.com/baseR4/"
+scheme = "x-api-key"
 validated_at = "2026-06-29"
 
 [search.healthcare_service]

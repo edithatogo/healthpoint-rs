@@ -2,7 +2,8 @@
 
 use healthpoint_client::HealthpointClient;
 use healthpoint_core::{
-    Code, DirectoryProvider, GeoPoint, HealthpointResourceUri, QueryLimit, ServiceQuery,
+    AccessPolicy, Code, DirectoryProvider, GeoPoint, HealthpointResourceUri, QueryLimit,
+    ServiceQuery,
 };
 use rmcp::{
     ServiceExt, handler::server::wrapper::Parameters, schemars::JsonSchema, tool, tool_router,
@@ -31,6 +32,14 @@ struct SearchServicesParams {
     /// FHIR specialty code or system|code token. Repeatable.
     #[serde(default)]
     specialty: Vec<String>,
+    /// Healthpoint branch code, e.g. primary.
+    branch_code: Option<String>,
+    /// Healthpoint region, e.g. Southland.
+    region: Option<String>,
+    /// Healthpoint DHB region, e.g. Southern.
+    dhb_region: Option<String>,
+    /// Healthpoint subregion, e.g. Ashburton.
+    subregion: Option<String>,
     /// Pagination cursor from a previous response.
     cursor: Option<String>,
     /// Maximum results. Clamped to 1..100.
@@ -97,6 +106,33 @@ impl HealthpointMcpServer {
     }
 
     #[tool(
+        description = "Show Healthpoint API access notes discovered from the portal. Does not include secrets."
+    )]
+    fn healthpoint_api_access_notes(&self) -> String {
+        serde_json::json!({
+            "base_url": "https://uat.healthpointapi.com/baseR4/",
+            "auth_header": "x-api-key",
+            "resources": ["HealthcareService", "Location", "Practitioner", "PractitionerRole"],
+            "methods": ["GET"],
+            "attribution_required": true,
+            "docs": [
+                "docs/healthpoint-api-access.md",
+                "docs/healthpoint-license-notes.md",
+                "docs/live-validation.md"
+            ],
+            "secret_handling": "API keys must be supplied through environment variables and never returned by tools."
+        })
+        .to_string()
+    }
+
+    #[tool(
+        description = "Show conservative Healthpoint access/export policy. Use before exporting or reusing data."
+    )]
+    fn healthpoint_access_policy(&self) -> String {
+        serde_json::to_string_pretty(&AccessPolicy::default()).unwrap_or_else(|err| err.to_string())
+    }
+
+    #[tool(
         description = "Search Healthpoint HealthcareService records. Read-only; requires a user-provided API key."
     )]
     async fn healthpoint_search_services(
@@ -122,6 +158,10 @@ impl HealthpointMcpServer {
                 .iter()
                 .map(|raw| Code::from_token(raw))
                 .collect(),
+            branch_code: params.branch_code,
+            region: params.region,
+            dhb_region: params.dhb_region,
+            subregion: params.subregion,
             limit: QueryLimit(params.limit.unwrap_or(10)),
             cursor: params.cursor,
             ..ServiceQuery::default()

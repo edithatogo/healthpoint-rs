@@ -1,0 +1,30 @@
+name: Live smoke
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: live-smoke-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  healthpoint-uat-smoke:
+    name: Healthpoint UAT smoke
+    runs-on: ubuntu-latest
+    env:
+      HEALTHPOINT_API_KEY: ${{ secrets.HEALTHPOINT_API_KEY }}
+      HEALTHPOINT_BASE_URL: https://uat.healthpointapi.com/baseR4/
+      HEALTHPOINT_AUTH_SCHEME: x-api-key
+      HEALTHPOINT_EXPORT_POLICY: local-only
+      HEALTHPOINT_GEO_SEARCH_MODE: healthpoint-lat-lon
+    steps:
+      - uses: actions/checkout@v7
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: Swatinem/rust-cache@v2
+      - name: Check secret presence
+        run: test -n "$HEALTHPOINT_API_KEY"
+      - name: Metadata-only live smoke
+        run: cargo run -p healthpoint-cli --locked -- smoke

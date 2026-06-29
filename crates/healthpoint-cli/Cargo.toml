@@ -14,9 +14,11 @@ path = "src/main.rs"
 [dependencies]
 anyhow.workspace = true
 clap.workspace = true
+clap_complete.workspace = true
 healthpoint-client.workspace = true
 healthpoint-core.workspace = true
 healthpoint-export.workspace = true
+healthpoint-osd-adapter.workspace = true
 schemars.workspace = true
 healthpoint-testkit.workspace = true
 healthpoint-fhir.workspace = true

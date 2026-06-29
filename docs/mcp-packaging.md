@@ -13,8 +13,8 @@ The server uses stdio transport and reads configuration from environment variabl
 ## Required runtime configuration
 
 - `HEALTHPOINT_API_KEY`: user-provided licensed Healthpoint API key or token.
-- `HEALTHPOINT_BASE_URL`: optional API base URL; defaults to `https://www.healthpointapi.com/`.
-- `HEALTHPOINT_AUTH_SCHEME`: optional auth mode; defaults to `bearer`.
+- `HEALTHPOINT_BASE_URL`: optional API base URL; defaults to `https://uat.healthpointapi.com/baseR4/`.
+- `HEALTHPOINT_AUTH_SCHEME`: optional auth mode; defaults to `x-api-key`.
 - `HEALTHPOINT_GEO_SEARCH_MODE`: optional nearby-search encoding mode.
 - `HEALTHPOINT_TIMEOUT_SECS`: optional HTTP timeout.
 

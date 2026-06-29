@@ -55,6 +55,12 @@ Each generated dataset pack should carry:
 
 Column dictionaries live in `docs/open-social-data-view-dictionaries.md`.
 
+The CLI exposes the same stable dictionaries:
+
+```bash
+healthpoint osd views --format json
+```
+
 ## Adapter contract
 
 The adapter must never infer that Healthpoint-derived rows are open. It should pass through `AccessPolicy` and `SourceProvenance` from `healthpoint-core` into any future catalogue or quality-report layer.
