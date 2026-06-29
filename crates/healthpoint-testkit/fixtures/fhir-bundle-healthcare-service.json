@@ -1,0 +1,61 @@
+{
+  "resourceType": "Bundle",
+  "type": "searchset",
+  "total": 1,
+  "entry": [
+    {
+      "fullUrl": "https://example.test/HealthcareService/svc-cervical-screening-1",
+      "resource": {
+        "resourceType": "HealthcareService",
+        "id": "svc-cervical-screening-1",
+        "active": true,
+        "name": "Synthetic Cervical Screening Service",
+        "providedBy": {
+          "reference": "Organization/org-1",
+          "display": "Synthetic Community Health Trust"
+        },
+        "location": [
+          {
+            "reference": "Location/loc-1",
+            "display": "Synthetic Clinic"
+          }
+        ],
+        "type": [
+          {
+            "coding": [
+              {
+                "system": "http://snomed.info/sct",
+                "code": "171149006",
+                "display": "Cervical smear procedure"
+              }
+            ],
+            "text": "Cervical screening"
+          }
+        ],
+        "specialty": [
+          {
+            "coding": [
+              {
+                "system": "http://snomed.info/sct",
+                "code": "394579002",
+                "display": "Gynaecology"
+              }
+            ]
+          }
+        ],
+        "telecom": [
+          {
+            "system": "phone",
+            "value": "+64-9-000-0000",
+            "use": "work"
+          },
+          {
+            "system": "url",
+            "value": "https://example.test/synthetic-service",
+            "use": "work"
+          }
+        ]
+      }
+    }
+  ]
+}

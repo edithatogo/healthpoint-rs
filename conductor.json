@@ -1,0 +1,12 @@
+{
+  "scripts": {
+    "setup": "bin/conductor-setup",
+    "run": "script/server"
+  },
+  "context": {
+    "state": "conductor/state.json",
+    "brief": "conductor/brief.md",
+    "tracks": "conductor/tracks.md",
+    "decisions": "conductor/decisions"
+  }
+}

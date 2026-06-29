@@ -1,0 +1,17 @@
+[package]
+name = "healthpoint-osd-adapter"
+version = "0.1.0"
+description = "Future open_social_data bridge for Healthpoint tabular views."
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+publish = false
+
+[dependencies]
+healthpoint-core.workspace = true
+serde.workspace = true
+serde_json.workspace = true
+
+[lints]
+workspace = true

@@ -1,0 +1,26 @@
+{
+  "project": "healthpoint-rs",
+  "status": "initial_scaffold",
+  "created_at": "2026-06-29",
+  "context_model": "conductor",
+  "default_branch": "main",
+  "canonical_goal": "Rust-first Healthpoint API SDK, CLI, MCP server, and future open_social_data adapter",
+  "current_decisions": [
+    "new_repo_not_substack_cli_ts",
+    "fhir_first_not_dataframe_first",
+    "bring_your_own_key",
+    "local_only_exports_by_default",
+    "rmcp_main_for_frontier_mcp_until_pinned"
+  ],
+  "blocked_by": [
+    "licensed_api_auth_details",
+    "confirmed_endpoint_and_search_parameter_contracts",
+    "Healthpoint redistribution/caching terms review"
+  ],
+  "next_tracks": [
+    "validate-client-auth",
+    "compile-workspace",
+    "mcp-resource-templates",
+    "osd-tabular-view-contract"
+  ]
+}

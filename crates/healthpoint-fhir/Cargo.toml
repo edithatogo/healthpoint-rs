@@ -1,0 +1,16 @@
+[package]
+name = "healthpoint-fhir"
+version = "0.1.0"
+description = "FHIR R4 mapping utilities for Healthpoint resources."
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+
+[dependencies]
+healthpoint-core.workspace = true
+serde.workspace = true
+serde_json.workspace = true
+
+[lints]
+workspace = true

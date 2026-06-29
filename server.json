@@ -1,0 +1,24 @@
+{
+  "name": "healthpoint-rs",
+  "version": "0.1.0",
+  "description": "Read-only MCP server for licensed Healthpoint HL7 FHIR API access.",
+  "command": "healthpoint-mcp",
+  "transport": "stdio",
+  "env": {
+    "HEALTHPOINT_API_KEY": {
+      "description": "User-provided licensed Healthpoint API key/token.",
+      "required": true,
+      "secret": true
+    },
+    "HEALTHPOINT_BASE_URL": {
+      "description": "Healthpoint API base URL.",
+      "required": false,
+      "default": "https://www.healthpointapi.com/"
+    },
+    "HEALTHPOINT_AUTH_SCHEME": {
+      "description": "bearer | x-api-key | header:<name> | none",
+      "required": false,
+      "default": "bearer"
+    }
+  }
+}

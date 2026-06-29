@@ -1,0 +1,15 @@
+#!/usr/bin/env bash
+set -Eeuo pipefail
+
+# Link secrets/config from a Conductor root outside worktrees when available.
+if [[ -n "${CONDUCTOR_ROOT_PATH:-}" && -f "$CONDUCTOR_ROOT_PATH/.env" ]]; then
+  ln -sf "$CONDUCTOR_ROOT_PATH/.env" .env
+fi
+
+if ! command -v cargo >/dev/null 2>&1; then
+  echo "Rust/Cargo is required. Install via rustup, then rerun bin/conductor-setup." >&2
+  exit 1
+fi
+
+cargo fetch
+cargo check --workspace --all-targets

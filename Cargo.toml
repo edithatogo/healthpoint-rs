@@ -1,0 +1,59 @@
+[workspace]
+resolver = "3"
+members = [
+  "crates/healthpoint-core",
+  "crates/healthpoint-fhir",
+  "crates/healthpoint-client",
+  "crates/healthpoint-export",
+  "crates/healthpoint-cli",
+  "crates/healthpoint-mcp",
+  "crates/healthpoint-osd-adapter",
+  "crates/healthpoint-testkit",
+]
+
+[workspace.package]
+edition = "2024"
+rust-version = "1.85"
+license = "Apache-2.0"
+repository = "https://github.com/edithatogo/healthpoint-rs"
+homepage = "https://github.com/edithatogo/healthpoint-rs"
+authors = ["Dylan"]
+keywords = ["healthpoint", "fhir", "mcp", "snomed", "rust"]
+categories = ["command-line-utilities", "api-bindings"]
+
+[workspace.lints.rust]
+unsafe_code = "forbid"
+missing_docs = "warn"
+
+[workspace.lints.clippy]
+pedantic = { level = "warn", priority = -1 }
+module_name_repetitions = "allow"
+must_use_candidate = "allow"
+missing_errors_doc = "allow"
+missing_panics_doc = "allow"
+
+[workspace.dependencies]
+anyhow = "1"
+async-trait = "0.1"
+chrono = { version = "0.4", features = ["serde", "clock"] }
+clap = { version = "4.5", features = ["derive", "env"] }
+csv = "1.3"
+reqwest = { version = "0.12", default-features = false, features = ["json", "rustls-tls", "gzip", "brotli", "deflate"] }
+schemars = { version = "1", features = ["chrono04", "url2"] }
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+thiserror = "2"
+tokio = { version = "1", features = ["macros", "rt-multi-thread", "signal", "io-std", "fs"] }
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["env-filter", "fmt", "json"] }
+url = { version = "2", features = ["serde"] }
+uuid = { version = "1", features = ["serde", "v7"] }
+
+# Bleeding-edge MCP SDK. Pin to a tag before a public crate release if reproducibility matters more than frontier features.
+rmcp = { git = "https://github.com/modelcontextprotocol/rust-sdk", branch = "main", features = ["server"] }
+
+healthpoint-core = { path = "crates/healthpoint-core" }
+healthpoint-fhir = { path = "crates/healthpoint-fhir" }
+healthpoint-client = { path = "crates/healthpoint-client" }
+healthpoint-export = { path = "crates/healthpoint-export" }
+healthpoint-testkit = { path = "crates/healthpoint-testkit" }

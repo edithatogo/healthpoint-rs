@@ -1,0 +1,26 @@
+[package]
+name = "healthpoint-cli"
+version = "0.1.0"
+description = "Command-line interface for the Healthpoint API."
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+
+[[bin]]
+name = "healthpoint"
+path = "src/main.rs"
+
+[dependencies]
+anyhow.workspace = true
+clap.workspace = true
+healthpoint-client.workspace = true
+healthpoint-core.workspace = true
+healthpoint-export.workspace = true
+serde_json.workspace = true
+tokio.workspace = true
+tracing-subscriber.workspace = true
+url.workspace = true
+
+[lints]
+workspace = true

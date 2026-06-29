@@ -1,0 +1,20 @@
+[package]
+name = "healthpoint-client"
+version = "0.1.0"
+description = "Async HTTP client for licensed Healthpoint API access."
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+
+[dependencies]
+async-trait.workspace = true
+healthpoint-core.workspace = true
+healthpoint-fhir.workspace = true
+reqwest.workspace = true
+serde.workspace = true
+serde_json.workspace = true
+url.workspace = true
+
+[lints]
+workspace = true

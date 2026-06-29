@@ -1,0 +1,5 @@
+#!/usr/bin/env bash
+set -Eeuo pipefail
+
+export RUST_LOG=${RUST_LOG:-info,healthpoint=debug}
+exec cargo run -p healthpoint-mcp

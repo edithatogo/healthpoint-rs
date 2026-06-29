@@ -1,0 +1,17 @@
+/target/
+/.healthpoint/
+/.open-social-data/
+/.conductor/tmp/
+.env
+.env.*
+!.env.example
+*.log
+*.trace
+*.har
+*.sqlite
+*.db
+*.parquet
+*.csv
+*.jsonl
+*.ndjson
+.DS_Store
