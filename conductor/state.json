@@ -65,7 +65,8 @@
     "cargo fmt --all --check passed",
     "cargo check --workspace --all-targets passed",
     "cargo test --workspace passed",
-    "cargo clippy --workspace --all-targets -- -D warnings passed"
+    "cargo clippy --workspace --all-targets -- -D warnings passed",
+    "cargo deny check passed"
   ],
   "blocked_by": [
     "licensed_api_auth_details",

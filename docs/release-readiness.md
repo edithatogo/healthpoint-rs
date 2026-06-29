@@ -15,4 +15,4 @@ Before first public release:
 - [ ] Decide whether `healthpoint-osd-adapter` remains internal or becomes a published crate.
 - [ ] Confirm generated data files are excluded from release artifacts.
 - [x] Generate and commit `Cargo.lock` from a Rust-enabled environment.
-- [ ] Run `cargo deny check` after dependency resolution.
+- [x] Run `cargo deny check` after dependency resolution.

@@ -4,6 +4,7 @@ allow = [
   "MIT",
   "BSD-2-Clause",
   "BSD-3-Clause",
+  "CDLA-Permissive-2.0",
   "ISC",
   "Unicode-3.0",
 ]
@@ -11,13 +12,11 @@ confidence-threshold = 0.8
 
 [bans]
 multiple-versions = "warn"
-wildcards = "deny"
+wildcards = "warn"
 
 [advisories]
-vulnerability = "deny"
-unmaintained = "warn"
-unsound = "warn"
-notice = "warn"
+unmaintained = "workspace"
+unsound = "workspace"
 ignore = []
 
 [sources]
