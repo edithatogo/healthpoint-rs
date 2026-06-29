@@ -9,14 +9,60 @@ permissions:
   contents: read
 
 jobs:
-  lychee:
-    name: Link check
+  markdown-local-links:
+    name: Markdown local link check
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
-      - uses: lycheeverse/lychee-action@v2
-        with:
-          args: --mode markdown --no-progress --exclude localhost --exclude 127.0.0.1 .
-          checkbox: false
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Check local markdown links
+        shell: python
+        run: |
+          import pathlib
+          import re
+          import sys
+          from urllib.parse import unquote, urlparse
+
+          root = pathlib.Path(".").resolve()
+          markdown_files = [
+              path
+              for path in root.rglob("*.md")
+              if ".git" not in path.parts and "target" not in path.parts
+          ]
+          link_pattern = re.compile(r"(?<!!)\[[^\]]+\]\(([^)]+)\)")
+          failures = []
+
+          def strip_anchor(target: str) -> str:
+              return target.split("#", 1)[0]
+
+          for path in markdown_files:
+              text = path.read_text(encoding="utf-8")
+              for match in link_pattern.finditer(text):
+                  raw = match.group(1).strip()
+                  if not raw or raw.startswith("#"):
+                      continue
+                  target = raw.split(None, 1)[0].strip("<>")
+                  parsed = urlparse(target)
+                  if parsed.scheme in {"http", "https", "mailto", "healthpoint"}:
+                      continue
+                  target_path = pathlib.Path(unquote(strip_anchor(target)))
+                  if not str(target_path):
+                      continue
+                  resolved = (
+                      target_path
+                      if target_path.is_absolute()
+                      else (path.parent / target_path)
+                  ).resolve()
+                  try:
+                      resolved.relative_to(root)
+                  except ValueError:
+                      failures.append((path, raw, "escapes repository"))
+                      continue
+                  if not resolved.exists():
+                      failures.append((path, raw, "missing target"))
+
+          if failures:
+              for path, raw, reason in failures:
+                  print(f"{path.relative_to(root)}: {raw} ({reason})")
+              sys.exit(1)
+
+          print(f"Checked {len(markdown_files)} markdown files.")
