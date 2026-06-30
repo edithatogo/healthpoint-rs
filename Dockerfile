@@ -23,9 +23,13 @@ LABEL io.modelcontextprotocol.server.name="io.github.edithatogo/healthpoint-rs"
 
 RUN apt-get update \
     && apt-get install -y --no-install-recommends ca-certificates \
+    && groupadd -r mcp \
+    && useradd -r -g mcp mcp \
     && rm -rf /var/lib/apt/lists/*
 
 COPY --from=builder /workspace/target/release/healthpoint-mcp /usr/local/bin/healthpoint-mcp
+
+USER mcp
 
 ENTRYPOINT ["/usr/local/bin/healthpoint-mcp"]
 

@@ -8,6 +8,7 @@ from __future__ import annotations
 
 import json
 import pathlib
+import re
 import subprocess
 import sys
 import tomllib
@@ -109,8 +110,13 @@ def main() -> int:
     if "mcp-name: io.github.edithatogo/healthpoint-rs" not in readme:
         errors.append("README.md must contain visible Cargo ownership token mcp-name: io.github.edithatogo/healthpoint-rs")
     dockerfile = (ROOT / "Dockerfile").read_text(encoding="utf-8")
-    if 'io.modelcontextprotocol.server.name="io.github.edithatogo/healthpoint-rs"' not in dockerfile:
+    if not re.search(
+        r"io\.modelcontextprotocol\.server\.name\s*=\s*[\"']io\.github\.edithatogo/healthpoint-rs[\"']",
+        dockerfile,
+    ):
         errors.append("Dockerfile must set io.modelcontextprotocol.server.name label for OCI ownership validation")
+    if "USER mcp" not in dockerfile:
+        errors.append("Dockerfile runtime image must run as the non-root mcp user")
 
     metadata = json.loads(cargo("metadata", "--format-version", "1", "--no-deps"))
     names = {pkg["name"] for pkg in metadata["packages"]}
