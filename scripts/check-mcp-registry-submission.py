@@ -30,7 +30,7 @@ REGISTRIES = [
         "Official MCP Registry",
         "https://github.com/modelcontextprotocol/registry",
         "mcp-publisher login && mcp-publisher publish",
-        "Valid server.json plus a published package in a trusted registry such as crates.io.",
+        "Valid server.json plus a published package in a supported trusted registry. The live registry currently accepts OCI, npm, PyPI, and NuGet package ownership validation; Cargo remains the Rust distribution path but is not accepted by the live publisher.",
         True,
     ),
     Registry(
@@ -85,12 +85,21 @@ def main() -> int:
     if repository.get("url") != "https://github.com/edithatogo/healthpoint-rs" or repository.get("source") != "github":
         errors.append("server.json repository must point to the GitHub source repository")
     packages = server.get("packages", [])
-    cargo_packages = [pkg for pkg in packages if pkg.get("registryType") == "cargo"]
-    mcp_pkg = next((pkg for pkg in cargo_packages if pkg.get("identifier") == "healthpoint-mcp"), None)
+    oci_packages = [pkg for pkg in packages if pkg.get("registryType") == "oci"]
+    mcp_pkg = next(
+        (
+            pkg
+            for pkg in oci_packages
+            if pkg.get("identifier") == f"ghcr.io/edithatogo/healthpoint-rs/healthpoint-mcp:{version}"
+        ),
+        None,
+    )
     if not mcp_pkg:
-        errors.append("server.json packages must include healthpoint-mcp with registryType cargo")
-    elif mcp_pkg.get("version") != version:
-        errors.append("healthpoint-mcp package version must match workspace version")
+        errors.append(
+            "server.json packages must include ghcr.io/edithatogo/healthpoint-rs/healthpoint-mcp:<version> with registryType oci"
+        )
+    elif "version" in mcp_pkg:
+        errors.append("healthpoint-mcp OCI package must not use a separate version field")
     elif mcp_pkg.get("transport", {}).get("type") != "stdio":
         errors.append("healthpoint-mcp package transport must be stdio")
     env_vars = {item.get("name"): item for item in (mcp_pkg or {}).get("environmentVariables", [])}
@@ -99,6 +108,9 @@ def main() -> int:
     readme = (ROOT / "README.md").read_text(encoding="utf-8")
     if "mcp-name: io.github.edithatogo/healthpoint-rs" not in readme:
         errors.append("README.md must contain visible Cargo ownership token mcp-name: io.github.edithatogo/healthpoint-rs")
+    dockerfile = (ROOT / "Dockerfile").read_text(encoding="utf-8")
+    if 'io.modelcontextprotocol.server.name="io.github.edithatogo/healthpoint-rs"' not in dockerfile:
+        errors.append("Dockerfile must set io.modelcontextprotocol.server.name label for OCI ownership validation")
 
     metadata = json.loads(cargo("metadata", "--format-version", "1", "--no-deps"))
     names = {pkg["name"] for pkg in metadata["packages"]}
