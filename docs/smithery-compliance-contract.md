@@ -57,12 +57,14 @@ The local checker treats these as a fail-closed contract: every tool must use do
 | Build | Prompt metadata is complete and matches the actual MCP surface | 2 prompts in metadata and server implementation | implemented |
 | Build | Sensitive user config is marked sensitive and optional | `healthpoint_api_key` is optional/sensitive and `healthpoint_mode` defaults to synthetic in `packaging/mcpb/manifest-metadata.json` | implemented |
 | Build | README includes a Smithery backlink/badge | `README.md` | implemented |
+| Verification | Smithery backlink scan can find the accepted server URL or badge URL | `README.md` contains `https://smithery.ai/servers/edithatogo/healthpoint-rs` and `https://smithery.ai/badge/edithatogo/healthpoint-rs` | implemented |
 | Publish | Local stdio servers should use MCPB bundles | Repo packaging path and CI bundle artifact | implemented |
 | Publish | URL-published servers must expose Streamable HTTP | No Streamable HTTP server is published by this repo | not_applicable |
 | Publish | URL-published servers requiring auth must support OAuth | No URL-published server is currently provided | not_applicable |
 | Publish | If Smithery scanning cannot complete, a static server card should exist at `/.well-known/mcp/server-card.json` | No hosted HTTP surface is published today | not_applicable |
 | Publish | Public listing and registry settings are complete | Smithery account state and listing visibility | external_gate |
 | Publish | Exact-host DNS TXT verification is complete when a controlled homepage host is used | DNS and owned domain state | external_gate |
+| Verification | Smithery exact-host TXT value `smithery-verification=cd3f0c4373ae3d6779a01d4ddd2930dfc51c9bcc932f2735377abdc5d784c2b1` is present | `github.com` TXT verification is not repo-controllable because the current Smithery homepage host is GitHub's apex domain, not a domain owned by this repo | external_gate |
 | Triggers | The server advertises `ai.smithery/events` only if it really implements triggers | `crates/healthpoint-mcp/src/main.rs` capabilities | not_applicable |
 | Triggers | Event list/subscribe/unsubscribe handlers exist | No trigger handlers in the server | not_applicable |
 | Triggers | Delivery forwarding, signing, and payload schema are implemented | No trigger delivery surface exists | not_applicable |
@@ -85,6 +87,21 @@ The local checker treats these as a fail-closed contract: every tool must use do
 - The bundle does not include `.env`, API keys, tokens, live payloads, traces, or logs.
 - CI can build the bundle on Linux, macOS, and Windows.
 - The registry score, if referenced, is treated as advisory evidence only.
+
+## Live Smithery verification status on 2026-06-30
+
+- Backlink: repo-controlled and implemented. `README.md` contains both accepted
+  backlink forms: the server URL and the badge URL. If Smithery still reports the
+  backlink missing, rerun the Smithery verification check or set the optional
+  custom backlink URL to `https://github.com/edithatogo/healthpoint-rs`.
+- TXT record: external/manual gate. Smithery is currently checking host
+  `github.com` for
+  `smithery-verification=cd3f0c4373ae3d6779a01d4ddd2930dfc51c9bcc932f2735377abdc5d784c2b1`.
+  `github.com` TXT verification is not repo-controllable.
+  This cannot be satisfied from this repository because the repo owner cannot add
+  TXT records to GitHub's apex domain. To close it, change Smithery's homepage to
+  a controlled host such as a GitHub Pages custom domain, then add the TXT value
+  at that host's DNS provider.
 
 ## Notes on applicability
 
