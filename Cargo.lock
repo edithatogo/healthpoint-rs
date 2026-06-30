@@ -677,6 +677,7 @@ dependencies = [
  "anyhow",
  "healthpoint-client",
  "healthpoint-core",
+ "healthpoint-testkit",
  "rmcp",
  "schemars",
  "serde",

@@ -5,13 +5,14 @@ use healthpoint_core::{
     AccessPolicy, Code, DirectoryProvider, GeoPoint, HealthpointResourceUri, QueryLimit,
     ServiceQuery,
 };
+use healthpoint_testkit::FixtureDirectoryProvider;
 use rmcp::{
     ErrorData as McpError, RoleServer, ServerHandler, ServiceExt,
     handler::server::wrapper::Parameters,
     model::{
-        GetPromptResult, ListResourceTemplatesResult, ListResourcesResult, PaginatedRequestParams,
-        PromptMessage, ReadResourceRequestParams, ReadResourceResult, Resource, ResourceContents,
-        ResourceTemplate, Role, ServerCapabilities, ServerInfo,
+        GetPromptResult, Implementation, ListResourceTemplatesResult, ListResourcesResult,
+        PaginatedRequestParams, PromptMessage, ReadResourceRequestParams, ReadResourceResult,
+        Resource, ResourceContents, ResourceTemplate, Role, ServerCapabilities, ServerInfo,
     },
     prompt, prompt_handler, prompt_router,
     schemars::JsonSchema,
@@ -20,11 +21,108 @@ use rmcp::{
     transport::stdio,
 };
 use serde::Deserialize;
+use std::sync::Arc;
 use url::Url;
 
 #[derive(Clone)]
 struct HealthpointMcpServer {
-    client: HealthpointClient,
+    provider: HealthpointProvider,
+}
+
+#[derive(Clone)]
+enum HealthpointProvider {
+    Live(HealthpointClient),
+    Synthetic(FixtureDirectoryProvider),
+}
+
+impl HealthpointProvider {
+    fn from_env() -> healthpoint_core::Result<Self> {
+        let mode = std::env::var("HEALTHPOINT_MODE").unwrap_or_else(|_| {
+            if std::env::var("HEALTHPOINT_API_KEY")
+                .ok()
+                .filter(|value| !value.is_empty())
+                .is_some()
+            {
+                "live".to_owned()
+            } else {
+                "synthetic".to_owned()
+            }
+        });
+        match mode.trim().to_ascii_lowercase().as_str() {
+            "synthetic" | "fixture" | "offline" => {
+                Ok(Self::Synthetic(FixtureDirectoryProvider::new()))
+            }
+            "live" | "healthpoint" => Ok(Self::Live(HealthpointClient::from_env()?)),
+            other => Err(healthpoint_core::HealthpointError::Config(format!(
+                "unsupported HEALTHPOINT_MODE {other:?}; use synthetic or live"
+            ))),
+        }
+    }
+
+    fn diagnostic_status(&self) -> serde_json::Value {
+        match self {
+            Self::Live(client) => {
+                let mut value = client.diagnostic_status();
+                if let Some(object) = value.as_object_mut() {
+                    object.insert("mode".into(), serde_json::json!("live"));
+                }
+                value
+            }
+            Self::Synthetic(_) => serde_json::json!({
+                "mode": "synthetic",
+                "base_url": "fixture://healthpoint-testkit",
+                "auth_scheme": "none",
+                "api_key_present": false,
+                "geo_search_mode": "healthpoint-lat-lon",
+                "safety": {
+                    "read_only": true,
+                    "public_cache_default": false,
+                    "secret_values_redacted": true,
+                    "live_healthpoint_data": false
+                }
+            }),
+        }
+    }
+
+    async fn search_services(
+        &self,
+        query: ServiceQuery,
+    ) -> healthpoint_core::Result<healthpoint_core::Page<healthpoint_core::ServiceRecord>> {
+        match self {
+            Self::Live(client) => client.search_services(query).await,
+            Self::Synthetic(provider) => provider.search_services(query).await,
+        }
+    }
+
+    async fn get_service(
+        &self,
+        id: &str,
+    ) -> healthpoint_core::Result<healthpoint_core::ServiceRecord> {
+        match self {
+            Self::Live(client) => client.get_service(id).await,
+            Self::Synthetic(provider) => provider.get_service(id).await,
+        }
+    }
+
+    async fn get_location(
+        &self,
+        id: &str,
+    ) -> healthpoint_core::Result<healthpoint_core::LocationRecord> {
+        match self {
+            Self::Live(client) => client.get_location(id).await,
+            Self::Synthetic(provider) => provider.get_location(id).await,
+        }
+    }
+
+    async fn get_organization(
+        &self,
+        id: &str,
+    ) -> healthpoint_core::Result<healthpoint_core::OrganizationRecord> {
+        match self {
+            Self::Live(client) => client.get_organization(id).await,
+            Self::Synthetic(provider) => provider.get_organization(id).await,
+        }
+    }
 }
 
 #[derive(Debug, Deserialize, JsonSchema)]
@@ -116,18 +214,60 @@ struct SearchPromptParams {
     branch_code: Option<String>,
 }
 
+fn healthpoint_output_schema(description: &'static str) -> Arc<rmcp::model::JsonObject> {
+    Arc::new(rmcp::model::object(serde_json::json!({
+        "type": "object",
+        "description": description,
+        "properties": {
+            "data": {
+                "description": "Successful JSON payload returned by the read-only Healthpoint provider.",
+                "type": "object",
+                "additionalProperties": true
+            },
+            "error": {
+                "description": "Redacted error message when the request cannot be completed.",
+                "type": "string"
+            },
+            "provenance": {
+                "description": "Source, retrieval, and license-boundary metadata when available.",
+                "type": "object",
+                "additionalProperties": true
+            }
+        },
+        "additionalProperties": true
+    })))
+}
+
 #[tool_router]
 impl HealthpointMcpServer {
     #[tool(
-        description = "Show redacted Healthpoint client configuration and readiness. Never returns the API key."
+        name = "healthpoint.diagnostic.status",
+        description = "Show redacted Healthpoint MCP runtime configuration, mode, and readiness. Never returns API keys or secret values.",
+        output_schema = healthpoint_output_schema("Redacted Healthpoint MCP diagnostic status including runtime mode, auth presence, base URL, and safety flags."),
+        annotations(
+            title = "Healthpoint diagnostic status",
+            read_only_hint = true,
+            destructive_hint = false,
+            idempotent_hint = true,
+            open_world_hint = false
+        )
     )]
     fn healthpoint_diagnostic_status(&self) -> String {
-        serde_json::to_string_pretty(&self.client.diagnostic_status())
+        serde_json::to_string_pretty(&self.provider.diagnostic_status())
             .unwrap_or_else(|err| err.to_string())
     }
 
     #[tool(
-        description = "Show Healthpoint API access notes discovered from the portal. Does not include secrets."
+        name = "healthpoint.access.notes",
+        description = "Show non-secret Healthpoint API access notes discovered from the licensed portal, including endpoint, auth header, supported read resources, and documentation paths.",
+        output_schema = healthpoint_output_schema("Non-secret Healthpoint API access notes including endpoint, auth header, resources, methods, attribution, docs, and secret handling."),
+        annotations(
+            title = "Healthpoint access notes",
+            read_only_hint = true,
+            destructive_hint = false,
+            idempotent_hint = true,
+            open_world_hint = false
+        )
     )]
     fn healthpoint_api_access_notes(&self) -> String {
         serde_json::json!({
@@ -147,14 +287,32 @@ impl HealthpointMcpServer {
     }
 
     #[tool(
-        description = "Show conservative Healthpoint access/export policy. Use before exporting or reusing data."
+        name = "healthpoint.access.policy",
+        description = "Show the conservative Healthpoint access and export policy. Use before exporting, caching, sharing, or reusing any Healthpoint-derived data.",
+        output_schema = healthpoint_output_schema("Machine-readable conservative Healthpoint access and export policy for safe local use."),
+        annotations(
+            title = "Healthpoint access policy",
+            read_only_hint = true,
+            destructive_hint = false,
+            idempotent_hint = true,
+            open_world_hint = false
+        )
     )]
     fn healthpoint_access_policy(&self) -> String {
         serde_json::to_string_pretty(&AccessPolicy::default()).unwrap_or_else(|err| err.to_string())
     }
 
     #[tool(
-        description = "Search Healthpoint HealthcareService records. Read-only; requires a user-provided API key."
+        name = "healthpoint.services.search",
+        description = "Search Healthpoint HealthcareService records by text, category, service type, SNOMED, specialty, region filters, cursor, and result limit. Read-only; live mode requires a user-provided licensed API key.",
+        output_schema = healthpoint_output_schema("Paged Healthpoint HealthcareService search results with service records, provenance, and pagination metadata."),
+        annotations(
+            title = "Search Healthpoint services",
+            read_only_hint = true,
+            destructive_hint = false,
+            idempotent_hint = true,
+            open_world_hint = true
+        )
     )]
     async fn healthpoint_search_services(
         &self,
@@ -187,11 +345,20 @@ impl HealthpointMcpServer {
             cursor: params.cursor,
             ..ServiceQuery::default()
         };
-        json_result(self.client.search_services(query).await)
+        json_result(self.provider.search_services(query).await)
     }
 
     #[tool(
-        description = "Search Healthpoint HealthcareService records by SNOMED CT code. Read-only."
+        name = "healthpoint.services.search_snomed",
+        description = "Search Healthpoint HealthcareService records by SNOMED CT code in service type, category, or specialty. Read-only; live mode requires a user-provided licensed API key.",
+        output_schema = healthpoint_output_schema("Paged Healthpoint HealthcareService search results matching the requested SNOMED CT code, with provenance metadata."),
+        annotations(
+            title = "Search Healthpoint services by SNOMED",
+            read_only_hint = true,
+            destructive_hint = false,
+            idempotent_hint = true,
+            open_world_hint = true
+        )
     )]
     async fn healthpoint_search_by_snomed(
         &self,
@@ -207,11 +374,20 @@ impl HealthpointMcpServer {
             SnomedField::Category => query.categories.push(code),
             SnomedField::Specialty => query.specialties.push(code),
         }
-        json_result(self.client.search_services(query).await)
+        json_result(self.provider.search_services(query).await)
     }
 
     #[tool(
-        description = "Find nearby Healthpoint HealthcareService records by latitude/longitude. Read-only."
+        name = "healthpoint.services.nearby",
+        description = "Find Healthpoint HealthcareService records near a latitude/longitude point with optional radius, text, service type, and result limit. Read-only; live mode requires a user-provided licensed API key.",
+        output_schema = healthpoint_output_schema("Paged Healthpoint HealthcareService nearby-search results with service records, provenance, and pagination metadata."),
+        annotations(
+            title = "Find nearby Healthpoint services",
+            read_only_hint = true,
+            destructive_hint = false,
+            idempotent_hint = true,
+            open_world_hint = true
+        )
     )]
     async fn healthpoint_find_nearby_services(
         &self,
@@ -233,37 +409,77 @@ impl HealthpointMcpServer {
             limit: QueryLimit(params.limit.unwrap_or(10)),
             ..ServiceQuery::default()
         };
-        json_result(self.client.search_services(query).await)
+        json_result(self.provider.search_services(query).await)
     }
 
     #[tool(
-        description = "Get a single Healthpoint HealthcareService record by FHIR id. Read-only."
+        name = "healthpoint.service.get",
+        description = "Read one Healthpoint HealthcareService record by FHIR id. Read-only; live mode requires a user-provided licensed API key.",
+        output_schema = healthpoint_output_schema("One Healthpoint HealthcareService record with preserved FHIR-derived fields and provenance metadata."),
+        annotations(
+            title = "Get Healthpoint service",
+            read_only_hint = true,
+            destructive_hint = false,
+            idempotent_hint = true,
+            open_world_hint = true
+        )
     )]
     async fn healthpoint_get_service(
         &self,
         Parameters(params): Parameters<GetResourceParams>,
     ) -> String {
-        json_result(self.client.get_service(&params.id).await)
+        json_result(self.provider.get_service(&params.id).await)
     }
 
-    #[tool(description = "Get a single Healthpoint Location record by FHIR id. Read-only.")]
+    #[tool(
+        name = "healthpoint.location.get",
+        description = "Read one Healthpoint Location record by FHIR id. Read-only; live mode requires a user-provided licensed API key.",
+        output_schema = healthpoint_output_schema("One Healthpoint Location record with address, position, identifiers, hours, endpoints, and provenance metadata."),
+        annotations(
+            title = "Get Healthpoint location",
+            read_only_hint = true,
+            destructive_hint = false,
+            idempotent_hint = true,
+            open_world_hint = true
+        )
+    )]
     async fn healthpoint_get_location(
         &self,
         Parameters(params): Parameters<GetResourceParams>,
     ) -> String {
-        json_result(self.client.get_location(&params.id).await)
+        json_result(self.provider.get_location(&params.id).await)
     }
 
-    #[tool(description = "Get a single Healthpoint Organization record by FHIR id. Read-only.")]
+    #[tool(
+        name = "healthpoint.organization.get",
+        description = "Read one Healthpoint Organization record by FHIR id. Read-only; live mode requires a user-provided licensed API key.",
+        output_schema = healthpoint_output_schema("One Healthpoint Organization record with identifiers, aliases, contacts, endpoints, relationships, and provenance metadata."),
+        annotations(
+            title = "Get Healthpoint organization",
+            read_only_hint = true,
+            destructive_hint = false,
+            idempotent_hint = true,
+            open_world_hint = true
+        )
+    )]
     async fn healthpoint_get_organization(
         &self,
         Parameters(params): Parameters<GetResourceParams>,
     ) -> String {
-        json_result(self.client.get_organization(&params.id).await)
+        json_result(self.provider.get_organization(&params.id).await)
     }
 
     #[tool(
-        description = "Read a supported healthpoint:// resource URI. This mirrors planned MCP resources while keeping the operation explicit and read-only."
+        name = "healthpoint.resource.read",
+        description = "Read a supported healthpoint:// resource URI for a service, location, or organization through the same safe read-only provider path as native MCP resources.",
+        output_schema = healthpoint_output_schema("The Healthpoint service, location, or organization resource addressed by the supplied healthpoint:// URI."),
+        annotations(
+            title = "Read Healthpoint resource URI",
+            read_only_hint = true,
+            destructive_hint = false,
+            idempotent_hint = true,
+            open_world_hint = true
+        )
     )]
     async fn healthpoint_read_resource_uri(
         &self,
@@ -271,13 +487,13 @@ impl HealthpointMcpServer {
     ) -> String {
         match HealthpointResourceUri::parse(&params.uri) {
             Ok(HealthpointResourceUri::Service(id)) => {
-                json_result(self.client.get_service(&id).await)
+                json_result(self.provider.get_service(&id).await)
             }
             Ok(HealthpointResourceUri::Location(id)) => {
-                json_result(self.client.get_location(&id).await)
+                json_result(self.provider.get_location(&id).await)
             }
             Ok(HealthpointResourceUri::Organization(id)) => {
-                json_result(self.client.get_organization(&id).await)
+                json_result(self.provider.get_organization(&id).await)
             }
             Err(err) => serde_json::json!({ "error": err.to_string() }).to_string(),
         }
@@ -341,6 +557,13 @@ impl ServerHandler for HealthpointMcpServer {
                 .enable_resources()
                 .build(),
         )
+        .with_server_info(
+            Implementation::new("healthpoint-rs", env!("CARGO_PKG_VERSION"))
+                .with_title("healthpoint-rs")
+                .with_description("Read-only MCP server for licensed Healthpoint HL7 FHIR directory lookup with synthetic default mode and BYO-key live mode.")
+                .with_website_url("https://github.com/edithatogo/healthpoint-rs"),
+        )
+        .with_instructions("Use this server only for read-only Healthpoint directory lookup. Default synthetic mode uses bundled synthetic fixtures and returns no live Healthpoint data. Live mode requires the user's licensed Healthpoint API key and must preserve Healthpoint attribution, currency, and license restrictions. Do not use outputs as clinical advice, do not expose secrets, and do not cache, bulk export, redistribute, train models on, or publish Healthpoint data without written approval.")
     }
 
     async fn list_resources(
@@ -401,14 +624,14 @@ impl ServerHandler for HealthpointMcpServer {
         let uri = request.uri;
         let body = match uri.as_str() {
             "healthpoint://diagnostic/status" => {
-                serde_json::to_string_pretty(&self.client.diagnostic_status())
+                serde_json::to_string_pretty(&self.provider.diagnostic_status())
                     .unwrap_or_else(|err| err.to_string())
             }
             "healthpoint://api/access-notes" => self.healthpoint_api_access_notes(),
             "healthpoint://access/policy" => self.healthpoint_access_policy(),
             _ if uri.starts_with("healthpoint://query/services?") => {
                 match service_query_from_resource_uri(&uri) {
-                    Ok(query) => json_result(self.client.search_services(query).await),
+                    Ok(query) => json_result(self.provider.search_services(query).await),
                     Err(err) => {
                         return Err(McpError::invalid_params(
                             err.to_string(),
@@ -419,13 +642,13 @@ impl ServerHandler for HealthpointMcpServer {
             }
             _ => match HealthpointResourceUri::parse(&uri) {
                 Ok(HealthpointResourceUri::Service(id)) => {
-                    json_result(self.client.get_service(&id).await)
+                    json_result(self.provider.get_service(&id).await)
                 }
                 Ok(HealthpointResourceUri::Location(id)) => {
-                    json_result(self.client.get_location(&id).await)
+                    json_result(self.provider.get_location(&id).await)
                 }
                 Ok(HealthpointResourceUri::Organization(id)) => {
-                    json_result(self.client.get_organization(&id).await)
+                    json_result(self.provider.get_organization(&id).await)
                 }
                 Err(err) => {
                     return Err(McpError::resource_not_found(
@@ -500,7 +723,7 @@ async fn main() -> anyhow::Result<()> {
         .with_writer(std::io::stderr)
         .init();
     let service = HealthpointMcpServer {
-        client: HealthpointClient::from_env()?,
+        provider: HealthpointProvider::from_env()?,
     }
     .serve(stdio())
     .await?;

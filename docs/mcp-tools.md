@@ -5,22 +5,22 @@ The MCP server is read-only and runs over stdio. It shares `healthpoint-client` 
 ## Tools
 
 ```text
-healthpoint_diagnostic_status
-healthpoint_api_access_notes
-healthpoint_access_policy
-healthpoint_search_services
-healthpoint_search_by_snomed
-healthpoint_find_nearby_services
-healthpoint_get_service
-healthpoint_get_location
-healthpoint_get_organization
-healthpoint_read_resource_uri
+healthpoint.diagnostic.status
+healthpoint.access.notes
+healthpoint.access.policy
+healthpoint.services.search
+healthpoint.services.search_snomed
+healthpoint.services.nearby
+healthpoint.service.get
+healthpoint.location.get
+healthpoint.organization.get
+healthpoint.resource.read
 ```
 
 All tools are:
 
 - read-only,
-- API-key gated via environment configuration,
+- synthetic by default and API-key gated only for live mode,
 - result-limited,
 - provenance-rich,
 - designed to return JSON with source/access metadata,
@@ -55,7 +55,7 @@ healthpoint://location/{id}
 healthpoint://query/services?text={text}&region={region}&limit={limit}
 ```
 
-The dynamic templates are readable through `resources/read` and return JSON. The query template supports `text`, `region`, `branch-code`, `type`, `category`, `specialty`, and `limit` query parameters. Use `healthpoint_search_services` when a client prefers tool calls over resource reads.
+The dynamic templates are readable through `resources/read` and return JSON. The query template supports `text`, `region`, `branch-code`, `type`, `category`, `specialty`, and `limit` query parameters. Use `healthpoint.services.search` when a client prefers tool calls over resource reads.
 
 ## Prompts
 
@@ -78,7 +78,7 @@ These prompts keep Healthpoint usage read-only, attributed, local-only by defaul
 ## Launch examples
 
 ```bash
-HEALTHPOINT_API_KEY=... cargo run -p healthpoint-mcp
+HEALTHPOINT_MODE=synthetic cargo run -p healthpoint-mcp
 ```
 
 Claude-style local server entry:
@@ -89,6 +89,7 @@ Claude-style local server entry:
     "healthpoint": {
       "command": "healthpoint-mcp",
       "env": {
+        "HEALTHPOINT_MODE": "live",
         "HEALTHPOINT_API_KEY": "...",
         "HEALTHPOINT_BASE_URL": "https://uat.healthpointapi.com/baseR4/",
         "HEALTHPOINT_AUTH_SCHEME": "x-api-key"

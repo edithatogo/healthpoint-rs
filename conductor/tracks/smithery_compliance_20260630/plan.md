@@ -65,6 +65,13 @@
 - [x] Task: Publish improved Smithery release when appropriate.
     - [x] Use local CLI to publish the hardened bundle.
     - [x] Record deployment ID `76edfcf1-d617-42fe-8b4e-06c6e3917854`.
-    - [ ] Record score after release once Smithery verification page loads reliably.
-- [ ] Task: Open PR and let branch protection run checks.
-- [ ] Task: Conductor - User Manual Verification 'Phase 6: Verification and closeout' (Protocol in workflow.md)
+    - [x] Record score after release once Smithery verification page loads reliably. Dashboard score later observed at `98/100`; the remaining `2` points are not attributable from public HTML/API.
+- [x] Task: Open PR and let branch protection run checks.
+- [x] Task: Apply Smithery 100/100 repo-controlled remediation.
+    - [x] Add explicit MCP runtime identity and instructions.
+    - [x] Rename Smithery-facing tools to dot notation.
+    - [x] Add parameter descriptions, output schemas, and tool annotations.
+    - [x] Add optional synthetic mode and root `smithery.yaml`.
+    - [x] Publish accepted release `677ad41a-384f-40d6-9ce0-b02774bb7294`.
+    - [x] Smithery listing metadata updated as far as the public API allows; any remaining null dashboard fields are an account-session gate.
+- [x] Task: Conductor - User Manual Verification 'Phase 6: Verification and closeout' (Protocol in workflow.md)

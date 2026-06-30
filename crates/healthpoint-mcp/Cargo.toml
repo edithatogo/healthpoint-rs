@@ -15,6 +15,7 @@ path = "src/main.rs"
 anyhow.workspace = true
 healthpoint-client.workspace = true
 healthpoint-core.workspace = true
+healthpoint-testkit.workspace = true
 rmcp.workspace = true
 schemars.workspace = true
 serde.workspace = true

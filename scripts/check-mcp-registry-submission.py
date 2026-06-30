@@ -45,7 +45,7 @@ REGISTRIES = [
         "Glama MCP server directory",
         "https://glama.ai/mcp/servers",
         "Directory submission/indexing.",
-        "Public repository metadata and MCP server install/use documentation.",
+        "Public repository metadata, a repo-local glama.json manifest, and MCP server install/use documentation.",
         False,
     ),
     Registry(
@@ -69,10 +69,16 @@ def cargo(*args: str) -> str:
     return subprocess.check_output(["cargo", *args], cwd=ROOT, text=True, stderr=subprocess.STDOUT)
 
 
+def load_json(path: pathlib.Path) -> dict:
+    return json.loads(path.read_text(encoding="utf-8"))
+
+
 def main() -> int:
     errors: list[str] = []
     server_path = ROOT / "server.json"
-    server = json.loads(server_path.read_text(encoding="utf-8"))
+    server = load_json(server_path)
+    glama_path = ROOT / "glama.json"
+    glama = load_json(glama_path)
     workspace = tomllib.loads((ROOT / "Cargo.toml").read_text(encoding="utf-8"))
     version = workspace["workspace"]["package"]["version"]
 
@@ -118,6 +124,36 @@ def main() -> int:
     if "USER mcp" not in dockerfile:
         errors.append("Dockerfile runtime image must run as the non-root mcp user")
 
+    if glama.get("$schema") != "https://glama.ai/mcp/schemas/server.json":
+        errors.append("glama.json must use the official Glama schema URL")
+    if glama.get("name") != "healthpoint-rs":
+        errors.append("glama.json name must be healthpoint-rs")
+    if glama.get("displayName") != "Healthpoint MCP Server":
+        errors.append("glama.json displayName must be Healthpoint MCP Server")
+    if glama.get("license") != "Apache-2.0":
+        errors.append("glama.json license must be Apache-2.0")
+    if glama.get("repository") != "https://github.com/edithatogo/healthpoint-rs":
+        errors.append("glama.json repository must point to the GitHub source repository")
+    if glama.get("transport") != "stdio":
+        errors.append("glama.json transport must be stdio")
+    glama_run = glama.get("run", {})
+    glama_env = glama_run.get("env", {})
+    if glama_run.get("command") != "healthpoint-mcp":
+        errors.append("glama.json run.command must be healthpoint-mcp")
+    if glama_env.get("HEALTHPOINT_MODE", {}).get("default") != "synthetic":
+        errors.append("glama.json must default HEALTHPOINT_MODE to synthetic")
+    if glama_env.get("HEALTHPOINT_API_KEY", {}).get("secret") is not True:
+        errors.append("glama.json must mark HEALTHPOINT_API_KEY as secret")
+    if glama_env.get("HEALTHPOINT_API_KEY", {}).get("required") is True:
+        errors.append("glama.json must keep HEALTHPOINT_API_KEY optional")
+    if glama_env.get("HEALTHPOINT_BASE_URL", {}).get("required") is True:
+        errors.append("glama.json must keep HEALTHPOINT_BASE_URL optional in synthetic mode")
+    install = glama.get("install", {})
+    if install.get("command") != "cargo":
+        errors.append("glama.json install.command must be cargo")
+    if install.get("args") != ["install", "--locked", "--version", "0.1.0", "healthpoint-mcp"]:
+        errors.append("glama.json install.args must pin healthpoint-mcp 0.1.0 with --locked")
+
     metadata = json.loads(cargo("metadata", "--format-version", "1", "--no-deps"))
     names = {pkg["name"] for pkg in metadata["packages"]}
     for required in ["healthpoint-mcp", "healthpoint-cli"]:
@@ -126,6 +162,7 @@ def main() -> int:
 
     report = {
         "server": server.get("name"),
+        "glama": glama.get("name"),
         "version": version,
         "registries": [registry.__dict__ for registry in REGISTRIES],
         "automated_submit_ready": not errors,

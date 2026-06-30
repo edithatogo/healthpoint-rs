@@ -29,7 +29,29 @@ healthpoint-rs/
   docs/                       # access, licensing, MCP, exports, integration roadmap
 ```
 
-## First commands
+## Installation
+
+Install from crates.io after Rust is available:
+
+```bash
+cargo install healthpoint-mcp healthpoint-cli
+```
+
+Install from source checkout:
+
+```bash
+git clone https://github.com/edithatogo/healthpoint-rs.git
+cd healthpoint-rs
+bin/conductor-setup
+cargo install --path crates/healthpoint-mcp
+cargo install --path crates/healthpoint-cli
+```
+
+Install through Smithery from the published listing: [edithatogo/healthpoint-rs](https://smithery.ai/servers/edithatogo/healthpoint-rs). The Smithery package starts in synthetic mode unless live Healthpoint credentials are supplied.
+
+## Usage
+
+First commands
 
 ```bash
 cp .env.example .env
@@ -45,12 +67,13 @@ cargo run -p healthpoint-cli -- get uri healthpoint://service/<id> --format json
 cargo run -p healthpoint-mcp
 ```
 
-The MCP server is a separate binary so CLI and MCP can evolve independently while sharing the same crates.
+The MCP server is a separate binary so CLI and MCP can evolve independently while sharing the same crates. It starts in synthetic fixture mode when no API key is supplied; set `HEALTHPOINT_MODE=live` and provide `HEALTHPOINT_API_KEY` for licensed live API calls.
 
 ## Configuration
 
 ```bash
-export HEALTHPOINT_API_KEY="..."
+export HEALTHPOINT_MODE="synthetic"                       # synthetic | live
+export HEALTHPOINT_API_KEY="..."                         # optional; required only for live mode
 export HEALTHPOINT_BASE_URL="https://uat.healthpointapi.com/baseR4/"
 export HEALTHPOINT_AUTH_SCHEME="x-api-key"               # bearer | x-api-key | header:<name> | none
 export HEALTHPOINT_GEO_SEARCH_MODE="healthpoint-lat-lon" # healthpoint-lat-lon | fhir-near
@@ -100,20 +123,56 @@ healthpoint export services \
   --output .healthpoint/cervical-screening.jsonl
 ```
 
-## MCP tools
+## Tools
 
-```text
-healthpoint_diagnostic_status
-healthpoint_search_services
-healthpoint_search_by_snomed
-healthpoint_find_nearby_services
-healthpoint_get_service
-healthpoint_get_location
-healthpoint_get_organization
-healthpoint_read_resource_uri
+| Tool | Purpose |
+| --- | --- |
+| `healthpoint.diagnostic.status` | Show redacted runtime mode, configuration, and readiness. |
+| `healthpoint.access.notes` | Show non-secret endpoint, auth, and documentation notes. |
+| `healthpoint.access.policy` | Show the conservative access/export policy before reuse. |
+| `healthpoint.services.search` | Search HealthcareService records by text, codes, region filters, cursor, and limit. |
+| `healthpoint.services.search_snomed` | Search HealthcareService records by SNOMED CT code in type, category, or specialty. |
+| `healthpoint.services.nearby` | Find HealthcareService records near a latitude/longitude point. |
+| `healthpoint.service.get` | Read one HealthcareService by FHIR id. |
+| `healthpoint.location.get` | Read one Location by FHIR id. |
+| `healthpoint.organization.get` | Read one Organization by FHIR id. |
+| `healthpoint.resource.read` | Read a supported `healthpoint://` resource URI. |
+
+The MCP server also exposes 3 static resources, 4 resource templates, and 2 prompts. See `docs/mcp-tools.md` and `docs/integrations/mcp-client-configs.md` for launch examples.
+
+Claude Desktop source-checkout example:
+
+```json
+{
+  "mcpServers": {
+    "healthpoint-dev": {
+      "command": "cargo",
+      "args": ["run", "-p", "healthpoint-mcp"],
+      "env": {
+        "HEALTHPOINT_MODE": "synthetic"
+      }
+    }
+  }
+}
 ```
 
-See `docs/mcp-tools.md` and `docs/integrations/mcp-client-configs.md` for launch examples and planned resource templates.
+Live Healthpoint mode requires a licensed API key:
+
+```json
+{
+  "mcpServers": {
+    "healthpoint-live": {
+      "command": "healthpoint-mcp",
+      "env": {
+        "HEALTHPOINT_MODE": "live",
+        "HEALTHPOINT_API_KEY": "...",
+        "HEALTHPOINT_BASE_URL": "https://uat.healthpointapi.com/baseR4/",
+        "HEALTHPOINT_AUTH_SCHEME": "x-api-key"
+      }
+    }
+  }
+}
+```
 
 ## Integration contracts
 

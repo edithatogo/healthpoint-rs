@@ -9,6 +9,7 @@ on:
       - scripts/check-smithery-compliance.py
       - scripts/validate-mcp-server
       - docs/smithery-compliance-playbook.md
+      - docs/smithery-compliance-contract.md
       - .github/workflows/smithery-compliance.yml
   workflow_dispatch:
     inputs:

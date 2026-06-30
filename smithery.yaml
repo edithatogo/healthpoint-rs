@@ -1,0 +1,53 @@
+startCommand:
+  type: stdio
+  configSchema:
+    type: object
+    properties:
+      healthpoint_mode:
+        type: string
+        title: Healthpoint mode
+        description: "synthetic starts without credentials using bundled fixture data; live uses licensed Healthpoint API access."
+        enum:
+          - synthetic
+          - live
+        default: synthetic
+      healthpoint_api_key:
+        type: string
+        title: Healthpoint API key
+        description: "Optional licensed Healthpoint API key. Required only when healthpoint_mode is live."
+        sensitive: true
+      healthpoint_base_url:
+        type: string
+        title: Healthpoint base URL
+        description: "FHIR base URL for live Healthpoint access."
+        default: https://uat.healthpointapi.com/baseR4/
+      healthpoint_auth_scheme:
+        type: string
+        title: Healthpoint auth scheme
+        description: "Authentication scheme for live Healthpoint access."
+        enum:
+          - x-api-key
+          - bearer
+          - none
+        default: x-api-key
+      healthpoint_geo_search_mode:
+        type: string
+        title: Nearby search encoding
+        description: "Encoding strategy for nearby live searches."
+        enum:
+          - healthpoint-lat-lon
+          - fhir-near
+        default: healthpoint-lat-lon
+    additionalProperties: false
+  commandFunction: |
+    (config) => ({
+      command: "healthpoint-mcp",
+      args: [],
+      env: {
+        HEALTHPOINT_MODE: config.healthpoint_mode || "synthetic",
+        HEALTHPOINT_API_KEY: config.healthpoint_api_key || "",
+        HEALTHPOINT_BASE_URL: config.healthpoint_base_url || "https://uat.healthpointapi.com/baseR4/",
+        HEALTHPOINT_AUTH_SCHEME: config.healthpoint_auth_scheme || "x-api-key",
+        HEALTHPOINT_GEO_SEARCH_MODE: config.healthpoint_geo_search_mode || "healthpoint-lat-lon"
+      }
+    })

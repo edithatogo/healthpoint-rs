@@ -2,6 +2,9 @@
 
 This playbook is the reusable checklist for improving Smithery score and verification for local stdio MCP servers. It is written from the `healthpoint-rs` hardening pass but should apply to other MCP repos with minimal changes.
 
+The source-of-truth contract for this repo lives in
+[`docs/smithery-compliance-contract.md`](docs/smithery-compliance-contract.md).
+
 ## Score strategy
 
 Separate gates into two classes:
@@ -12,6 +15,9 @@ Separate gates into two classes:
 For `healthpoint-rs`, the target is maximum free/repo-controlled score. Full verification is intentionally out of scope until a paid plan and controlled homepage host are approved.
 
 ## Required repo-controlled items
+
+Mirror Smithery score categories locally: Capability Quality, Server Metadata, and Configuration UX. Fail the repo checker for missing parameter descriptions, output schemas, annotations, dot-notation names, required config, missing config schema, or incomplete listing metadata.
+
 
 - Add the Smithery badge near the top of `README.md`:
 
@@ -28,10 +34,10 @@ For `healthpoint-rs`, the target is maximum free/repo-controlled score. Full ver
 
 - Generate MCPB from a metadata source of truth:
   - Include `manifest_version: "0.3"`.
-  - Include complete `tools` with descriptions, `inputSchema`, and preferably `outputSchema`.
+  - Include complete `tools` with Smithery-friendly names, descriptions, parameter descriptions in `inputSchema`, `outputSchema`, and read-only annotations.
   - Include prompts where supported by the MCPB spec.
   - Record resources/resource templates in `_meta.io.modelcontextprotocol` when the bundle format has no first-class resource field.
-  - Mark secret user config as sensitive and required.
+  - Keep no-credential startup possible where safe. Mark secret user config as sensitive but optional, and provide a synthetic/default mode when live credentials are license-bound.
 
 - Exclude from bundles:
   - `.env` files

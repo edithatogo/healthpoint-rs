@@ -10,13 +10,14 @@
   "transport": "stdio",
   "install": {
     "command": "cargo",
-    "args": ["install", "healthpoint-mcp"]
+    "args": ["install", "--locked", "--version", "0.1.0", "healthpoint-mcp"]
   },
   "run": {
     "command": "healthpoint-mcp",
     "env": {
-      "HEALTHPOINT_API_KEY": {"required": true, "secret": true},
-      "HEALTHPOINT_BASE_URL": {"required": true},
+      "HEALTHPOINT_MODE": {"required": false, "default": "synthetic"},
+      "HEALTHPOINT_API_KEY": {"required": false, "secret": true},
+      "HEALTHPOINT_BASE_URL": {"required": false},
       "HEALTHPOINT_AUTH_SCHEME": {"required": false, "default": "x-api-key"}
     }
   },

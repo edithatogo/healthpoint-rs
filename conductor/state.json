@@ -1,6 +1,6 @@
 {
   "project": "healthpoint-rs",
-  "status": "smithery_compliance_hardening_in_progress",
+  "status": "registry_closeout_complete_external_gates_pending",
   "updated_at": "2026-06-30",
   "context_model": "conductor",
   "default_branch": "main",
@@ -54,7 +54,8 @@
     "janix_validator_reference_only_due_agpl",
     "apify_validator_optional_manual_paid_actor",
     "awesome_mcp_servers_directory_benchmark_only",
-    "smithery_paid_plan_and_dns_txt_are_external_gates"
+    "smithery_paid_plan_and_dns_txt_are_external_gates",
+    "glama_repo_metadata_captured_in_glama_json"
   ],
   "implemented_surfaces": [
     "HealthpointClient configurable base URL/auth/geo mode",
@@ -109,8 +110,18 @@
     "MCP protocol validator wrapper using mcp-validation CLI",
     "multi-platform Smithery compliance workflow",
     "reusable Smithery compliance playbook",
+    "Glama repo metadata file with synthetic-by-default runtime config",
     "Smithery accepted hardened release 76edfcf1-d617-42fe-8b4e-06c6e3917854",
-    "mcp-validation fast protocol check passed for healthpoint-mcp"
+    "mcp-validation fast protocol check passed for healthpoint-mcp",
+    "Smithery 100/100 remediation metadata: dot-notation tools, parameter descriptions, output schemas, read-only annotations, optional synthetic mode, root smithery.yaml, and project icon asset",
+    "healthpoint-mcp synthetic default mode for no-credential MCP startup",
+    "healthpoint-mcp explicit runtime identity and server instructions",
+    "Smithery accepted remediation release 677ad41a-384f-40d6-9ce0-b02774bb7294",
+    "healthpoint-mcp runtime tools/list now exposes outputSchema for all 10 tools",
+    "Smithery metadata icon updated through authenticated API to reachable GitHub favicon URL",
+    "Smithery accepted runtime output-schema release 36ec9477-599d-4d76-a900-f37d83753746",
+    "Smithery accepted structured output-schema and icon remediation release dda10c87-9df1-4f17-9f4d-0b9bb5c950ba",
+    "Glama release v0.1.0 created from successful Dockerfile test 019f181f-0b4a-7200-b5a0-f52c6516b629"
   ],
   "validated_in_current_environment": [
     "JSON metadata parsed successfully",
@@ -152,7 +163,26 @@
     "mcp-publisher publish server.json succeeded for io.github.edithatogo/healthpoint-rs version 0.1.0",
     "scripts/check-smithery-compliance.py passed",
     "scripts/validate-mcp-server fast passed with mcp-validation from GitHub",
-    "smithery mcp publish accepted hardened release 76edfcf1-d617-42fe-8b4e-06c6e3917854"
+    "smithery mcp publish accepted hardened release 76edfcf1-d617-42fe-8b4e-06c6e3917854",
+    "scripts/package-mcpb rebuilt Darwin arm64 MCPB bundle successfully after Smithery 100/100 remediation",
+    "scripts/check-smithery-compliance.py passed with Capability Quality, Server Metadata, and Configuration UX rubric checks",
+    "scripts/validate-mcp-server fast passed and reported healthpoint-rs v0.1.0 with 10 tools, 2 prompts, and 3 resources",
+    "smithery mcp publish accepted release 677ad41a-384f-40d6-9ce0-b02774bb7294",
+    "Smithery public API shows configuration required fields are now empty after optional synthetic-mode release",
+    "direct MCP tools/list probe showed no missing outputSchema and no missing annotations after runtime output-schema remediation",
+    "scripts/package-mcpb passed after structured runtime output-schema remediation",
+    "scripts/check-smithery-compliance.py passed after structured runtime output-schema remediation",
+    "scripts/validate-mcp-server fast passed after structured runtime output-schema remediation",
+    "smithery mcp publish accepted release 36ec9477-599d-4d76-a900-f37d83753746",
+    "smithery mcp publish accepted release dda10c87-9df1-4f17-9f4d-0b9bb5c950ba",
+    "Glama search shows edithatogo/healthpoint-rs as Healthpoint MCP Server",
+    "Glama score page reports 25 percent with no release, no recent usage, and no glama.json recognition",
+    "Glama Dockerfile test 019f181f-0b4a-7200-b5a0-f52c6516b629 succeeded and discovered 10 tools, 2 prompts, and 3 resources",
+    "Glama release v0.1.0 exists and public score improved to 58 percent",
+    "Glama Try in Browser launched instance o7bzzvjw41 and healthpoint_access_policy returned the expected local-only access policy",
+    "PulseMCP submit flow confirms daily official-registry ingestion and manual email gate",
+    "mcp.so my-servers shows healthpoint-rs status created",
+    "authenticated Smithery API shows active bundleUrl contains dda10c87-9df1-4f17-9f4d-0b9bb5c950ba, iconUrl is reachable, config required fields are empty, and 10 tools have outputSchema"
   ],
   "blocked_by": [
     "Healthpoint written approval for public-data, hosted proxy, redistribution, open_social_data publication, AI dataset, or non-research commercial use",
@@ -161,13 +191,17 @@
     "PulseMCP is manual/contact-gated or dependent on Official MCP Registry ingestion",
     "Smithery verification still requires quality score >80, exact-host TXT record, and paid developer plan",
     "Smithery exact-host TXT verification requires a controlled homepage host",
-    "Smithery paid developer plan requires explicit user approval"
+    "Smithery paid developer plan requires explicit user approval",
+    "Smithery live quality score now reads 98/100 in the dashboard, but the final 2 points are not attributable from public HTML/API responses available from this shell",
+    "Smithery API update accepts description and iconUrl; homepage, repositoryUrl, backlinkUrl, license, and unlisted field persistence still depends on the dashboard/account session",
+    "Smithery live quality score remains a dashboard source of truth for the last 2 points; public HTML/API do not expose the exact incomplete item",
+    "Glama score remains externally gated until usage, glama.json indexing, and pending tool scores are recognized by Glama"
   ],
   "next_tracks": [
+    "address-glama-release-and-usage-gates",
     "monitor-or-contact-pulsemcp-for-official-registry-ingestion",
     "monitor-mcp-so-created-status-for-public-listing",
-    "obtain-healthpoint-written-approval-before-production-or-public-data-release",
-    "publish-hardened-smithery-mcpb-release-and-recheck-score"
+    "obtain-healthpoint-written-approval-before-production-or-public-data-release"
   ],
-  "latest_checkpoint": "conductor/checkpoints/2026-06-30-smithery-compliance-hardening.md"
+  "latest_checkpoint": "conductor/checkpoints/2026-06-30-glama-score-gap.md"
 }

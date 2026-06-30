@@ -9,7 +9,15 @@ shift || true
 
 mkdir -p "$REPORT_DIR"
 
-if ! command -v mcp-validate >/dev/null 2>&1; then
+VALIDATOR_BIN="${MCP_VALIDATE_BIN:-}"
+if [[ -z "$VALIDATOR_BIN" && -x "$ROOT/target/mcp-validation-venv313/bin/mcp-validate" ]]; then
+  VALIDATOR_BIN="$ROOT/target/mcp-validation-venv313/bin/mcp-validate"
+fi
+if [[ -z "$VALIDATOR_BIN" ]]; then
+  VALIDATOR_BIN="$(command -v mcp-validate || true)"
+fi
+
+if [[ -z "$VALIDATOR_BIN" ]]; then
   cat >&2 <<'MSG'
 mcp-validate is not installed.
 Install the preferred CLI validator with:
@@ -26,14 +34,15 @@ elif [[ "$MODE" != "fast" ]]; then
   exit 2
 fi
 
-export HEALTHPOINT_API_KEY="${HEALTHPOINT_API_KEY:-synthetic-validation-key}"
-export HEALTHPOINT_BASE_URL="${HEALTHPOINT_BASE_URL:-http://127.0.0.1:8787/}"
+export HEALTHPOINT_MODE="${HEALTHPOINT_MODE:-synthetic}"
+export HEALTHPOINT_API_KEY="${HEALTHPOINT_API_KEY:-}"
+export HEALTHPOINT_BASE_URL="${HEALTHPOINT_BASE_URL:-https://uat.healthpointapi.com/baseR4/}"
 export HEALTHPOINT_AUTH_SCHEME="${HEALTHPOINT_AUTH_SCHEME:-none}"
 export HEALTHPOINT_GEO_SEARCH_MODE="${HEALTHPOINT_GEO_SEARCH_MODE:-healthpoint-lat-lon}"
 export HEALTHPOINT_TIMEOUT_SECS="${HEALTHPOINT_TIMEOUT_SECS:-5}"
 
 # shellcheck disable=SC2086
-mcp-validate \
+"$VALIDATOR_BIN" \
   --json-report "$REPORT_PATH" \
   --repo-url "https://github.com/edithatogo/healthpoint-rs" \
   $SCAN_FLAG \

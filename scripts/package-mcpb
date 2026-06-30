@@ -70,6 +70,7 @@ manifest = {
             "command": f"${{__dirname}}/bin/{bin_name}",
             "args": [],
             "env": {
+                "HEALTHPOINT_MODE": "${user_config.healthpoint_mode}",
                 "HEALTHPOINT_API_KEY": "${user_config.healthpoint_api_key}",
                 "HEALTHPOINT_BASE_URL": "${user_config.healthpoint_base_url}",
                 "HEALTHPOINT_AUTH_SCHEME": "${user_config.healthpoint_auth_scheme}",
@@ -79,7 +80,9 @@ manifest = {
         },
     },
     "tools": metadata["tools"],
+    "resources": metadata["resources"],
     "prompts": metadata["prompts"],
+    "resourceTemplates": metadata["resource_templates"],
     "tools_generated": False,
     "prompts_generated": False,
     "user_config": metadata["user_config"],
