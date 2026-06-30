@@ -3,6 +3,14 @@ set -euo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 METADATA="$ROOT/packaging/mcpb/manifest-metadata.json"
+
+for command in cargo jq zip; do
+  if ! command -v "$command" >/dev/null 2>&1; then
+    echo "required command not found: $command" >&2
+    exit 1
+  fi
+done
+
 VERSION="$(cd "$ROOT" && cargo metadata --no-deps --format-version 1 | jq -r '.packages[] | select(.name == "healthpoint-mcp") | .version' | head -n 1)"
 
 if [[ -z "${VERSION}" || "${VERSION}" == "null" ]]; then
@@ -33,6 +41,7 @@ OUT_DIR="$ROOT/target/mcpb"
 BUNDLE="$OUT_DIR/healthpoint-rs-${VERSION}-${OS}-${ARCH}.mcpb"
 
 rm -rf "$BUILD_DIR"
+trap 'rm -rf "$BUILD_DIR"' EXIT
 mkdir -p "$BUILD_DIR/bin" "$OUT_DIR"
 
 (cd "$ROOT" && cargo build --release -p healthpoint-mcp)
