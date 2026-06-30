@@ -177,7 +177,8 @@ def check_server_json(findings: list[Finding]) -> None:
     official_env = []
     official_transport = None
     for package in packages:
-        if package.get("identifier") == "healthpoint-mcp":
+        identifier = package.get("identifier", "")
+        if identifier == "healthpoint-mcp" or identifier.startswith("ghcr.io/edithatogo/healthpoint-mcp:"):
             official_env = package.get("environmentVariables", [])
             official_transport = package.get("transport", {}).get("type")
             break

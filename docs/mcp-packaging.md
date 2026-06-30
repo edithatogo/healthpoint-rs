@@ -10,6 +10,22 @@ cargo install --path crates/healthpoint-mcp
 
 The server uses stdio transport and reads configuration from environment variables declared in `server.json`.
 
+## OCI image
+
+The official MCP Registry currently validates this server through the GHCR OCI image declared in `server.json`:
+
+```bash
+docker run --rm -i \
+  -e HEALTHPOINT_API_KEY \
+  ghcr.io/edithatogo/healthpoint-mcp:0.1.0
+```
+
+The image sets the required MCP ownership label:
+
+```text
+io.modelcontextprotocol.server.name=io.github.edithatogo/healthpoint-rs
+```
+
 ## Required runtime configuration
 
 - `HEALTHPOINT_API_KEY`: user-provided licensed Healthpoint API key or token.

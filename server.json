@@ -19,9 +19,8 @@
   ],
   "packages": [
     {
-      "registryType": "cargo",
-      "identifier": "healthpoint-mcp",
-      "version": "0.1.0",
+      "registryType": "oci",
+      "identifier": "ghcr.io/edithatogo/healthpoint-mcp:0.1.0",
       "transport": {
         "type": "stdio"
       },
