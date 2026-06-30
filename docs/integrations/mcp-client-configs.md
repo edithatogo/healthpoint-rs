@@ -9,7 +9,7 @@
       "command": "healthpoint-mcp",
       "env": {
         "HEALTHPOINT_MODE": "live",
-        "HEALTHPOINT_MODE": "synthetic",
+        "HEALTHPOINT_API_KEY": "your-healthpoint-api-key",
         "HEALTHPOINT_AUTH_SCHEME": "x-api-key",
         "HEALTHPOINT_GEO_SEARCH_MODE": "healthpoint-lat-lon"
       }

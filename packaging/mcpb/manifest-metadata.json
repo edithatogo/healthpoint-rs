@@ -518,5 +518,5 @@
       "required": false
     }
   },
-  "icon": "https://github.githubassets.com/favicons/favicon.svg"
+  "icon": "https://raw.githubusercontent.com/edithatogo/healthpoint-rs/main/assets/healthpoint-rs-icon.svg"
 }

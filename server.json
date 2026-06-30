@@ -10,7 +10,7 @@
   "websiteUrl": "https://github.com/edithatogo/healthpoint-rs",
   "icons": [
     {
-      "src": "https://github.githubassets.com/favicons/favicon.svg",
+      "src": "https://raw.githubusercontent.com/edithatogo/healthpoint-rs/main/assets/healthpoint-rs-icon.svg",
       "mimeType": "image/svg+xml",
       "sizes": [
         "any"
