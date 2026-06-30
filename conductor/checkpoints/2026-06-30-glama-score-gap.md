@@ -20,7 +20,5 @@ Date: 2026-06-30
 
 ## Next step
 
-- Push the local registry/Glama metadata changes to `main`.
-- Sync the Glama repository index.
-- Sync the Glama repository index.
-- Recheck the score after Glama completes pending usage, indexing, and tool scoring.
+- Superseded by `conductor/checkpoints/2026-06-30-smithery-glama-closeout.md`.
+- Remaining Glama score movement is external to the repository and depends on Glama-side indexing, usage recognition, and scoring.

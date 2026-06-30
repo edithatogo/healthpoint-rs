@@ -21,5 +21,5 @@ Implemented:
 
 Open:
 
-- Arrow/Parquet strategy.
+- Arrow/Parquet strategy is deferred; the string-row bridge remains the stable contract.
 - Actual open_social_data provider only after terms review.

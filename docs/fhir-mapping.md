@@ -79,4 +79,4 @@ raw_fhir
 
 ## Why not generated full FHIR bindings yet?
 
-FHIR code generation can be heavy and brittle for a first API-client spike. The current mapper uses tolerant JSON extraction so the client can validate Healthpoint's actual profile quickly. Revisit generated bindings after the live endpoint contract, extensions, profiles, and common payload shapes are known.
+FHIR code generation can be heavy and brittle for a first API-client spike. The current mapper uses tolerant JSON extraction so the client can validate Healthpoint's actual profile quickly. This strategy is codified in ADR 0008. Revisit generated bindings after the live endpoint contract, extensions, profiles, and common payload shapes are known.

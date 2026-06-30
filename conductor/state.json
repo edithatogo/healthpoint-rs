@@ -21,6 +21,8 @@
     "native_mcp_resources_and_prompts",
     "vuw_outlook_contract_evidence_ignored_local_only",
     "environment_limit_documented",
+    "tolerant_json_fhir_mapping_until_live_profiles_known",
+    "open_social_data_string_row_bridge_until_consumer_exists",
     "metadata_static_preflight_script",
     "synthetic_http_mock_server",
     "interim_contract_schemas",
@@ -203,5 +205,5 @@
     "monitor-mcp-so-created-status-for-public-listing",
     "obtain-healthpoint-written-approval-before-production-or-public-data-release"
   ],
-  "latest_checkpoint": "conductor/checkpoints/2026-06-30-glama-score-gap.md"
+  "latest_checkpoint": "conductor/checkpoints/2026-06-30-release-distribution-external-gates.md"
 }

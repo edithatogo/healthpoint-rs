@@ -34,3 +34,4 @@ Date: 2026-06-30
 - Official MCP registry submission requires the crates.io packages to exist and `mcp-publisher` credentials/tooling.
 - Smithery, Glama, PulseMCP, and mcp.so submissions are account-gated/manual unless those services expose usable credentials or APIs.
 - Healthpoint written approval is still required before public data redistribution, open data publication, hosted proxy use, AI dataset/model training use, or non-research commercial use.
+- All remaining gates above are external to the repository.

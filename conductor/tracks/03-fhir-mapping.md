@@ -14,4 +14,4 @@ Implemented from synthetic fixtures:
 Open:
 
 - Validate against Healthpoint's actual FHIR profiles.
-- Decide whether tolerant JSON mapping is sufficient or generated bindings are justified.
+- ADR 0008 keeps tolerant JSON mapping until live profile validation justifies generated bindings.
