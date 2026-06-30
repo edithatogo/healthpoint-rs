@@ -90,13 +90,13 @@ def main() -> int:
         (
             pkg
             for pkg in oci_packages
-            if pkg.get("identifier") == f"ghcr.io/edithatogo/healthpoint-rs/healthpoint-mcp:{version}"
+            if pkg.get("identifier") == f"ghcr.io/edithatogo/healthpoint-mcp:{version}"
         ),
         None,
     )
     if not mcp_pkg:
         errors.append(
-            "server.json packages must include ghcr.io/edithatogo/healthpoint-rs/healthpoint-mcp:<version> with registryType oci"
+            "server.json packages must include ghcr.io/edithatogo/healthpoint-mcp:<version> with registryType oci"
         )
     elif "version" in mcp_pkg:
         errors.append("healthpoint-mcp OCI package must not use a separate version field")

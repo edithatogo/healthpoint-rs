@@ -17,7 +17,7 @@ The official MCP Registry currently validates this server through the GHCR OCI i
 ```bash
 docker run --rm -i \
   -e HEALTHPOINT_API_KEY \
-  ghcr.io/edithatogo/healthpoint-rs/healthpoint-mcp:0.1.0
+  ghcr.io/edithatogo/healthpoint-mcp:0.1.0
 ```
 
 The image sets the required MCP ownership label:
