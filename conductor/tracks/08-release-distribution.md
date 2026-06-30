@@ -4,7 +4,7 @@ Status: partial
 
 Open tasks:
 
-- Confirm GitHub CI passes after push.
+- Confirm GitHub CI passes after push, then treat any remaining publication items as external gates.
 
 Implemented prep:
 
@@ -17,3 +17,10 @@ Implemented prep:
 - RMCP pin plan.
 - GitHub PR and issue templates.
 - Documentation link-check workflow.
+
+External gates:
+
+- `CARGO_REGISTRY_TOKEN` repository secret.
+- crates.io publication.
+- Official MCP Registry submission after crates.io visibility.
+- Smithery/Glama/PulseMCP/mcp.so publication or refresh where those services require account-side actions.

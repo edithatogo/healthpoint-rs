@@ -15,7 +15,7 @@ service-eligibilities
 service-availability
 ```
 
-The adapter currently returns simple string rows so it can later be converted to Polars, Arrow, or Parquet without forcing the core Healthpoint client to depend on a tabular engine.
+The adapter currently returns simple string rows so it can later be converted to Polars, Arrow, or Parquet without forcing the core Healthpoint client to depend on a tabular engine. This bridge shape is codified in ADR 0009.
 
 ## Licensing gates
 
