@@ -190,6 +190,8 @@ def main() -> int:
         glama = json.loads(glama_path.read_text(encoding="utf-8"))
         if glama.get("$schema") != "https://glama.ai/mcp/schemas/server.json":
             errors.append("glama.json must use Glama's server schema URL")
+        if "edithatogo" not in glama.get("maintainers", []):
+            errors.append("glama.json maintainers must include edithatogo")
         if glama.get("repository") != "https://github.com/edithatogo/healthpoint-rs":
             errors.append("glama.json repository must point to the public GitHub repository")
         if glama.get("license") != "Apache-2.0":
