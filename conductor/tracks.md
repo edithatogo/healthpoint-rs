@@ -6,11 +6,11 @@
 | --- | --- | --- |
 | 01. Workspace foundation | Complete | Workspace, CI, Conductor files, docs, crates, static preflight, mock server, Cargo.lock, setup, fmt, locked check/test/clippy, and cargo-deny validate locally. |
 | 02. Access and licensing boundary | Complete | Bring-your-own-key/local-only defaults, redaction, path validation, manifest warnings, portal terms review, VUW Outlook licence evidence, and machine-readable policy are encoded. |
-| 03. FHIR mapping | Partial | Synthetic HealthcareService, Location, Organization, pagination, richer availability/eligibility/identifier mappings are implemented; live profile validation remains open. |
+| 03. FHIR mapping | Partial | Synthetic HealthcareService, Location, Organization, pagination, richer availability/eligibility/identifier mappings are implemented; tolerant JSON mapping is retained pending live profile validation. |
 | 04. CLI | Complete | doctor/search/get/get-uri/inspect/export/fixture/schema/policy/completions commands and mock-backed coverage are implemented. |
 | 05. MCP | Complete | RMCP stdio server exposes read-only tools, native resources/resource templates, and prompt templates. |
-| 06. open_social_data bridge | Partial | Tabular adapter covers services, locations, organizations, codes, contacts, eligibility, and availability without hard dependency; initial data dictionaries exist. |
-| 07. Live validation | Partial | UAT base URL, x-api-key auth, search parameter names, and a metadata-only live smoke are confirmed; broader pagination/nearby/direct-read/rate-limit captures remain metadata-only follow-ups. |
+| 06. open_social_data bridge | Partial | Tabular adapter covers services, locations, organizations, codes, contacts, eligibility, and availability without hard dependency; the string-row bridge is retained pending terms review. |
+| 07. Live validation | Partial | UAT base URL, x-api-key auth, documented search parameter names, and nearby-encoding notes are recorded; pagination, live Organization reads, and response-header capture remain live-only follow-ups. |
 | 08. Release and distribution | Partial | Dynamic workspace versioning, crates.io-ready metadata, tag-driven GitHub release workflow, checksum artifacts, crates.io publish job, and MCP registry submission workflow exist; crates.io token and account-gated registry submissions remain external gates. |
 
 ## Track 01 — Workspace foundation
@@ -69,7 +69,7 @@ Tasks:
 - [x] Map Organization identifiers, type, aliases, parent, endpoints, and contacts.
 - [x] Add Bundle pagination tests.
 - [x] Add HTTP example responses derived from synthetic fixtures.
-- [ ] Decide whether to adopt generated FHIR bindings or keep tolerant JSON mapping after live-profile validation.
+- [x] Decide whether to adopt generated FHIR bindings or keep tolerant JSON mapping after live-profile validation.
 
 ## Track 04 — CLI
 
@@ -127,14 +127,14 @@ Status: partial
 
 Tasks:
 
-- [ ] Confirm base URL and auth scheme.
-- [ ] Confirm search parameter names.
+- [x] Confirm base URL and auth scheme.
+- [x] Confirm search parameter names.
 - [ ] Confirm pagination shape.
-- [ ] Confirm nearby-search encoding.
+- [x] Confirm nearby-search encoding.
 - [ ] Confirm direct reads for HealthcareService, Location, and Organization.
 - [ ] Confirm error/status/rate-limit response headers.
 - [x] Add redacted live contract capture plan.
-- [ ] Record only metadata and endpoint-shape notes; never commit real Healthpoint payloads.
+- [x] Record only metadata and endpoint-shape notes; never commit real Healthpoint payloads.
 
 ## Track 08 — Release and distribution
 
@@ -164,5 +164,5 @@ Tasks:
 
 ---
 
-- [ ] **Track: Smithery compliance hardening with CLI MCP validation**
+- [x] **Track: Smithery compliance hardening with CLI MCP validation**
 *Link: [./tracks/smithery_compliance_20260630/](./tracks/smithery_compliance_20260630/)*

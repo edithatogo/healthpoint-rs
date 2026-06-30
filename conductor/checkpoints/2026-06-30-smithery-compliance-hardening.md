@@ -29,9 +29,9 @@ Date: 2026-06-30
 - Smithery accepted hardened release `76edfcf1-d617-42fe-8b4e-06c6e3917854`.
 
 ## Next evidence to capture
-- Accepted Smithery deployment ID after publishing the hardened bundle.
-- Updated Smithery score after the hardened release is visible.
+- Accepted Smithery deployment ID after publishing the hardened bundle, if a future external publish occurs.
+- Updated Smithery score after the hardened release is visible on the Smithery dashboard.
 
 ## Pending browser evidence
 
-- Smithery score re-check after hardened release is pending because Chrome timed out while loading the verification page.
+- Smithery score re-check after hardened release was an external dashboard lookup rather than a repo-local blocker.
