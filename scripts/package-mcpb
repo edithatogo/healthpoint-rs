@@ -1,0 +1,218 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+VERSION="$(cd "$ROOT" && cargo metadata --no-deps --format-version 1 | jq -r '.packages[] | select(.name == "healthpoint-mcp") | .version' | head -n 1)"
+
+if [[ -z "${VERSION}" || "${VERSION}" == "null" ]]; then
+  echo "could not determine healthpoint-mcp version" >&2
+  exit 1
+fi
+
+case "$(uname -s)" in
+  Darwin) OS="darwin" ;;
+  Linux) OS="linux" ;;
+  MINGW*|MSYS*|CYGWIN*) OS="windows" ;;
+  *) OS="$(uname -s | tr '[:upper:]' '[:lower:]')" ;;
+esac
+
+case "$(uname -m)" in
+  arm64|aarch64) ARCH="arm64" ;;
+  x86_64|amd64) ARCH="x64" ;;
+  *) ARCH="$(uname -m)" ;;
+esac
+
+BIN_NAME="healthpoint-mcp"
+if [[ "${OS}" == "windows" ]]; then
+  BIN_NAME="healthpoint-mcp.exe"
+fi
+
+BUILD_DIR="$ROOT/target/mcpb/build"
+OUT_DIR="$ROOT/target/mcpb"
+BUNDLE="$OUT_DIR/healthpoint-rs-${VERSION}-${OS}-${ARCH}.mcpb"
+
+rm -rf "$BUILD_DIR"
+mkdir -p "$BUILD_DIR/bin" "$OUT_DIR"
+
+(cd "$ROOT" && cargo build --release -p healthpoint-mcp)
+cp "$ROOT/target/release/$BIN_NAME" "$BUILD_DIR/bin/$BIN_NAME"
+cp "$ROOT/README.md" "$BUILD_DIR/README.md"
+cp "$ROOT/LICENSE" "$BUILD_DIR/LICENSE"
+cp "$ROOT/server.json" "$BUILD_DIR/server.json"
+
+cat > "$BUILD_DIR/manifest.json" <<JSON
+{
+  "manifest_version": "0.3",
+  "name": "healthpoint-rs",
+  "display_name": "healthpoint-rs",
+  "version": "${VERSION}",
+  "description": "Read-only stdio MCP server for licensed Healthpoint HL7 FHIR API access.",
+  "long_description": "healthpoint-rs provides read-only MCP tools, resources, resource templates, and prompts over the Healthpoint HL7 FHIR API. Users must provide their own licensed Healthpoint API key. The bundle contains no Healthpoint data or secrets.",
+  "author": {
+    "name": "Dylan",
+    "url": "https://github.com/edithatogo"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/edithatogo/healthpoint-rs"
+  },
+  "homepage": "https://github.com/edithatogo/healthpoint-rs",
+  "documentation": "https://github.com/edithatogo/healthpoint-rs#readme",
+  "support": "https://github.com/edithatogo/healthpoint-rs/issues",
+  "license": "Apache-2.0",
+  "privacy_policies": ["https://www.healthpoint.co.nz/healthpoint-privacy-policy/"],
+  "keywords": ["healthpoint", "fhir", "mcp", "healthcare", "snomed"],
+  "server": {
+    "type": "binary",
+    "entry_point": "bin/${BIN_NAME}",
+    "mcp_config": {
+      "command": "\${__dirname}/bin/${BIN_NAME}",
+      "args": [],
+      "env": {
+        "HEALTHPOINT_API_KEY": "\${user_config.healthpoint_api_key}",
+        "HEALTHPOINT_BASE_URL": "\${user_config.healthpoint_base_url}",
+        "HEALTHPOINT_AUTH_SCHEME": "\${user_config.healthpoint_auth_scheme}",
+        "HEALTHPOINT_GEO_SEARCH_MODE": "\${user_config.healthpoint_geo_search_mode}",
+        "HEALTHPOINT_TIMEOUT_SECS": "\${user_config.healthpoint_timeout_secs}"
+      }
+    }
+  },
+  "tools": [
+    {
+      "name": "healthpoint_diagnostic_status",
+      "description": "Return redacted diagnostic status for the configured Healthpoint API connection.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {}
+      }
+    },
+    {
+      "name": "healthpoint_search_services",
+      "description": "Search licensed Healthpoint services by text, SNOMED code, location, and result limit.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "text": {"type": "string"},
+          "snomed": {"type": "string"},
+          "lat": {"type": "number"},
+          "lon": {"type": "number"},
+          "radius_km": {"type": "number"},
+          "limit": {"type": "integer", "minimum": 1, "maximum": 100}
+        }
+      }
+    },
+    {
+      "name": "healthpoint_search_by_snomed",
+      "description": "Search licensed Healthpoint services by SNOMED CT code.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "snomed": {"type": "string"},
+          "limit": {"type": "integer", "minimum": 1, "maximum": 100}
+        },
+        "required": ["snomed"]
+      }
+    },
+    {
+      "name": "healthpoint_find_nearby_services",
+      "description": "Find licensed Healthpoint services near a latitude/longitude point.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "lat": {"type": "number"},
+          "lon": {"type": "number"},
+          "radius_km": {"type": "number"},
+          "limit": {"type": "integer", "minimum": 1, "maximum": 100}
+        },
+        "required": ["lat", "lon"]
+      }
+    },
+    {
+      "name": "healthpoint_get_service",
+      "description": "Read one licensed Healthpoint service record by identifier.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "id": {"type": "string"}
+        },
+        "required": ["id"]
+      }
+    },
+    {
+      "name": "healthpoint_get_location",
+      "description": "Read one licensed Healthpoint location record by identifier.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "id": {"type": "string"}
+        },
+        "required": ["id"]
+      }
+    },
+    {
+      "name": "healthpoint_get_organization",
+      "description": "Read one licensed Healthpoint organization record by identifier.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "id": {"type": "string"}
+        },
+        "required": ["id"]
+      }
+    },
+    {
+      "name": "healthpoint_read_resource_uri",
+      "description": "Resolve and read a healthpoint:// resource URI.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "uri": {"type": "string"}
+        },
+        "required": ["uri"]
+      }
+    }
+  ],
+  "tools_generated": true,
+  "prompts_generated": true,
+  "user_config": {
+    "healthpoint_api_key": {
+      "type": "string",
+      "title": "Healthpoint API key",
+      "description": "User-provided licensed Healthpoint API key or token.",
+      "sensitive": true,
+      "required": true
+    },
+    "healthpoint_base_url": {
+      "type": "string",
+      "title": "Healthpoint base URL",
+      "default": "https://uat.healthpointapi.com/baseR4/",
+      "required": false
+    },
+    "healthpoint_auth_scheme": {
+      "type": "string",
+      "title": "Healthpoint auth scheme",
+      "default": "x-api-key",
+      "required": false
+    },
+    "healthpoint_geo_search_mode": {
+      "type": "string",
+      "title": "Nearby search encoding",
+      "default": "healthpoint-lat-lon",
+      "required": false
+    },
+    "healthpoint_timeout_secs": {
+      "type": "string",
+      "title": "HTTP timeout seconds",
+      "default": "30",
+      "required": false
+    }
+  },
+  "compatibility": {
+    "platforms": ["${OS}"],
+    "architectures": ["${ARCH}"]
+  }
+}
+JSON
+
+(cd "$BUILD_DIR" && zip -qr "$BUNDLE" .)
+echo "$BUNDLE"
