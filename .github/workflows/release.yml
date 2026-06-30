@@ -109,7 +109,7 @@ jobs:
           cargo metadata --locked --format-version 1 | Out-File -Encoding utf8 dist/healthpoint-rs-${{ matrix.target }}/cargo-metadata.json
           Compress-Archive -Path dist/healthpoint-rs-${{ matrix.target }} -DestinationPath healthpoint-rs-${{ matrix.target }}.zip
           Get-FileHash healthpoint-rs-${{ matrix.target }}.zip -Algorithm SHA256 | ForEach-Object { "$($_.Hash.ToLower())  healthpoint-rs-${{ matrix.target }}.zip" } | Set-Content healthpoint-rs-${{ matrix.target }}.zip.sha256
-      - uses: actions/attest-build-provenance@v3
+      - uses: actions/attest-build-provenance@v4
         with:
           subject-path: |
             healthpoint-rs-${{ matrix.target }}.${{ matrix.archive }}
