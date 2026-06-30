@@ -161,3 +161,8 @@ Tasks:
 - [ ] Publish crates.io packages.
 - [ ] Submit official MCP registry package after crates.io publication.
 - [ ] Complete account-gated third-party MCP directory submissions.
+
+---
+
+- [ ] **Track: Smithery compliance hardening with CLI MCP validation**
+*Link: [./tracks/smithery_compliance_20260630/](./tracks/smithery_compliance_20260630/)*

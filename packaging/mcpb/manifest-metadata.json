@@ -1,0 +1,390 @@
+{
+  "name": "healthpoint-rs",
+  "display_name": "healthpoint-rs",
+  "description": "Read-only stdio MCP server for licensed Healthpoint HL7 FHIR API access.",
+  "long_description": "healthpoint-rs provides read-only MCP tools, resources, resource templates, and prompts over the Healthpoint HL7 FHIR API. Users must provide their own licensed Healthpoint API key. The bundle contains no Healthpoint data or secrets.",
+  "author": {
+    "name": "Dylan",
+    "url": "https://github.com/edithatogo"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/edithatogo/healthpoint-rs"
+  },
+  "homepage": "https://github.com/edithatogo/healthpoint-rs",
+  "documentation": "https://github.com/edithatogo/healthpoint-rs#readme",
+  "support": "https://github.com/edithatogo/healthpoint-rs/issues",
+  "license": "Apache-2.0",
+  "privacy_policies": [
+    "https://www.healthpoint.co.nz/healthpoint-privacy-policy/"
+  ],
+  "keywords": [
+    "healthpoint",
+    "fhir",
+    "mcp",
+    "healthcare",
+    "snomed"
+  ],
+  "tools": [
+    {
+      "name": "healthpoint_diagnostic_status",
+      "description": "Return redacted diagnostic status for the configured Healthpoint API connection. Never returns API keys or secret values.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {},
+        "additionalProperties": false
+      },
+      "outputSchema": {
+        "type": "object",
+        "additionalProperties": true
+      }
+    },
+    {
+      "name": "healthpoint_api_access_notes",
+      "description": "Show non-secret Healthpoint API access notes discovered from the licensed portal.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {},
+        "additionalProperties": false
+      },
+      "outputSchema": {
+        "type": "object",
+        "additionalProperties": true
+      }
+    },
+    {
+      "name": "healthpoint_access_policy",
+      "description": "Show conservative Healthpoint access and export policy before exporting or reusing data.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {},
+        "additionalProperties": false
+      },
+      "outputSchema": {
+        "type": "object",
+        "additionalProperties": true
+      }
+    },
+    {
+      "name": "healthpoint_search_services",
+      "description": "Search licensed Healthpoint HealthcareService records by text, category, service type, SNOMED, specialty, region filters, cursor, and result limit.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "text": {
+            "type": "string"
+          },
+          "category": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "service_type": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "snomed": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "specialty": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "branch_code": {
+            "type": "string"
+          },
+          "region": {
+            "type": "string"
+          },
+          "dhb_region": {
+            "type": "string"
+          },
+          "subregion": {
+            "type": "string"
+          },
+          "cursor": {
+            "type": "string"
+          },
+          "limit": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 100
+          }
+        },
+        "additionalProperties": false
+      },
+      "outputSchema": {
+        "type": "object",
+        "additionalProperties": true
+      }
+    },
+    {
+      "name": "healthpoint_search_by_snomed",
+      "description": "Search licensed Healthpoint HealthcareService records by SNOMED CT code in type, category, or specialty.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "string"
+          },
+          "field": {
+            "type": "string",
+            "enum": [
+              "type",
+              "category",
+              "specialty"
+            ]
+          },
+          "limit": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 100
+          }
+        },
+        "required": [
+          "code"
+        ],
+        "additionalProperties": false
+      },
+      "outputSchema": {
+        "type": "object",
+        "additionalProperties": true
+      }
+    },
+    {
+      "name": "healthpoint_find_nearby_services",
+      "description": "Find licensed Healthpoint HealthcareService records near a latitude/longitude point.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "lat": {
+            "type": "number"
+          },
+          "lon": {
+            "type": "number"
+          },
+          "radius_km": {
+            "type": "number"
+          },
+          "text": {
+            "type": "string"
+          },
+          "service_type": {
+            "type": "string"
+          },
+          "limit": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 100
+          }
+        },
+        "required": [
+          "lat",
+          "lon"
+        ],
+        "additionalProperties": false
+      },
+      "outputSchema": {
+        "type": "object",
+        "additionalProperties": true
+      }
+    },
+    {
+      "name": "healthpoint_get_service",
+      "description": "Read one licensed Healthpoint HealthcareService record by FHIR id.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id"
+        ],
+        "additionalProperties": false
+      },
+      "outputSchema": {
+        "type": "object",
+        "additionalProperties": true
+      }
+    },
+    {
+      "name": "healthpoint_get_location",
+      "description": "Read one licensed Healthpoint Location record by FHIR id.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id"
+        ],
+        "additionalProperties": false
+      },
+      "outputSchema": {
+        "type": "object",
+        "additionalProperties": true
+      }
+    },
+    {
+      "name": "healthpoint_get_organization",
+      "description": "Read one licensed Healthpoint Organization record by FHIR id.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id"
+        ],
+        "additionalProperties": false
+      },
+      "outputSchema": {
+        "type": "object",
+        "additionalProperties": true
+      }
+    },
+    {
+      "name": "healthpoint_read_resource_uri",
+      "description": "Resolve and read a supported healthpoint:// resource URI using the same read-only provider path as native MCP resources.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "uri": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "uri"
+        ],
+        "additionalProperties": false
+      },
+      "outputSchema": {
+        "type": "object",
+        "additionalProperties": true
+      }
+    }
+  ],
+  "resources": [
+    {
+      "uri": "healthpoint://diagnostic/status",
+      "name": "Diagnostic status",
+      "description": "Redacted runtime client configuration",
+      "mimeType": "application/json"
+    },
+    {
+      "uri": "healthpoint://api/access-notes",
+      "name": "API access notes",
+      "description": "Non-secret Healthpoint API endpoint and access notes",
+      "mimeType": "application/json"
+    },
+    {
+      "uri": "healthpoint://access/policy",
+      "name": "Access policy",
+      "description": "Conservative Healthpoint access and export policy",
+      "mimeType": "application/json"
+    }
+  ],
+  "resource_templates": [
+    {
+      "uriTemplate": "healthpoint://service/{id}",
+      "name": "HealthcareService",
+      "description": "Read one Healthpoint HealthcareService by FHIR id",
+      "mimeType": "application/json"
+    },
+    {
+      "uriTemplate": "healthpoint://location/{id}",
+      "name": "Location",
+      "description": "Read one Healthpoint Location by FHIR id",
+      "mimeType": "application/json"
+    },
+    {
+      "uriTemplate": "healthpoint://organization/{id}",
+      "name": "Organization",
+      "description": "Read one Healthpoint Organization by FHIR id",
+      "mimeType": "application/json"
+    },
+    {
+      "uriTemplate": "healthpoint://query/services?text={text}&region={region}&limit={limit}",
+      "name": "Service search query",
+      "description": "Search Healthpoint HealthcareService records",
+      "mimeType": "application/json"
+    }
+  ],
+  "prompts": [
+    {
+      "name": "healthpoint_safe_search",
+      "description": "Draft a safe Healthpoint service-search request using licensed, read-only access.",
+      "arguments": [
+        {
+          "name": "need",
+          "description": "Plain-language service need, such as immunisation, GP, or pharmacy",
+          "required": false
+        },
+        {
+          "name": "region",
+          "description": "Optional Healthpoint region filter",
+          "required": false
+        },
+        {
+          "name": "branch_code",
+          "description": "Optional Healthpoint branch code filter",
+          "required": false
+        }
+      ],
+      "text": "Search Healthpoint for ${arguments.need}. Apply only supplied filters. Return concise directory results with provenance, attribution, and no clinical advice. Do not expose API keys or cache/publicly redistribute returned data."
+    },
+    {
+      "name": "healthpoint_license_check",
+      "description": "Prepare a license/export safety check before using Healthpoint data.",
+      "arguments": [],
+      "text": "Before using Healthpoint data, check the access policy resource and confirm the use is local-only, attributed, read-only, non-production unless approved in writing, and not a bulk dump, public cache, resale, redistribution, competing directory, or AI-training dataset."
+    }
+  ],
+  "user_config": {
+    "healthpoint_api_key": {
+      "type": "string",
+      "title": "Healthpoint API key",
+      "description": "User-provided licensed Healthpoint API key or token.",
+      "sensitive": true,
+      "required": true
+    },
+    "healthpoint_base_url": {
+      "type": "string",
+      "title": "Healthpoint base URL",
+      "default": "https://uat.healthpointapi.com/baseR4/",
+      "required": false
+    },
+    "healthpoint_auth_scheme": {
+      "type": "string",
+      "title": "Healthpoint auth scheme",
+      "default": "x-api-key",
+      "required": false
+    },
+    "healthpoint_geo_search_mode": {
+      "type": "string",
+      "title": "Nearby search encoding",
+      "default": "healthpoint-lat-lon",
+      "required": false
+    },
+    "healthpoint_timeout_secs": {
+      "type": "string",
+      "title": "HTTP timeout seconds",
+      "default": "30",
+      "required": false
+    }
+  }
+}

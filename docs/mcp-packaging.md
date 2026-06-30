@@ -56,7 +56,7 @@ Smithery's local-server publishing path uses MCPB bundles for stdio servers. Gen
 scripts/package-mcpb
 ```
 
-The bundle is written under `target/mcpb/` and is intentionally ignored by git. It includes the `healthpoint-mcp` binary, `manifest.json`, `server.json`, `README.md`, and `LICENSE`. The generated manifest declares `HEALTHPOINT_API_KEY` as required sensitive user configuration and does not include any secret value.
+The bundle is written under `target/mcpb/` and is intentionally ignored by git. It includes the `healthpoint-mcp` binary, `manifest.json`, `server.json`, `README.md`, and `LICENSE`. The generated manifest is built from `packaging/mcpb/manifest-metadata.json`, declares `HEALTHPOINT_API_KEY` as required sensitive user configuration, and does not include any secret value.
 
 Submit the generated `.mcpb` through Smithery's local MCPB publishing flow:
 
@@ -83,3 +83,23 @@ was accepted as deployment `f68c78e1-5eec-4c4b-a530-c34291c84819`.
 Example client snippets live in `docs/integrations/mcp-client-configs.md`.
 
 Before registry submission, validate the installed binary with a real MCP client against synthetic or redacted metadata-only flows.
+
+## Smithery compliance checks
+
+Run static bundle/metadata checks after generating a local bundle:
+
+```bash
+scripts/package-mcpb
+scripts/check-smithery-compliance.py
+```
+
+Run protocol validation with the preferred CLI validator after installing `mcp-validation`:
+
+```bash
+python3.13 -m pip install git+https://github.com/RHEcosystemAppEng/mcp-validation.git
+scripts/validate-mcp-server fast
+```
+
+Use `scripts/validate-mcp-server full` only when the optional security scanner dependencies are available. JSON reports are written under `target/mcp-validation/` and are not committed.
+
+Hardened Smithery release `76edfcf1-d617-42fe-8b4e-06c6e3917854` was accepted after adding full tool/resource/template/prompt metadata and CLI validator evidence.

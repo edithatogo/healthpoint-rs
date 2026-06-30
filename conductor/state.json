@@ -1,6 +1,6 @@
 {
   "project": "healthpoint-rs",
-  "status": "official_mcp_registry_smithery_and_mcp_so_submitted_pulsemcp_healthpoint_gates_remaining",
+  "status": "smithery_compliance_hardening_in_progress",
   "updated_at": "2026-06-30",
   "context_model": "conductor",
   "default_branch": "main",
@@ -48,9 +48,13 @@
     "smithery_local_mcpb_packaging_for_stdio_byo_key_server",
     "smithery_initial_darwin_arm64_mcpb_release_accepted",
     "mcp_so_initial_submission_created",
-    "smithery_settings_and_readme_badge_added"
-    ,
-    "smithery_followup_release_after_badge_accepted"
+    "smithery_settings_and_readme_badge_added",
+    "smithery_followup_release_after_badge_accepted",
+    "smithery_compliance_uses_mcp_validation_cli",
+    "janix_validator_reference_only_due_agpl",
+    "apify_validator_optional_manual_paid_actor",
+    "awesome_mcp_servers_directory_benchmark_only",
+    "smithery_paid_plan_and_dns_txt_are_external_gates"
   ],
   "implemented_surfaces": [
     "HealthpointClient configurable base URL/auth/geo mode",
@@ -99,7 +103,14 @@
     "Smithery accepted edithatogo/healthpoint-rs release c73eb36e-66ba-4d28-b95e-71b92dcf20f2",
     "Smithery compliance score improved from 27/100 to 51/100 after settings update",
     "Smithery accepted follow-up release f68c78e1-5eec-4c4b-a530-c34291c84819 after README badge addition",
-    "mcp.so created server 9b528cf0-6c30-4566-84e4-8e8ac43070cb with status created"
+    "mcp.so created server 9b528cf0-6c30-4566-84e4-8e8ac43070cb with status created",
+    "Smithery MCPB manifest metadata source for tools resources templates and prompts",
+    "Smithery static compliance checker",
+    "MCP protocol validator wrapper using mcp-validation CLI",
+    "multi-platform Smithery compliance workflow",
+    "reusable Smithery compliance playbook",
+    "Smithery accepted hardened release 76edfcf1-d617-42fe-8b4e-06c6e3917854",
+    "mcp-validation fast protocol check passed for healthpoint-mcp"
   ],
   "validated_in_current_environment": [
     "JSON metadata parsed successfully",
@@ -138,20 +149,25 @@
     "mcp-publisher publish server.json reaches official registry validation and is blocked by GHCR package visibility",
     "gh api package listing shows healthpoint-mcp visibility public",
     "mcp-publisher login github completed successfully after GitHub device authorization",
-    "mcp-publisher publish server.json succeeded for io.github.edithatogo/healthpoint-rs version 0.1.0"
+    "mcp-publisher publish server.json succeeded for io.github.edithatogo/healthpoint-rs version 0.1.0",
+    "scripts/check-smithery-compliance.py passed",
+    "scripts/validate-mcp-server fast passed with mcp-validation from GitHub",
+    "smithery mcp publish accepted hardened release 76edfcf1-d617-42fe-8b4e-06c6e3917854"
   ],
   "blocked_by": [
     "Healthpoint written approval for public-data, hosted proxy, redistribution, open_social_data publication, AI dataset, or non-research commercial use",
     "metadata-only follow-up captures for broader pagination, nearby, direct-read, and rate-limit shapes",
     "Third-party MCP directories require account-gated manual submission or repository indexing",
-    "PulseMCP is manual/contact-gated or dependent on Official MCP Registry ingestion"
-    ,
-    "Smithery verification still requires quality score >80, exact-host TXT record, and paid developer plan"
+    "PulseMCP is manual/contact-gated or dependent on Official MCP Registry ingestion",
+    "Smithery verification still requires quality score >80, exact-host TXT record, and paid developer plan",
+    "Smithery exact-host TXT verification requires a controlled homepage host",
+    "Smithery paid developer plan requires explicit user approval"
   ],
   "next_tracks": [
     "monitor-or-contact-pulsemcp-for-official-registry-ingestion",
     "monitor-mcp-so-created-status-for-public-listing",
-    "obtain-healthpoint-written-approval-before-production-or-public-data-release"
+    "obtain-healthpoint-written-approval-before-production-or-public-data-release",
+    "publish-hardened-smithery-mcpb-release-and-recheck-score"
   ],
-  "latest_checkpoint": "conductor/checkpoints/2026-06-30-third-party-registry-blockers.md"
+  "latest_checkpoint": "conductor/checkpoints/2026-06-30-smithery-compliance-hardening.md"
 }
