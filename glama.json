@@ -4,11 +4,27 @@
   "displayName": "Healthpoint MCP Server",
   "description": "Read-only MCP server for licensed Healthpoint HL7 FHIR API access.",
   "maintainers": ["edithatogo"],
+  "type": "mcp_server",
+  "status": "stable",
+  "framework": "Rust rmcp",
+  "tools": 10,
   "license": "Apache-2.0",
   "repository": "https://github.com/edithatogo/healthpoint-rs",
   "homepage": "https://github.com/edithatogo/healthpoint-rs",
   "categories": ["healthcare", "api", "fhir"],
-  "transport": "stdio",
+  "keywords": [
+    "healthpoint",
+    "healthcare",
+    "fhir",
+    "hl7",
+    "snomed",
+    "mcp-server",
+    "rust",
+    "stdio",
+    "directory",
+    "new-zealand"
+  ],
+  "transport": ["stdio"],
   "install": {
     "command": "cargo",
     "args": ["install", "--locked", "--version", "0.1.0", "healthpoint-mcp"]
@@ -26,5 +42,42 @@
     "readOnly": true,
     "noBundledData": true,
     "requiresUserProvidedLicense": true
+  },
+  "features": {
+    "healthpoint_lookup": {
+      "enabled": true,
+      "resources": ["HealthcareService", "Location", "Organization"],
+      "access": "bring-your-own-key"
+    },
+    "synthetic_mode": {
+      "enabled": true,
+      "note": "Runs without live Healthpoint credentials for install and registry validation."
+    },
+    "safety": {
+      "read_only": true,
+      "no_clinical_decision_support": true,
+      "no_public_cache": true
+    }
+  },
+  "relatedServers": [
+    "edithatogo/sourceright",
+    "CSOAI-ORG/healthcare-fhir-mcp",
+    "wso2/fhir-mcp-server",
+    "msathiyakeerthi/google-cloud-healthcare-api-mcp",
+    "NyxToolsDev/dicom-hl7-mcp-server"
+  ],
+  "relatedRepositories": [
+    "https://github.com/edithatogo/sourceright",
+    "https://github.com/edithatogo/nz-legislation",
+    "https://github.com/edithatogo/anz-legislation",
+    "https://github.com/edithatogo/mchs",
+    "https://github.com/edithatogo/open_social_data"
+  ],
+  "relatedServersNote": {
+    "edithatogo/sourceright": "Same maintainer; MCP server for citation/reference verification used alongside health and policy evidence workflows.",
+    "CSOAI-ORG/healthcare-fhir-mcp": "FHIR R4 healthcare MCP server with search/manage healthcare data focus.",
+    "wso2/fhir-mcp-server": "FHIR API integration MCP server with SMART-on-FHIR and multiple transports.",
+    "msathiyakeerthi/google-cloud-healthcare-api-mcp": "FHIR resource access through Google Cloud Healthcare API.",
+    "NyxToolsDev/dicom-hl7-mcp-server": "Healthcare interoperability MCP server spanning DICOM, HL7v2, and FHIR."
   }
 }

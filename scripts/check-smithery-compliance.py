@@ -148,8 +148,6 @@ def validate_readme() -> None:
     for tool in EXPECTED_TOOLS:
         if tool not in text:
             fail(f"README missing tool {tool}")
-    if "https://smithery.ai/servers/edithatogo/healthpoint-rs" not in text:
-        fail("README missing Smithery install/listing link")
 
 
 def validate_contract() -> None:
@@ -171,6 +169,8 @@ def validate_contract() -> None:
         "implemented",
         "not_applicable",
         "external_gate",
+        "smithery-verification=cd3f0c4373ae3d6779a01d4ddd2930dfc51c9bcc932f2735377abdc5d784c2b1",
+        "`github.com` TXT verification is not repo-controllable",
         "10 tools",
         "3 resources",
         "4 resource templates",

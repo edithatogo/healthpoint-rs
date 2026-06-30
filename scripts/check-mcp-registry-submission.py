@@ -120,8 +120,23 @@ GLAMA_SCORE_CONTRACT = {
     "local_status": {
         "glama_json_present": True,
         "glama_json_not_yet_visible_until_main_merge_or_sync": True,
-        "related_servers_are_external_directory_metadata": True,
+        "related_servers_declared_in_glama_json": True,
+        "related_servers_may_require_dashboard_sync": True,
     },
+    "related_servers": [
+        "edithatogo/sourceright",
+        "CSOAI-ORG/healthcare-fhir-mcp",
+        "wso2/fhir-mcp-server",
+        "msathiyakeerthi/google-cloud-healthcare-api-mcp",
+        "NyxToolsDev/dicom-hl7-mcp-server",
+    ],
+    "related_repositories": [
+        "https://github.com/edithatogo/sourceright",
+        "https://github.com/edithatogo/nz-legislation",
+        "https://github.com/edithatogo/anz-legislation",
+        "https://github.com/edithatogo/mchs",
+        "https://github.com/edithatogo/open_social_data",
+    ],
 }
 
 
@@ -196,8 +211,8 @@ def main() -> int:
             errors.append("glama.json repository must point to the public GitHub repository")
         if glama.get("license") != "Apache-2.0":
             errors.append("glama.json license must be Apache-2.0")
-        if glama.get("transport") != "stdio":
-            errors.append("glama.json transport must be stdio")
+        if "stdio" not in glama.get("transport", []):
+            errors.append("glama.json transport must include stdio")
         if not glama.get("quality", {}).get("readOnly"):
             errors.append("glama.json quality.readOnly must be true")
         run_env = glama.get("run", {}).get("env", {})
@@ -214,8 +229,26 @@ def main() -> int:
         errors.append("glama.json license must be Apache-2.0")
     if glama.get("repository") != "https://github.com/edithatogo/healthpoint-rs":
         errors.append("glama.json repository must point to the GitHub source repository")
-    if glama.get("transport") != "stdio":
-        errors.append("glama.json transport must be stdio")
+    if "stdio" not in glama.get("transport", []):
+        errors.append("glama.json transport must include stdio")
+    if glama.get("type") != "mcp_server":
+        errors.append("glama.json type must be mcp_server")
+    if glama.get("status") != "stable":
+        errors.append("glama.json status must be stable")
+    if glama.get("tools") != 10:
+        errors.append("glama.json tools must be 10")
+    required_keywords = {"healthcare", "fhir", "mcp-server", "rust", "healthpoint"}
+    keywords = set(glama.get("keywords", []))
+    if not required_keywords.issubset(keywords):
+        errors.append(f"glama.json keywords missing {sorted(required_keywords - keywords)}")
+    required_related_servers = set(GLAMA_SCORE_CONTRACT["related_servers"])
+    related_servers = set(glama.get("relatedServers", []))
+    if not required_related_servers.issubset(related_servers):
+        errors.append(f"glama.json relatedServers missing {sorted(required_related_servers - related_servers)}")
+    required_related_repos = set(GLAMA_SCORE_CONTRACT["related_repositories"])
+    related_repos = set(glama.get("relatedRepositories", []))
+    if not required_related_repos.issubset(related_repos):
+        errors.append(f"glama.json relatedRepositories missing {sorted(required_related_repos - related_repos)}")
     glama_run = glama.get("run", {})
     glama_env = glama_run.get("env", {})
     if glama_run.get("command") != "healthpoint-mcp":

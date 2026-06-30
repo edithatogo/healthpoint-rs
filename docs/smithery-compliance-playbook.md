@@ -28,9 +28,15 @@ Mirror Smithery score categories locally: Capability Quality, Server Metadata, a
 - Set Smithery server settings:
   - Display name
   - Description
-  - Homepage
+  - Homepage. Use a host where you can add DNS TXT records if Smithery verification is required; `github.com` cannot be verified by repo owners.
   - GitHub repository
   - Public listing, not unlisted
+  - Custom backlink URL when needed. For `healthpoint-rs`, use `https://github.com/edithatogo/healthpoint-rs`.
+
+- Handle Smithery verification separately from score hardening:
+  - Backlink is repo-controlled: add the Smithery badge or server URL to the README.
+  - TXT exact-host verification is DNS-controlled: add the TXT value only on a domain you own.
+  - If Smithery asks for a TXT record on `github.com`, change the homepage to a controlled host rather than trying to modify GitHub DNS.
 
 - Generate MCPB from a metadata source of truth:
   - Include `manifest_version: "0.3"`.
