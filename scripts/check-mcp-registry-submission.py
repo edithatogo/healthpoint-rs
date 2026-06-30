@@ -64,6 +64,66 @@ REGISTRIES = [
     ),
 ]
 
+GLAMA_SCORE_CONTRACT = {
+    "source": "https://glama.ai/mcp/servers/edithatogo/healthpoint-rs/score",
+    "observed_at": "2026-06-30",
+    "observed_profile_score_percent": 83,
+    "latest_release": "v0.1.0",
+    "profile_checks": {
+        "has_glama_release": True,
+        "maintenance_grade": "A",
+        "license": "Apache 2.0",
+        "has_readme": True,
+        "active_usage_30d": 2,
+        "author_verified": True,
+        "glama_json_visible_on_glama": False,
+        "related_servers_configured": False,
+    },
+    "quality_formula": {
+        "overall": "70% Tool Definition Quality + 30% Server Coherence",
+        "tool_definition_quality": "60% mean TDQS + 40% minimum TDQS",
+        "tool_definition_dimensions": {
+            "purpose_clarity": 0.25,
+            "usage_guidelines": 0.20,
+            "behavioral_transparency": 0.20,
+            "parameter_semantics": 0.15,
+            "conciseness_structure": 0.10,
+            "contextual_completeness": 0.10,
+        },
+        "server_coherence_dimensions": [
+            "disambiguation",
+            "naming_consistency",
+            "tool_count_appropriateness",
+            "completeness",
+        ],
+    },
+    "server_coherence": {
+        "grade": "A",
+        "disambiguation": 5,
+        "naming_consistency": 5,
+        "tool_count": 5,
+        "completeness": 5,
+    },
+    "tool_definition_quality": {
+        "grade": "A",
+        "average": 3.7,
+        "tool_count_scored": 10,
+        "lowest": 3.1,
+        "visible_low_score_reasons": [
+            "Descriptions often omit usage guidance and alternatives.",
+            "Descriptions often rely on read-only wording but omit auth, error, rate-limit, pagination, and return-shape behavior.",
+            "Complex search tools do not describe filter interaction, return format, or pagination enough for first-attempt use.",
+            "Simple get-by-id tools do not clearly distinguish when to use them instead of search or sibling get tools.",
+            "Glama reports no tool annotations, so descriptions carry the behavioral-disclosure burden.",
+        ],
+    },
+    "local_status": {
+        "glama_json_present": True,
+        "glama_json_not_yet_visible_until_main_merge_or_sync": True,
+        "related_servers_are_external_directory_metadata": True,
+    },
+}
+
 
 def cargo(*args: str) -> str:
     return subprocess.check_output(["cargo", *args], cwd=ROOT, text=True, stderr=subprocess.STDOUT)
@@ -123,6 +183,24 @@ def main() -> int:
         errors.append("Dockerfile must set io.modelcontextprotocol.server.name label for OCI ownership validation")
     if "USER mcp" not in dockerfile:
         errors.append("Dockerfile runtime image must run as the non-root mcp user")
+    glama_path = ROOT / "glama.json"
+    if not glama_path.exists():
+        errors.append("glama.json must exist so Glama can ingest repository metadata after main sync")
+    else:
+        glama = json.loads(glama_path.read_text(encoding="utf-8"))
+        if glama.get("$schema") != "https://glama.ai/mcp/schemas/server.json":
+            errors.append("glama.json must use Glama's server schema URL")
+        if glama.get("repository") != "https://github.com/edithatogo/healthpoint-rs":
+            errors.append("glama.json repository must point to the public GitHub repository")
+        if glama.get("license") != "Apache-2.0":
+            errors.append("glama.json license must be Apache-2.0")
+        if glama.get("transport") != "stdio":
+            errors.append("glama.json transport must be stdio")
+        if not glama.get("quality", {}).get("readOnly"):
+            errors.append("glama.json quality.readOnly must be true")
+        run_env = glama.get("run", {}).get("env", {})
+        if not run_env.get("HEALTHPOINT_API_KEY", {}).get("secret"):
+            errors.append("glama.json must mark HEALTHPOINT_API_KEY as secret")
 
     if glama.get("$schema") != "https://glama.ai/mcp/schemas/server.json":
         errors.append("glama.json must use the official Glama schema URL")
@@ -165,6 +243,7 @@ def main() -> int:
         "glama": glama.get("name"),
         "version": version,
         "registries": [registry.__dict__ for registry in REGISTRIES],
+        "glama_score_contract": GLAMA_SCORE_CONTRACT,
         "automated_submit_ready": not errors,
         "errors": errors,
     }
