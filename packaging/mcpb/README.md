@@ -21,7 +21,7 @@ Build a local bundle with:
 scripts/package-mcpb
 ```
 
-The generated manifest declares `HEALTHPOINT_API_KEY` as a required secret
+The generated manifest declares `HEALTHPOINT_API_KEY` as an optional secret and `healthpoint_mode` defaults to synthetic
 configuration value supplied by the installing user.
 
 ## Metadata source

@@ -2,11 +2,21 @@
   "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
   "name": "io.github.edithatogo/healthpoint-rs",
   "title": "healthpoint-rs",
-  "description": "Read-only MCP server for licensed Healthpoint HL7 FHIR API access.",
+  "description": "Read-only MCP server for Healthpoint HL7 FHIR directory lookup with synthetic default mode and BYO-key live mode.",
   "repository": {
     "url": "https://github.com/edithatogo/healthpoint-rs",
     "source": "github"
   },
+  "websiteUrl": "https://github.com/edithatogo/healthpoint-rs",
+  "icons": [
+    {
+      "src": "https://raw.githubusercontent.com/edithatogo/healthpoint-rs/main/assets/healthpoint-rs-icon.svg",
+      "mimeType": "image/svg+xml",
+      "sizes": [
+        "any"
+      ]
+    }
+  ],
   "version": "0.1.0",
   "license": "Apache-2.0",
   "homepage": "https://github.com/edithatogo/healthpoint-rs",
@@ -26,9 +36,16 @@
       },
       "environmentVariables": [
         {
+          "name": "HEALTHPOINT_MODE",
+          "description": "Runtime mode: synthetic uses bundled fixture data without credentials; live uses the licensed Healthpoint API.",
+          "isRequired": false,
+          "format": "string",
+          "default": "synthetic"
+        },
+        {
           "name": "HEALTHPOINT_API_KEY",
-          "description": "User-provided licensed Healthpoint API key/token.",
-          "isRequired": true,
+          "description": "Optional user-provided licensed Healthpoint API key/token. Required only when HEALTHPOINT_MODE=live.",
+          "isRequired": false,
           "format": "string",
           "isSecret": true
         },

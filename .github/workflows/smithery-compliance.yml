@@ -9,6 +9,7 @@ on:
       - scripts/check-smithery-compliance.py
       - scripts/validate-mcp-server
       - docs/smithery-compliance-playbook.md
+      - docs/smithery-compliance-contract.md
       - .github/workflows/smithery-compliance.yml
   workflow_dispatch:
     inputs:
@@ -83,7 +84,7 @@ jobs:
           path: target/mcpb/*.mcpb
           if-no-files-found: error
       - name: Publish Smithery bundle
-        if: ${{ github.event_name == 'workflow_dispatch' && inputs.publish_smithery == 'true' && secrets.SMITHERY_TOKEN != '' }}
+        if: ${{ github.event_name == 'workflow_dispatch' && inputs.publish_smithery == 'true' && secrets.SMITHERY_TOKEN }}
         shell: bash
         env:
           SMITHERY_TOKEN: ${{ secrets.SMITHERY_TOKEN }}

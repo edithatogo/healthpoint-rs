@@ -26,9 +26,10 @@ The image sets the required MCP ownership label:
 io.modelcontextprotocol.server.name=io.github.edithatogo/healthpoint-rs
 ```
 
-## Required runtime configuration
+## Runtime configuration
 
-- `HEALTHPOINT_API_KEY`: user-provided licensed Healthpoint API key or token.
+- `HEALTHPOINT_MODE`: optional runtime mode; defaults to `synthetic`. Use `live` only with licensed Healthpoint access.
+- `HEALTHPOINT_API_KEY`: optional user-provided licensed Healthpoint API key or token; required only when `HEALTHPOINT_MODE=live`.
 - `HEALTHPOINT_BASE_URL`: optional API base URL; defaults to `https://uat.healthpointapi.com/baseR4/`.
 - `HEALTHPOINT_AUTH_SCHEME`: optional auth mode; defaults to `x-api-key`.
 - `HEALTHPOINT_GEO_SEARCH_MODE`: optional nearby-search encoding mode.
@@ -56,7 +57,7 @@ Smithery's local-server publishing path uses MCPB bundles for stdio servers. Gen
 scripts/package-mcpb
 ```
 
-The bundle is written under `target/mcpb/` and is intentionally ignored by git. It includes the `healthpoint-mcp` binary, `manifest.json`, `server.json`, `README.md`, and `LICENSE`. The generated manifest is built from `packaging/mcpb/manifest-metadata.json`, declares `HEALTHPOINT_API_KEY` as required sensitive user configuration, and does not include any secret value.
+The bundle is written under `target/mcpb/` and is intentionally ignored by git. It includes the `healthpoint-mcp` binary, `manifest.json`, `server.json`, `README.md`, and `LICENSE`. The generated manifest is built from `packaging/mcpb/manifest-metadata.json`, declares `HEALTHPOINT_API_KEY` as optional sensitive user configuration and defaults to synthetic mode, and does not include any secret value.
 
 Submit the generated `.mcpb` through Smithery's local MCPB publishing flow:
 
