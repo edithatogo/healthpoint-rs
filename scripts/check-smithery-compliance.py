@@ -140,10 +140,6 @@ def validate_readme() -> None:
     badge = "[![smithery badge](https://smithery.ai/badge/edithatogo/healthpoint-rs)](https://smithery.ai/servers/edithatogo/healthpoint-rs)"
     if badge not in text:
         fail("README is missing Smithery badge backlink")
-    if "https://smithery.ai/badge/edithatogo/healthpoint-rs" not in text:
-        fail("README is missing Smithery badge URL")
-    if "https://smithery.ai/servers/edithatogo/healthpoint-rs" not in text:
-        fail("README is missing Smithery server URL backlink")
     if "mcp-name: io.github.edithatogo/healthpoint-rs" not in text:
         fail("README is missing official MCP registry ownership marker")
     missing_sections = [section for section in REQUIRED_README_SECTIONS if section not in text]
