@@ -1,0 +1,115 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+METADATA="$ROOT/packaging/mcpb/manifest-metadata.json"
+
+for command in cargo jq zip; do
+  if ! command -v "$command" >/dev/null 2>&1; then
+    echo "required command not found: $command" >&2
+    exit 1
+  fi
+done
+
+VERSION="$(cd "$ROOT" && cargo metadata --no-deps --format-version 1 | jq -r '.packages[] | select(.name == "healthpoint-mcp") | .version' | head -n 1)"
+
+if [[ -z "${VERSION}" || "${VERSION}" == "null" ]]; then
+  echo "could not determine healthpoint-mcp version" >&2
+  exit 1
+fi
+
+case "$(uname -s)" in
+  Darwin) OS="darwin" ;;
+  Linux) OS="linux" ;;
+  MINGW*|MSYS*|CYGWIN*) OS="windows" ;;
+  *) OS="$(uname -s | tr '[:upper:]' '[:lower:]')" ;;
+esac
+
+case "$(uname -m)" in
+  arm64|aarch64) ARCH="arm64" ;;
+  x86_64|amd64) ARCH="x64" ;;
+  *) ARCH="$(uname -m)" ;;
+esac
+
+BIN_NAME="healthpoint-mcp"
+if [[ "${OS}" == "windows" ]]; then
+  BIN_NAME="healthpoint-mcp.exe"
+fi
+
+BUILD_DIR="$ROOT/target/mcpb/build"
+OUT_DIR="$ROOT/target/mcpb"
+BUNDLE="$OUT_DIR/healthpoint-rs-${VERSION}-${OS}-${ARCH}.mcpb"
+
+rm -rf "$BUILD_DIR"
+trap 'rm -rf "$BUILD_DIR"' EXIT
+mkdir -p "$BUILD_DIR/bin" "$OUT_DIR"
+
+(cd "$ROOT" && cargo build --release -p healthpoint-mcp)
+cp "$ROOT/target/release/$BIN_NAME" "$BUILD_DIR/bin/$BIN_NAME"
+cp "$ROOT/README.md" "$BUILD_DIR/README.md"
+cp "$ROOT/LICENSE" "$BUILD_DIR/LICENSE"
+cp "$ROOT/server.json" "$BUILD_DIR/server.json"
+
+python3 - "$METADATA" "$BUILD_DIR/manifest.json" "$VERSION" "$OS" "$ARCH" "$BIN_NAME" <<'PY'
+import json
+import sys
+from pathlib import Path
+
+metadata_path, manifest_path, version, os_name, arch, bin_name = sys.argv[1:]
+metadata = json.loads(Path(metadata_path).read_text())
+manifest = {
+    "manifest_version": "0.3",
+    "name": metadata["name"],
+    "display_name": metadata["display_name"],
+    "version": version,
+    "description": metadata["description"],
+    "long_description": metadata["long_description"],
+    "author": metadata["author"],
+    "repository": metadata["repository"],
+    "homepage": metadata["homepage"],
+    "documentation": metadata["documentation"],
+    "support": metadata["support"],
+    "license": metadata["license"],
+    "privacy_policies": metadata["privacy_policies"],
+    "keywords": metadata["keywords"],
+    "server": {
+        "type": "binary",
+        "entry_point": f"bin/{bin_name}",
+        "mcp_config": {
+            "command": f"${{__dirname}}/bin/{bin_name}",
+            "args": [],
+            "env": {
+                "HEALTHPOINT_API_KEY": "${user_config.healthpoint_api_key}",
+                "HEALTHPOINT_BASE_URL": "${user_config.healthpoint_base_url}",
+                "HEALTHPOINT_AUTH_SCHEME": "${user_config.healthpoint_auth_scheme}",
+                "HEALTHPOINT_GEO_SEARCH_MODE": "${user_config.healthpoint_geo_search_mode}",
+                "HEALTHPOINT_TIMEOUT_SECS": "${user_config.healthpoint_timeout_secs}",
+            },
+        },
+    },
+    "tools": metadata["tools"],
+    "prompts": metadata["prompts"],
+    "tools_generated": False,
+    "prompts_generated": False,
+    "user_config": metadata["user_config"],
+    "compatibility": {
+        "platforms": [os_name],
+        "architectures": [arch],
+    },
+    "_meta": {
+        "io.modelcontextprotocol": {
+            "resources": metadata["resources"],
+            "resourceTemplates": metadata["resource_templates"],
+        }
+    },
+}
+Path(manifest_path).write_text(json.dumps(manifest, indent=2, sort_keys=False) + "\n")
+PY
+
+if ! command -v zip &> /dev/null; then
+  echo "error: zip is required but not installed" >&2
+  exit 1
+fi
+
+(cd "$BUILD_DIR" && zip -qr "$BUNDLE" .)
+echo "$BUNDLE"

@@ -1,0 +1,94 @@
+name: Smithery compliance
+
+on:
+  pull_request:
+    paths:
+      - README.md
+      - packaging/mcpb/**
+      - scripts/package-mcpb
+      - scripts/check-smithery-compliance.py
+      - scripts/validate-mcp-server
+      - docs/smithery-compliance-playbook.md
+      - .github/workflows/smithery-compliance.yml
+  workflow_dispatch:
+    inputs:
+      publish_smithery:
+        description: Publish generated MCPB bundles to Smithery when SMITHERY_TOKEN is available
+        required: false
+        default: "false"
+        type: choice
+        options:
+          - "false"
+          - "true"
+
+permissions:
+  contents: read
+
+jobs:
+  validate-mcp:
+    name: Validate MCP server
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          toolchain: 1.88.0
+      - uses: Swatinem/rust-cache@v3
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.13"
+      - name: Install MCP validator
+        run: python -m pip install --upgrade git+https://github.com/RHEcosystemAppEng/mcp-validation.git
+      - name: Run static Smithery checks
+        run: scripts/check-smithery-compliance.py
+      - name: Run MCP protocol validator
+        run: scripts/validate-mcp-server fast
+      - name: Upload MCP validation report
+        uses: actions/upload-artifact@v5
+        if: always()
+        with:
+          name: mcp-validation-report
+          path: target/mcp-validation/*.json
+          if-no-files-found: ignore
+
+  bundle:
+    name: Build MCPB bundle (${{ matrix.os }})
+    runs-on: ${{ matrix.runner }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - runner: ubuntu-latest
+            os: linux
+          - runner: macos-latest
+            os: macos
+          - runner: windows-latest
+            os: windows
+    steps:
+      - uses: actions/checkout@v5
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          toolchain: 1.88.0
+      - uses: Swatinem/rust-cache@v3
+      - name: Build MCPB bundle
+        shell: bash
+        run: scripts/package-mcpb
+      - name: Run static Smithery checks
+        shell: bash
+        run: scripts/check-smithery-compliance.py
+      - name: Upload MCPB bundle
+        uses: actions/upload-artifact@v5
+        with:
+          name: healthpoint-rs-mcpb-${{ matrix.os }}
+          path: target/mcpb/*.mcpb
+          if-no-files-found: error
+      - name: Publish Smithery bundle
+        if: ${{ github.event_name == 'workflow_dispatch' && inputs.publish_smithery == 'true' && secrets.SMITHERY_TOKEN != '' }}
+        shell: bash
+        env:
+          SMITHERY_TOKEN: ${{ secrets.SMITHERY_TOKEN }}
+        run: |
+          npm install -g smithery
+          for bundle in target/mcpb/*.mcpb; do
+            smithery mcp publish "$bundle" -n edithatogo/healthpoint-rs
+          done

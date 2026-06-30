@@ -3,6 +3,7 @@
   "name": "healthpoint-rs",
   "displayName": "Healthpoint MCP Server",
   "description": "Read-only MCP server for licensed Healthpoint HL7 FHIR API access.",
+  "maintainers": ["edithatogo"],
   "license": "Apache-2.0",
   "repository": "https://github.com/edithatogo/healthpoint-rs",
   "homepage": "https://github.com/edithatogo/healthpoint-rs",

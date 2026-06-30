@@ -1,0 +1,43 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+REPORT_DIR="${MCP_VALIDATION_REPORT_DIR:-$ROOT/target/mcp-validation}"
+REPORT_PATH="${MCP_VALIDATION_REPORT_PATH:-$REPORT_DIR/healthpoint-mcp-validation.json}"
+MODE="${1:-fast}"
+shift || true
+
+mkdir -p "$REPORT_DIR"
+
+if ! command -v mcp-validate >/dev/null 2>&1; then
+  cat >&2 <<'MSG'
+mcp-validate is not installed.
+Install the preferred CLI validator with:
+  python3.13 -m pip install git+https://github.com/RHEcosystemAppEng/mcp-validation.git
+MSG
+  exit 127
+fi
+
+SCAN_FLAG="--skip-mcp-scan"
+if [[ "$MODE" == "full" ]]; then
+  SCAN_FLAG=""
+elif [[ "$MODE" != "fast" ]]; then
+  echo "usage: scripts/validate-mcp-server [fast|full] [-- extra mcp-validate args]" >&2
+  exit 2
+fi
+
+export HEALTHPOINT_API_KEY="${HEALTHPOINT_API_KEY:-synthetic-validation-key}"
+export HEALTHPOINT_BASE_URL="${HEALTHPOINT_BASE_URL:-http://127.0.0.1:8787/}"
+export HEALTHPOINT_AUTH_SCHEME="${HEALTHPOINT_AUTH_SCHEME:-none}"
+export HEALTHPOINT_GEO_SEARCH_MODE="${HEALTHPOINT_GEO_SEARCH_MODE:-healthpoint-lat-lon}"
+export HEALTHPOINT_TIMEOUT_SECS="${HEALTHPOINT_TIMEOUT_SECS:-5}"
+
+# shellcheck disable=SC2086
+mcp-validate \
+  --json-report "$REPORT_PATH" \
+  --repo-url "https://github.com/edithatogo/healthpoint-rs" \
+  $SCAN_FLAG \
+  "$@" \
+  -- cargo run -p healthpoint-mcp
+
+echo "$REPORT_PATH"

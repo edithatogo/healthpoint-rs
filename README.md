@@ -1,5 +1,7 @@
 # healthpoint-rs
 
+[![smithery badge](https://smithery.ai/badge/edithatogo/healthpoint-rs)](https://smithery.ai/servers/edithatogo/healthpoint-rs)
+
 Rust-first tooling for the Healthpoint HL7 FHIR® API: a typed client, CLI, read-only MCP server, and future open-social-data adapter.
 
 This repository is intentionally **code-first and data-light**:
