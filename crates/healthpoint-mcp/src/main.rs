@@ -119,7 +119,7 @@ struct SearchPromptParams {
 #[tool_router]
 impl HealthpointMcpServer {
     #[tool(
-        description = "Show redacted Healthpoint client configuration and readiness. Never returns the API key."
+        description = "Show redacted Healthpoint client configuration and readiness before live calls. Use this diagnostic tool when checking setup, auth mode, base URL, timeout, or synthetic-vs-live behavior; it is read-only, never returns the API key, and returns JSON status/error metadata rather than Healthpoint records."
     )]
     fn healthpoint_diagnostic_status(&self) -> String {
         serde_json::to_string_pretty(&self.client.diagnostic_status())
@@ -127,7 +127,7 @@ impl HealthpointMcpServer {
     }
 
     #[tool(
-        description = "Show Healthpoint API access notes discovered from the portal. Does not include secrets."
+        description = "Show non-secret Healthpoint API access notes discovered from portal and contract review. Use this before configuring live access; it is read-only, requires no live lookup, returns JSON notes about endpoint/auth/resource expectations, and never includes API keys or licensed payloads."
     )]
     fn healthpoint_api_access_notes(&self) -> String {
         serde_json::json!({
@@ -147,14 +147,14 @@ impl HealthpointMcpServer {
     }
 
     #[tool(
-        description = "Show conservative Healthpoint access/export policy. Use before exporting or reusing data."
+        description = "Show the conservative Healthpoint access and export policy. Use this before exporting, caching, sharing, or reusing results; it is read-only, requires no live lookup, returns JSON policy/provenance fields, and clarifies that public redistribution is not allowed without approval."
     )]
     fn healthpoint_access_policy(&self) -> String {
         serde_json::to_string_pretty(&AccessPolicy::default()).unwrap_or_else(|err| err.to_string())
     }
 
     #[tool(
-        description = "Search Healthpoint HealthcareService records. Read-only; requires a user-provided API key."
+        description = "Search Healthpoint HealthcareService records with text and structured filters. Use this for broad service discovery; use healthpoint_search_by_snomed for a single SNOMED CT code, healthpoint_find_nearby_services for lat/lon proximity, and get-by-id tools only after a record id is known. Live mode is read-only and BYO-key; results are JSON pages with provenance/access metadata, filters combine conjunctively where supported, limit defaults to 10 and is clamped to 1..100, cursor continues pagination, and errors are returned as JSON."
     )]
     async fn healthpoint_search_services(
         &self,
@@ -191,7 +191,7 @@ impl HealthpointMcpServer {
     }
 
     #[tool(
-        description = "Search Healthpoint HealthcareService records by SNOMED CT code. Read-only."
+        description = "Search Healthpoint HealthcareService records by one SNOMED CT code. Use this when the clinical/service code is known; use healthpoint_search_services for mixed text/region/category filters and healthpoint_find_nearby_services for proximity. The field parameter chooses type, category, or specialty and defaults to type; live mode is read-only and BYO-key; output is a JSON result page with provenance/access metadata, limit defaults to 10 and is clamped to 1..100, and no-match/errors are returned as JSON."
     )]
     async fn healthpoint_search_by_snomed(
         &self,
@@ -211,7 +211,7 @@ impl HealthpointMcpServer {
     }
 
     #[tool(
-        description = "Find nearby Healthpoint HealthcareService records by latitude/longitude. Read-only."
+        description = "Find nearby Healthpoint HealthcareService records from latitude/longitude coordinates. Use this for proximity search; use healthpoint_search_services for non-geographic filtering and get-by-id tools after selecting a result. Live mode is read-only and BYO-key; lat/lon are decimal degrees, radius_km is optional, text and service_type further narrow results, output is a JSON result page with provenance/access metadata, limit defaults to 10 and is clamped to 1..100, and errors are returned as JSON."
     )]
     async fn healthpoint_find_nearby_services(
         &self,
@@ -237,7 +237,7 @@ impl HealthpointMcpServer {
     }
 
     #[tool(
-        description = "Get a single Healthpoint HealthcareService record by FHIR id. Read-only."
+        description = "Get one Healthpoint HealthcareService record by FHIR resource id. Use this only when a service id is already known from search results or a healthpoint://service URI; use healthpoint_get_location or healthpoint_get_organization for related location/organization ids. Live mode is read-only and BYO-key, returns a JSON service record with provenance/access metadata, and invalid or missing ids return JSON errors."
     )]
     async fn healthpoint_get_service(
         &self,
@@ -246,7 +246,9 @@ impl HealthpointMcpServer {
         json_result(self.client.get_service(&params.id).await)
     }
 
-    #[tool(description = "Get a single Healthpoint Location record by FHIR id. Read-only.")]
+    #[tool(
+        description = "Get one Healthpoint Location record by FHIR resource id. Use this only when a location id is already known from a service record or healthpoint://location URI; use healthpoint_get_service for service details and healthpoint_get_organization for organization ownership. Live mode is read-only and BYO-key, returns a JSON location record with provenance/access metadata, and invalid or missing ids return JSON errors."
+    )]
     async fn healthpoint_get_location(
         &self,
         Parameters(params): Parameters<GetResourceParams>,
@@ -254,7 +256,9 @@ impl HealthpointMcpServer {
         json_result(self.client.get_location(&params.id).await)
     }
 
-    #[tool(description = "Get a single Healthpoint Organization record by FHIR id. Read-only.")]
+    #[tool(
+        description = "Get one Healthpoint Organization record by FHIR resource id. Use this only when an organization id is already known from a service record or healthpoint://organization URI; use healthpoint_get_service for service details and healthpoint_get_location for place/contact details. Live mode is read-only and BYO-key, returns a JSON organization record with provenance/access metadata, and invalid or missing ids return JSON errors."
+    )]
     async fn healthpoint_get_organization(
         &self,
         Parameters(params): Parameters<GetResourceParams>,
@@ -263,7 +267,7 @@ impl HealthpointMcpServer {
     }
 
     #[tool(
-        description = "Read a supported healthpoint:// resource URI. This mirrors planned MCP resources while keeping the operation explicit and read-only."
+        description = "Read a supported healthpoint:// resource URI and dispatch it to the matching service, location, or organization lookup. Use this when a client has a URI such as healthpoint://service/{id}; use the explicit get tools when the resource type/id are already separate, and search tools when no id is known. Live mode is read-only and BYO-key, supported URI schemes return JSON records with provenance/access metadata, and unsupported or malformed URIs return JSON errors."
     )]
     async fn healthpoint_read_resource_uri(
         &self,
