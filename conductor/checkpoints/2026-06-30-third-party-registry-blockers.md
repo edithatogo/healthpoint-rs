@@ -31,3 +31,4 @@ Date: 2026-06-30
 - PulseMCP remains manual/contact-gated or dependent on Official MCP Registry ingestion.
 - Smithery verification still requires score >80, an exact-homepage-host TXT record, and paid developer plan.
 - Healthpoint written approval is still required before public data redistribution, hosted proxying, AI dataset use, or non-research commercial use.
+- These gates are external to the repository and do not require further repo-local implementation.
