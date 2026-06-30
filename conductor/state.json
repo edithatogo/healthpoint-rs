@@ -132,11 +132,9 @@
   "blocked_by": [
     "Healthpoint written approval for public-data, hosted proxy, redistribution, open_social_data publication, AI dataset, or non-research commercial use",
     "metadata-only follow-up captures for broader pagination, nearby, direct-read, and rate-limit shapes",
-    "Third-party MCP directories require account-gated manual submission or repository indexing",
-    "MCP publisher is not authenticated and should not publish until crates.io packages exist"
+    "Third-party MCP directories require account-gated manual submission or repository indexing"
   ],
   "next_tracks": [
-    "submit-official-mcp-registry-after-crates-publication",
     "complete-third-party-mcp-directory-account-submissions",
     "obtain-healthpoint-written-approval-before-production-or-public-data-release"
   ],
