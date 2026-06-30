@@ -75,6 +75,26 @@ These prompts keep Healthpoint usage read-only, attributed, local-only by defaul
 - Tool descriptions must not contain hidden behavioural instructions unrelated to the tool.
 - Search tools should cap `_count` to 100 unless a reviewed bulk-export policy says otherwise.
 
+## Glama tool-quality contract
+
+Glama's visible score page was checked on 2026-06-30. It reported:
+
+- Overall profile score: `83%`.
+- Server Coherence: `A`, with `5/5` for disambiguation, naming consistency, tool count, and completeness.
+- Tool Definition Quality: `A`, average `3.7/5` across `10` tools, lowest tool score `3.1/5`.
+- Formula: overall quality is `70% Tool Definition Quality + 30% Server Coherence`; Tool Definition Quality is `60% mean TDQS + 40% minimum TDQS`.
+
+For future tool changes, preserve the server-coherence strengths and optimize descriptions for the six Glama dimensions:
+
+- Purpose Clarity: say what the tool does and how it differs from sibling tools.
+- Usage Guidelines: say when to use it, when not to use it, and which sibling tool is the alternative.
+- Behavioral Transparency: disclose read-only behavior, BYO-key/live-mode requirements, no-public-cache boundary, error behavior, result limits, pagination, and whether no live Healthpoint data is bundled.
+- Parameter Semantics: explain non-obvious parameter formats, defaults, ranges, and filter interactions beyond the schema.
+- Conciseness and Structure: keep the most important selection cue first and avoid hidden instructions.
+- Contextual Completeness: mention return shape and provenance/access metadata when useful.
+
+The main observed TDQS gaps were sparse usage guidance and sparse behavior/return-shape disclosure on search and get-by-id tools. Treat this section as the local contract for Glama scoring; `scripts/check-mcp-registry-submission.py` emits the same rubric under `glama_score_contract`.
+
 ## Launch examples
 
 ```bash
