@@ -51,7 +51,7 @@ url = { version = "2", features = ["serde"] }
 uuid = { version = "1", features = ["serde", "v7"] }
 
 # Official Rust MCP SDK pinned to the commit validated by local setup gates.
-rmcp = { version = "2.0.0", features = ["server", "transport-io"] }
+rmcp = { version = "3.3.0", features = ["server", "transport-io"] }
 
 healthpoint-core = { version = "0.1.0", path = "crates/healthpoint-core" }
 healthpoint-fhir = { version = "0.1.0", path = "crates/healthpoint-fhir" }
