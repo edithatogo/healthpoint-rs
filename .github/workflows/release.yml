@@ -114,7 +114,7 @@ jobs:
           subject-path: |
             healthpoint-rs-${{ matrix.target }}.${{ matrix.archive }}
             healthpoint-rs-${{ matrix.target }}.${{ matrix.archive }}.sha256
-      - uses: actions/upload-artifact@v7
+      - uses: actions/upload-artifact@v6
         with:
           name: healthpoint-rs-${{ matrix.target }}
           path: |
