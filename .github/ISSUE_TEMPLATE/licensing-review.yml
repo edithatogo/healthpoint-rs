@@ -1,5 +1,5 @@
 name: Licensing/access review
-about: Track Healthpoint terms, caching, attribution, redistribution, and rate-limit decisions.
+description: Track Healthpoint terms, caching, attribution, redistribution, and rate-limit decisions.
 title: "Licensing review: <topic>"
 labels: ["licensing", "access-policy"]
 body:
