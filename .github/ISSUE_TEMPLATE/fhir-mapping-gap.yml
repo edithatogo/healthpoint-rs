@@ -1,5 +1,5 @@
 name: FHIR mapping gap
-about: Track unmapped or incorrectly mapped FHIR fields using synthetic/redacted examples only.
+description: Track unmapped or incorrectly mapped FHIR fields using synthetic/redacted examples only.
 title: "FHIR mapping: <resource.field>"
 labels: ["fhir", "mapping"]
 body:

@@ -1,5 +1,5 @@
 name: Live API contract validation
-about: Track redacted validation of Healthpoint endpoint/auth/search behaviour.
+description: Track redacted validation of Healthpoint endpoint/auth/search behaviour.
 title: "Live contract: <area>"
 labels: ["live-validation", "licensed-api", "needs-redaction"]
 body:
