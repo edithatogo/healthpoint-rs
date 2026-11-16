@@ -1,5 +1,5 @@
 # syntax=docker/dockerfile:1
-FROM rust:1-bookworm AS builder
+FROM rust:1-bookworm@sha256:ade39a710ef85f3506cffcfec3e8a24ba090badef1dff2fb798f71d878833fea AS builder
 
 WORKDIR /workspace
 RUN apt-get update \
@@ -14,7 +14,7 @@ COPY . .
 RUN cargo fetch
 RUN cargo build --locked --release -p healthpoint-mcp
 
-FROM debian:bookworm-slim AS runtime
+FROM debian:bookworm-slim@sha256:734a72b3d6142a71993b4bc580ca01d8ca687f77a2c422d96a961d3376b179bc AS runtime
 
 LABEL org.opencontainers.image.source="https://github.com/edithatogo/healthpoint-rs"
 LABEL org.opencontainers.image.description="Read-only MCP server for licensed Healthpoint HL7 FHIR API access."
