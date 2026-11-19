@@ -1,7 +1,7 @@
 {
   "project": "healthpoint-rs",
   "status": "registry_closeout_complete_external_gates_pending",
-  "updated_at": "2026-06-30",
+  "updated_at": "2026-11-20",
   "context_model": "conductor",
   "default_branch": "main",
   "canonical_goal": "Rust-first Healthpoint API SDK, CLI, MCP server, and future open_social_data adapter",
@@ -205,5 +205,17 @@
     "monitor-mcp-so-created-status-for-public-listing",
     "obtain-healthpoint-written-approval-before-production-or-public-data-release"
   ],
-  "latest_checkpoint": "conductor/checkpoints/2026-06-30-release-distribution-external-gates.md"
+  "latest_checkpoint": "conductor/checkpoints/2026-11-20-bounded-parser-fuzzing.md",
+  "parser_fuzzing": {
+    "status": "native_tests_passed_local_campaign_interrupted_hosted_ci_pending",
+    "scope": [
+      "FHIR raw value/provenance preservation",
+      "resource URI round trip",
+      "diagnostic redaction"
+    ],
+    "native_evidence": "cargo +1.99.1 test --locked -p healthpoint-fhir --test fuzz_regressions: 2 passed, 0 failed",
+    "details": "fuzz/README.md",
+    "limits": "Synthetic data only; no live profile or API/terms qualification; stable/MSRV and existing external gates remain unchanged.",
+    "campaign_evidence": "Earlier draft campaign interrupted by SIGKILL after 21,548 executions; final harness sanitizer execution remains pending."
+  }
 }

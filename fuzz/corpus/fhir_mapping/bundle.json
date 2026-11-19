@@ -1,0 +1,1 @@
+{"resourceType": "Bundle", "total": 1, "entry": [{"resource": {"resourceType": "Location", "id": "synthetic-place", "position": {"latitude": 0, "longitude": 0}}}], "link": [{"relation": "next", "url": "https://example.invalid/page2"}]}

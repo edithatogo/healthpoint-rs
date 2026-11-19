@@ -1,0 +1,1 @@
+{"resourceType": "HealthcareService", "id": "synthetic-service", "name": "Synthetic service", "extension": [{"url": "https://example.invalid/unknown", "valueString": "preserve"}]}
