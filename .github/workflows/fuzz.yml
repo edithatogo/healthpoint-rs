@@ -1,0 +1,67 @@
+name: Bounded parser fuzzing
+
+on:
+  pull_request:
+    paths:
+      - 'crates/healthpoint-fhir/**'
+      - 'crates/healthpoint-core/**'
+      - 'crates/healthpoint-testkit/fixtures/**'
+      - 'contracts/**'
+      - 'fuzz/**'
+      - 'Cargo.toml'
+      - 'Cargo.lock'
+      - 'rust-toolchain.toml'
+      - '.github/workflows/fuzz.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'crates/healthpoint-fhir/**'
+      - 'crates/healthpoint-core/**'
+      - 'crates/healthpoint-testkit/fixtures/**'
+      - 'contracts/**'
+      - 'fuzz/**'
+      - 'Cargo.toml'
+      - 'Cargo.lock'
+      - 'rust-toolchain.toml'
+      - '.github/workflows/fuzz.yml'
+  schedule:
+    - cron: '33 3 * * 2'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: fuzz-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+jobs:
+  fuzz:
+    name: fhir_mapping bounded campaign
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      CARGO_BUILD_JOBS: '2'
+      FUZZ_SECONDS: ${{ github.event_name == 'schedule' && '600' || '30' }}
+    steps:
+      - name: Checkout synthetic sources
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Install pinned fuzz tools
+        run: |
+          rustup toolchain install nightly-2026-11-19 --profile minimal
+          cargo +nightly-2026-11-19 install cargo-fuzz --version 0.13.2 --locked
+      - name: Run bounded corpus and mutation campaign
+        run: bash fuzz/run.sh "$FUZZ_SECONDS"
+      - name: Preserve exact run and reproduction evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: fuzz-${{ github.run_id }}-${{ github.run_attempt }}
+          path: |
+            fuzz/artifacts/**
+            fuzz/target/evidence/**
+            fuzz/target/corpus/**
+          if-no-files-found: warn
+          retention-days: 14

@@ -1,0 +1,1 @@
+healthpoint://service/synthetic-service

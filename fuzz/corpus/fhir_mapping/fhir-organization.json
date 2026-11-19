@@ -1,0 +1,49 @@
+{
+  "resourceType": "Organization",
+  "id": "org-example-provider-1",
+  "active": true,
+  "name": "Synthetic Community Health Trust",
+  "telecom": [
+    {
+      "system": "phone",
+      "value": "+64-9-222-2222",
+      "use": "work"
+    },
+    {
+      "system": "url",
+      "value": "https://example.test/org",
+      "use": "work"
+    }
+  ],
+  "identifier": [
+    {
+      "use": "official",
+      "system": "https://example.test/org-id",
+      "value": "org-example-provider-1"
+    }
+  ],
+  "type": [
+    {
+      "coding": [
+        {
+          "system": "http://terminology.hl7.org/CodeSystem/organization-type",
+          "code": "prov",
+          "display": "Healthcare Provider"
+        }
+      ]
+    }
+  ],
+  "alias": [
+    "Synthetic CHT"
+  ],
+  "partOf": {
+    "reference": "Organization/org-parent-1",
+    "display": "Synthetic parent"
+  },
+  "endpoint": [
+    {
+      "reference": "Endpoint/endpoint-example-1",
+      "display": "Synthetic endpoint"
+    }
+  ]
+}
