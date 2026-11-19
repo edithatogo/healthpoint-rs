@@ -53,6 +53,11 @@ jobs:
           else
             scripts/check-release-version.py
           fi
+      - name: Bind an existing release tag to the exact scanned source
+        if: github.ref_type == 'tag' || inputs.create_github_release == true || inputs.publish_crates == true
+        env:
+          EXPECTED_RELEASE_TAG: ${{ steps.version.outputs.tag }}
+        run: python3 scripts/check-release-source.py --tag "$EXPECTED_RELEASE_TAG"
       - name: Validate MCP registry readiness
         run: scripts/check-mcp-registry-submission.py
       - name: Cargo package validation
@@ -61,6 +66,30 @@ jobs:
           for crate in healthpoint-fhir healthpoint-client healthpoint-export healthpoint-testkit healthpoint-osd-adapter healthpoint-cli healthpoint-mcp; do
             cargo package -p "$crate" --locked --list >/dev/null
           done
+      - name: Inventory exact locked Rust dependencies
+        uses: edithatogo/repository-standards/.github/actions/cargo-lock-sbom@bc76f1fbe0fa87a1371eadc06b08f54b48c623f7
+        with:
+          lockfile: Cargo.lock
+          output: .grype/healthpoint-rs.dependencies.cdx.json
+          name: healthpoint-rs
+          source-sha: ${{ github.sha }}
+      - name: Scan resolved Rust dependencies with Grype
+        uses: edithatogo/repository-standards/.github/actions/grype-scan@bc76f1fbe0fa87a1371eadc06b08f54b48c623f7
+        with:
+          sbom: .grype/healthpoint-rs.dependencies.cdx.json
+          mode: enforce
+          severity-cutoff: critical
+          artifact-name: grype-healthpoint-release
+          output-directory: .grype/release-report
+          source-sha: ${{ github.sha }}
+      - name: Retain the resolved source inventory for the release
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: healthpoint-dependency-inventory
+          path: .grype/healthpoint-rs.dependencies.cdx.json
+          include-hidden-files: true
+          if-no-files-found: error
+          retention-days: 90
 
   build:
     name: Build ${{ matrix.target }}
@@ -191,4 +220,4 @@ jobs:
           notes_file=$(mktemp)
           awk '/^## v?${{ needs.validate.outputs.version }} /{flag=1; next} /^## /{if(flag) exit} flag{print}' CHANGELOG.md > "$notes_file"
           gh release view "$tag" >/dev/null 2>&1 || gh release create "$tag" --target "$GITHUB_SHA" --title "$tag" --notes-file "$notes_file"
-          find dist-artifacts -type f \( -name '*.tar.gz' -o -name '*.zip' -o -name '*.sha256' \) -print0 | xargs -0 gh release upload "$tag" --clobber
+          find dist-artifacts -type f \( -name '*.tar.gz' -o -name '*.zip' -o -name '*.sha256' -o -name '*.cdx.json' \) -print0 | xargs -0 gh release upload "$tag" --clobber
