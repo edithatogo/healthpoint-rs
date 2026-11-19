@@ -1,0 +1,83 @@
+name: Grype resolved dependency advisory
+
+on:
+  pull_request:
+    paths:
+      - Cargo.lock
+      - Cargo.toml
+      - '**/Cargo.toml'
+      - .github/workflows/grype.yml
+      - .github/workflows/release.yml
+      - scripts/check-release-source.py
+      - tests/test_release_source.py
+  push:
+    branches: [main]
+    paths:
+      - Cargo.lock
+      - Cargo.toml
+      - '**/Cargo.toml'
+      - .github/workflows/grype.yml
+      - .github/workflows/release.yml
+      - scripts/check-release-source.py
+      - tests/test_release_source.py
+  schedule:
+    - cron: '32 4 * * 1'
+  workflow_dispatch:
+    inputs:
+      ref:
+        description: Optional exact release commit or tag to rescan its locked source dependencies
+        type: string
+        required: false
+      released_inventory:
+        description: Rescan the latest published release SBOM instead of source resolution
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+
+concurrency:
+  group: grype-source-${{ github.event_name }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+jobs:
+  scan:
+    if: github.event_name != 'schedule' && inputs.released_inventory != true
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ inputs.ref || github.sha }}
+          persist-credentials: false
+      - name: Record the exact source being scanned
+        id: source
+        shell: bash
+        run: echo "sha=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
+      - name: Verify release source refusal cases
+        if: github.event_name != 'workflow_dispatch' || inputs.ref == ''
+        run: python3 -m unittest discover -s tests -p test_release_source.py -v
+      - name: Generate full Cargo.lock resolution inventory
+        uses: edithatogo/repository-standards/.github/actions/cargo-lock-sbom@bc76f1fbe0fa87a1371eadc06b08f54b48c623f7
+        with:
+          lockfile: Cargo.lock
+          output: .grype/healthpoint-rs.dependencies.cdx.json
+          name: healthpoint-rs
+          source-sha: ${{ steps.source.outputs.sha }}
+      - name: Scan current source resolution
+        uses: edithatogo/repository-standards/.github/actions/grype-scan@bc76f1fbe0fa87a1371eadc06b08f54b48c623f7
+        with:
+          sbom: .grype/healthpoint-rs.dependencies.cdx.json
+          mode: advisory
+          severity-cutoff: critical
+          artifact-name: grype-healthpoint-rs-source-${{ github.run_id }}-${{ github.run_attempt }}
+          output-directory: .grype/report
+          source-sha: ${{ steps.source.outputs.sha }}
+
+  released-sbom:
+    if: github.event_name == 'schedule' || inputs.released_inventory == true
+    uses: edithatogo/repository-standards/.github/workflows/grype-release-rescan.yml@eb588b9f97c4996cd068822a004002be1cf03f3f
+    with:
+      sbom-asset: healthpoint-rs.dependencies.cdx.json
+      artifact-name: grype-healthpoint-rs-released
+      severity-cutoff: critical

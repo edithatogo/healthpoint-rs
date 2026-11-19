@@ -1,7 +1,7 @@
 {
   "project": "healthpoint-rs",
   "status": "registry_closeout_complete_external_gates_pending",
-  "updated_at": "2026-06-30",
+  "updated_at": "2026-11-20",
   "context_model": "conductor",
   "default_branch": "main",
   "canonical_goal": "Rust-first Healthpoint API SDK, CLI, MCP server, and future open_social_data adapter",
@@ -205,5 +205,10 @@
     "monitor-mcp-so-created-status-for-public-listing",
     "obtain-healthpoint-written-approval-before-production-or-public-data-release"
   ],
-  "latest_checkpoint": "conductor/checkpoints/2026-06-30-release-distribution-external-gates.md"
+  "latest_checkpoint": "conductor/checkpoints/2026-06-30-release-distribution-external-gates.md",
+  "grype_rollout": {
+    "status": "implemented_hosted_qualification_pending",
+    "checkpoint": "conductor/checkpoints/2026-11-20-grype-dependency-gate.md",
+    "scope": "Resolved Cargo.lock source inventory; critical release gate and advisory source scans; no runtime or data/licensing change"
+  }
 }
