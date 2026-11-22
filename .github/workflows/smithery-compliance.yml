@@ -45,7 +45,7 @@ jobs:
       - name: Run MCP protocol validator
         run: scripts/validate-mcp-server fast
       - name: Upload MCP validation report
-        uses: actions/upload-artifact@v5
+        uses: actions/upload-artifact@v6
         if: always()
         with:
           name: mcp-validation-report
@@ -78,7 +78,7 @@ jobs:
         shell: bash
         run: scripts/check-smithery-compliance.py
       - name: Upload MCPB bundle
-        uses: actions/upload-artifact@v5
+        uses: actions/upload-artifact@v6
         with:
           name: healthpoint-rs-mcpb-${{ matrix.os }}
           path: target/mcpb/*.mcpb
